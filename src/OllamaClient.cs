@@ -15,6 +15,7 @@ using System.Text.Json;
 using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace Ollama.NET;
 
@@ -170,7 +171,7 @@ public class OllamaClient : IDisposable
         });
     }
 
-    public async Task<IEnumerable<Model>> ListModelsAsync(string? model = null, ModelSize? size = ModelSize.Small, ModelLocation location = ModelLocation.Remote, CancellationToken ct = default)
+    public async Task<IEnumerable<Model>> ListModelsAsync(string? pattern = null, ModelSize? size = null, ModelLocation location = ModelLocation.Remote, CancellationToken ct = default)
     {
         IEnumerable<Model> models;
 
@@ -198,9 +199,9 @@ public class OllamaClient : IDisposable
             }
         }
 
-        if (!string.IsNullOrEmpty(model))
+        if (!string.IsNullOrEmpty(pattern))
         {
-            models = models.Where(s => s.Name != null && s.Name.Contains(model, StringComparison.OrdinalIgnoreCase));
+            models = models.Where(s => s.Name != null && Regex.IsMatch(s.Name, pattern, RegexOptions.IgnoreCase));
         }
 
         if (size.HasValue)

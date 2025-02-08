@@ -9,7 +9,6 @@ namespace Ollama.NET.Dto.Models
         public long? Size { get; set; }
 
         [JsonProperty("modified_at")]
-        //[JsonConverter(typeof(ISO8601ToDateTimeConverter))]
         public DateTime? ModifiedAt { get; set; }
     }
 }
