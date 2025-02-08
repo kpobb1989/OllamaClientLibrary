@@ -8,7 +8,7 @@ using Ollama.NET;
 using Ollama.NET.Dto;
 using Ollama.NET.Dto.ChatCompletion;
 
-using var client = new OllamaClient(new DeepSeekOptions("sk-2fcac6562b8143ceb3e20b17c6604a3e"));
+using var client = new OllamaClient();
 
 await foreach (var chunk in client.GetChatCompletionAsync("Hi").Select((message, index) => (Message: message, Index: index)))
 {
