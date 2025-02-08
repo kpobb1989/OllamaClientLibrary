@@ -1,10 +1,6 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Schema.Generation;
-using Newtonsoft.Json.Schema;
 
-using Ollama.NET.SchemaGenerator;
-
-namespace Ollama.NET.Extensions
+namespace OllamaClientLibrary.Extensions
 {
     internal static class JsonSerializerExtensions
     {

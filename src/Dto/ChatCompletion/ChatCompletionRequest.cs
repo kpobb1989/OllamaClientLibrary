@@ -1,4 +1,4 @@
-﻿namespace Ollama.NET.Dto.ChatCompletion
+﻿namespace OllamaClientLibrary.Dto.ChatCompletion
 {
     internal record ChatCompletionRequest
     {

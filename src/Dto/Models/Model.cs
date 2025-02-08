@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Ollama.NET.Dto.Models
+namespace OllamaClientLibrary.Dto.Models
 {
     public record Model
     {

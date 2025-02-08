@@ -1,6 +1,6 @@
-﻿using Ollama.NET.Constants;
+﻿using OllamaClientLibrary.Constants;
 
-namespace Ollama.NET.Dto.ChatCompletion
+namespace OllamaClientLibrary.Dto.ChatCompletion
 {
     /// <summary>
     /// Represents a chat message.

@@ -1,6 +1,6 @@
-﻿using Ollama.NET;
-using Ollama.NET.Constants;
-using Ollama.NET.SchemaGenerator;
+﻿using OllamaClientLibrary;
+using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.SchemaGenerator;
 
 using var client = new OllamaClient(new LocalOllamaOptions()
 {

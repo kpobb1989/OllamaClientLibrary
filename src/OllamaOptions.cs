@@ -1,4 +1,4 @@
-﻿namespace Ollama.NET
+﻿namespace OllamaClientLibrary
 {
     public abstract class OllamaOptions
     {

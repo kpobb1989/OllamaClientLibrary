@@ -1,4 +1,4 @@
-﻿namespace Ollama.NET.Constants
+﻿namespace OllamaClientLibrary.Constants
 {
     /// <summary>
     /// Provides predefined temperature values for different use cases.

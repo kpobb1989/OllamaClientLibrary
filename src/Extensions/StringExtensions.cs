@@ -1,7 +1,7 @@
-﻿using Ollama.NET.Constants;
-using Ollama.NET.Dto.ChatCompletion;
+﻿using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Dto.ChatCompletion;
 
-namespace Ollama.NET.Extensions
+namespace OllamaClientLibrary.Extensions
 {
     internal static class StringExtensions
     {

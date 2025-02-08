@@ -1,5 +1,5 @@
-﻿using Ollama.NET;
-using Ollama.NET.Constants;
+﻿using OllamaClientLibrary;
+using OllamaClientLibrary.Constants;
 
 using var client = new OllamaClient(new LocalOllamaOptions()
 {

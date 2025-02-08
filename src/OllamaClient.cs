@@ -1,23 +1,24 @@
-﻿using Ollama.NET.Cache;
-using Ollama.NET.Constants;
-using Ollama.NET.Converters;
-using Ollama.NET.Dto;
-using Ollama.NET.Dto.ChatCompletion;
-using Ollama.NET.Dto.GenerateCompletion;
-using Ollama.NET.Dto.Models;
-using Ollama.NET.Extensions;
-using Ollama.NET.Parsers;
-
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Text;
 using Newtonsoft.Json;
 using System.Text.Json;
-using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System.Text.RegularExpressions;
+using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Converters;
+using OllamaClientLibrary.Extensions;
+using OllamaClientLibrary.Dto.GenerateCompletion;
+using OllamaClientLibrary.Dto.Models;
+using OllamaClientLibrary.Dto.ChatCompletion;
+using OllamaClientLibrary.Cache;
+using OllamaClientLibrary.Parsers;
+using OllamaClientLibrary.Dto;
 
-namespace Ollama.NET;
+using JsonSerializer = Newtonsoft.Json.JsonSerializer;
+using OllamaClientLibrary.SchemaGenerator;
+
+namespace OllamaClientLibrary;
 
 /// <summary>
 /// Client for interacting with the Ollama API.
@@ -90,7 +91,7 @@ public class OllamaClient : IDisposable
     /// <returns>An object of type T</returns>
     public async Task<T?> GenerateCompletionAsync<T>(string? prompt, CancellationToken ct = default)
     {
-        var schema = SchemaGenerator.JsonSchemaGenerator.Generate<T>();
+        var schema = JsonSchemaGenerator.Generate<T>();
 
         var message = new GenerateCompletionRequest
         {

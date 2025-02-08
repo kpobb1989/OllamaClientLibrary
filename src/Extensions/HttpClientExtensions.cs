@@ -2,7 +2,7 @@
 
 using System.Text;
 
-namespace Ollama.NET.Extensions
+namespace OllamaClientLibrary.Extensions
 {
     internal static class HttpClientExtensions
     {

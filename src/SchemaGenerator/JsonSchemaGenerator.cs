@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json;
-namespace Ollama.NET.SchemaGenerator
+
+namespace OllamaClientLibrary.SchemaGenerator
 {
     internal static class JsonSchemaGenerator
     {

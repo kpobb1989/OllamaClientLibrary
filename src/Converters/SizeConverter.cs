@@ -1,4 +1,4 @@
-﻿namespace Ollama.NET.Converters
+﻿namespace OllamaClientLibrary.Converters
 {
     public static class SizeConverter
     {
@@ -7,7 +7,7 @@
 
         public static double BytesToGigabytes(long? bytes)
         {
-            if(!bytes.HasValue)
+            if (!bytes.HasValue)
                 return 0;
 
             const long BytesInOneGB = 1024L * 1024 * 1024;

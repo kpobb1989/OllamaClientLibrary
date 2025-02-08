@@ -2,12 +2,12 @@
 
 using Newtonsoft.Json;
 
-using Ollama.NET.Dto.Models;
-using Ollama.NET.Extensions;
+using OllamaClientLibrary.Dto.Models;
+using OllamaClientLibrary.Extensions;
 
 using System.Collections.Concurrent;
 
-namespace Ollama.NET.Parsers
+namespace OllamaClientLibrary.Parsers
 {
     internal static class RemoteModelParser
     {

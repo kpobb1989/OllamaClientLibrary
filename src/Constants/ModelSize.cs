@@ -1,4 +1,4 @@
-﻿namespace Ollama.NET.Constants
+﻿namespace OllamaClientLibrary.Constants
 {
     public enum ModelSize
     {

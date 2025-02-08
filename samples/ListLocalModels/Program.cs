@@ -1,6 +1,6 @@
-﻿using Ollama.NET;
-using Ollama.NET.Constants;
-using Ollama.NET.Converters;
+﻿using OllamaClientLibrary;
+using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Converters;
 
 using var client = new OllamaClient();
 

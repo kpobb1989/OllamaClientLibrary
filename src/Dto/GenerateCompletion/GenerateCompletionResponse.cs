@@ -1,4 +1,4 @@
-﻿namespace Ollama.NET.Dto.GenerateCompletion
+﻿namespace OllamaClientLibrary.Dto.GenerateCompletion
 {
     public record GenerateCompletionResponse
     {

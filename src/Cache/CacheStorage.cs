@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Ollama.NET.Cache
+namespace OllamaClientLibrary.Cache
 {
     internal static class CacheStorage
     {

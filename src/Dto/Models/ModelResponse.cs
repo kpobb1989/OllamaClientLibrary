@@ -1,4 +1,4 @@
-﻿namespace Ollama.NET.Dto.Models
+﻿namespace OllamaClientLibrary.Dto.Models
 {
     internal record ModelResponse
     {
