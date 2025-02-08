@@ -1,5 +1,7 @@
 ﻿using HtmlAgilityPack;
 
+using Newtonsoft.Json;
+
 using Ollama.NET.Dto.Models;
 using Ollama.NET.Extensions;
 
@@ -9,9 +11,9 @@ namespace Ollama.NET.Parsers
 {
     internal static class RemoteModelParser
     {
-        public static async Task<IEnumerable<Model>> ParseAsync(HttpClient client, CancellationToken ct)
+        public static async Task<IEnumerable<Model>> ParseAsync(HttpClient client, JsonSerializer jsonSerializer, CancellationToken ct)
         {
-            using var stream = await client.ExecuteAndGetStreamAsync("https://ollama.com/library?sort=newest", HttpMethod.Get, ct: ct);
+            using var stream = await client.ExecuteAndGetStreamAsync("https://ollama.com/library?sort=newest", HttpMethod.Get, jsonSerializer, ct: ct);
 
             var htmlDoc = new HtmlDocument();
             htmlDoc.Load(stream);
@@ -30,7 +32,7 @@ namespace Ollama.NET.Parsers
                 await semaphore.WaitAsync(ct);
                 try
                 {
-                    var models = await GetRemoteModels(client, href, ct);
+                    var models = await GetRemoteModels(client, jsonSerializer, href, ct);
 
                     foreach (var model in models)
                     {
@@ -48,9 +50,9 @@ namespace Ollama.NET.Parsers
             return remoteModels;
         }
 
-        private static async Task<IEnumerable<Model>> GetRemoteModels(HttpClient client, string href, CancellationToken ct)
+        private static async Task<IEnumerable<Model>> GetRemoteModels(HttpClient client, JsonSerializer jsonSerializer, string href, CancellationToken ct)
         {
-            using var stream = await client.ExecuteAndGetStreamAsync($"https://ollama.com/{href}/tags", HttpMethod.Get, ct: ct);
+            using var stream = await client.ExecuteAndGetStreamAsync($"https://ollama.com/{href}/tags", HttpMethod.Get, jsonSerializer, ct: ct);
 
             var htmlDoc = new HtmlDocument();
             htmlDoc.Load(stream);

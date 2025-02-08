@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json.Schema.Generation;
-using Newtonsoft.Json.Schema;
-
-using Ollama.NET.Cache;
+﻿using Ollama.NET.Cache;
 using Ollama.NET.Constants;
 using Ollama.NET.Converters;
 using Ollama.NET.Dto;
@@ -12,11 +9,12 @@ using Ollama.NET.Extensions;
 using Ollama.NET.Parsers;
 
 using System.Runtime.CompilerServices;
-using System.Security.Principal;
 using System.Text;
+using Newtonsoft.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
+using JsonSerializer = Newtonsoft.Json.JsonSerializer;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 
 namespace Ollama.NET;
 
@@ -28,11 +26,15 @@ public class OllamaClient : IDisposable
     private readonly string RemoteModelsCacheKey = "remote-models";
     private readonly TimeSpan RemoteModelsCacheTime = TimeSpan.FromHours(1);
     private readonly HttpClient _httpClient;
-    private readonly JsonSerializerOptions _serializerOptions = new()
+    private readonly JsonSerializer _jsonSerializer = JsonSerializer.Create(new JsonSerializerSettings()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = { new MessageRoleJsonConverter(), new ISO8601ToDateTimeConverter() }
-    };
+        ContractResolver = new CamelCasePropertyNamesContractResolver(),
+        DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+        Converters =
+            [
+                new StringEnumConverter(new CamelCaseNamingStrategy())
+            ]
+    });
     private readonly OllamaOptions _options;
 
     public OllamaClient(OllamaOptions? options = null)
@@ -71,9 +73,9 @@ public class OllamaClient : IDisposable
             Stream = false
         };
 
-        await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, request, _serializerOptions, ct);
+        await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct);
 
-        var response = await JsonSerializer.DeserializeAsync<GenerateCompletionResponse>(stream, _serializerOptions, cancellationToken: ct);
+        var response = _jsonSerializer.Deserialize<GenerateCompletionResponse>(stream);
 
         return response?.Response;
     }
@@ -93,36 +95,21 @@ public class OllamaClient : IDisposable
         {
             Model = _options.Model,
             Options = new ModelOptions(_options.Temperature),
-            Prompt = prompt, //. Schema: {JsonSerializer.Serialize(schema)}
+            Prompt = prompt,
             Format = schema,
             Stream = false
         };
 
-        await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, message, _serializerOptions, ct);
+        await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, message, ct);
 
-        var response = await JsonSerializer.DeserializeAsync<GenerateCompletionResponse>(stream, _serializerOptions, cancellationToken: ct);
+        var response = _jsonSerializer.Deserialize<GenerateCompletionResponse>(stream);
 
         if (response?.Response == null) return default;
 
-        var completion = JsonSerializer.Deserialize<T?>(response.Response);
+        var completion = _jsonSerializer.Deserialize<T?>(response.Response);
 
         return completion;
     }
-
-    //public class Schema
-    //{
-    //    public string? Type { get; set; }
-
-    //    public Dictionary<string, Property> Properties { get; set; } = [];
-
-    //    public List<string> Required { get; set; } = [];
-
-    //}
-
-    //public class Property
-    //{
-    //    public string? Type { get; set; }
-    //}
 
     /// <summary>
     /// Generates a chat completion response from the model as an asynchronous stream of chat messages.
@@ -143,7 +130,7 @@ public class OllamaClient : IDisposable
             Stream = true
         };
 
-        await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.ChatAapi, HttpMethod.Post, request, _serializerOptions, ct);
+        await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.ChatAapi, HttpMethod.Post, _jsonSerializer, request, ct);
 
         using var reader = new StreamReader(stream);
 
@@ -161,7 +148,7 @@ public class OllamaClient : IDisposable
 
             if (string.IsNullOrWhiteSpace(line)) continue;
 
-            var response = JsonSerializer.Deserialize<ChatCompletionResponse>(line, _serializerOptions);
+            var response = _jsonSerializer.Deserialize<ChatCompletionResponse>(line);
 
             if (response != null)
             {
@@ -189,9 +176,9 @@ public class OllamaClient : IDisposable
 
         if (location == ModelLocation.Local)
         {
-            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.TagsApi, HttpMethod.Get, ct: ct);
+            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.TagsApi, HttpMethod.Get, _jsonSerializer, ct: ct);
 
-            var response = await JsonSerializer.DeserializeAsync<ModelResponse>(stream, _serializerOptions, ct);
+            var response = _jsonSerializer.Deserialize<ModelResponse>(stream);
 
             models = response?.Models ?? [];
         }
@@ -205,7 +192,7 @@ public class OllamaClient : IDisposable
             }
             else
             {
-                models = await RemoteModelParser.ParseAsync(_httpClient, ct);
+                models = await RemoteModelParser.ParseAsync(_httpClient, _jsonSerializer, ct);
 
                 await CacheStorage.SaveAsync(RemoteModelsCacheKey, models, ct);
             }

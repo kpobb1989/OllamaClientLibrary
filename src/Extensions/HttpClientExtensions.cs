@@ -1,11 +1,12 @@
-﻿using System.Net.Http.Json;
-using System.Text.Json;
+﻿using Newtonsoft.Json;
+
+using System.Text;
 
 namespace Ollama.NET.Extensions
 {
     internal static class HttpClientExtensions
     {
-        public static async Task<Stream> ExecuteAndGetStreamAsync(this HttpClient httpClient, string requestUri, HttpMethod method, object? request = null, JsonSerializerOptions? options = null, CancellationToken ct = default)
+        public static async Task<Stream> ExecuteAndGetStreamAsync(this HttpClient httpClient, string requestUri, HttpMethod method, JsonSerializer jsonSerializer, object? request = null, CancellationToken ct = default)
         {
             HttpRequestMessage httpRequestMessage;
 
@@ -13,7 +14,7 @@ namespace Ollama.NET.Extensions
             {
                 httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri)
                 {
-                    Content = JsonContent.Create(request, options: options)
+                    Content = new StringContent(jsonSerializer.Serialize(request), Encoding.UTF8, "application/json")
                 };
             }
             else

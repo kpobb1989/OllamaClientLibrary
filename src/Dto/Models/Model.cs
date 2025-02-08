@@ -1,17 +1,15 @@
-﻿using Ollama.NET.Converters;
-
-using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Ollama.NET.Dto.Models
 {
     public record Model
     {
-        [JsonPropertyName("model")]
+        [JsonProperty("model")]
         public string? Name { get; set; }
         public long? Size { get; set; }
 
-        [JsonPropertyName("modified_at")]
-        [JsonConverter(typeof(ISO8601ToDateTimeConverter))]
+        [JsonProperty("modified_at")]
+        //[JsonConverter(typeof(ISO8601ToDateTimeConverter))]
         public DateTime? ModifiedAt { get; set; }
     }
 }

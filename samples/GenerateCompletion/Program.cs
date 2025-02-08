@@ -5,11 +5,23 @@ using Ollama.NET.SchemaGenerator;
 using var client = new OllamaClient(new LocalOllamaOptions()
 {
     Host = "http://localhost:11434", // default Ollama server URL
-    Model = "deepseek-r1", // make sure this model is available in your Ollama installation
+    Model = "llama3.2:latest", // make sure this model is available in your Ollama installation
     Temperature = Temperature.DataCleaningOrAnalysis,
 });
 
 var completion = await client.GenerateCompletionAsync<Response>("You are a professional .net developer. Provide a list of all available .net core versions for the last 5 years");
+
+if (completion == null)
+{
+    Console.WriteLine("No response received from the model.");
+
+    return;
+}
+
+foreach (var item in completion.Data.OrderBy(s => s.Version))
+{
+    Console.WriteLine($"Version: {item.Version}, ReleaseDate: {item.ReleaseDate}, EndOfLife: {item.EndOfLife}");
+}
 
 Console.ReadKey();
 

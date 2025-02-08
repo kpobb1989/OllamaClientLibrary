@@ -5,19 +5,14 @@ namespace Ollama.NET.SchemaGenerator
 {
     internal static class JsonSchemaGenerator
     {
-        public static object Generate<T>()
+        public static JSchema Generate<T>()
         {
             JSchemaGenerator generator = new();
             JSchema schema = generator.Generate(typeof(T));
 
             ApplyCustomAttributes(typeof(T), schema);
 
-            JsonSerializerSettings microsoftDateFormatSettings = new JsonSerializerSettings
-            {
-                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat
-            };
-
-            return System.Text.Json.JsonSerializer.Deserialize<object>((Newtonsoft.Json.JsonConvert.SerializeObject(schema, microsoftDateFormatSettings)))!;
+            return schema;
         }
 
         private static void ApplyCustomAttributes(Type type, JSchema schema)
