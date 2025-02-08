@@ -1,4 +1,7 @@
-﻿using Ollama.NET.Cache;
+﻿using Newtonsoft.Json.Schema.Generation;
+using Newtonsoft.Json.Schema;
+
+using Ollama.NET.Cache;
 using Ollama.NET.Constants;
 using Ollama.NET.Converters;
 using Ollama.NET.Dto;
@@ -9,10 +12,11 @@ using Ollama.NET.Extensions;
 using Ollama.NET.Parsers;
 
 using System.Runtime.CompilerServices;
+using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
-
-using static UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor.ContentOrderTextExtractor;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace Ollama.NET;
 
@@ -83,12 +87,15 @@ public class OllamaClient : IDisposable
     /// <returns>An object of type T</returns>
     public async Task<T?> GenerateCompletionAsync<T>(string? prompt, CancellationToken ct = default)
     {
+        var schema = SchemaGenerator.JsonSchemaGenerator.Generate<T>();
+
         var message = new GenerateCompletionRequest
         {
             Model = _options.Model,
             Options = new ModelOptions(_options.Temperature),
-            Prompt = prompt,
-            Format = "json",
+            Prompt = prompt, //. Schema: {JsonSerializer.Serialize(schema)}
+            Format = schema,
+            Stream = false
         };
 
         await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, message, _serializerOptions, ct);
@@ -97,10 +104,25 @@ public class OllamaClient : IDisposable
 
         if (response?.Response == null) return default;
 
-        var completion = JsonSerializer.Deserialize<T?>(response.Response, _serializerOptions);
+        var completion = JsonSerializer.Deserialize<T?>(response.Response);
 
         return completion;
     }
+
+    //public class Schema
+    //{
+    //    public string? Type { get; set; }
+
+    //    public Dictionary<string, Property> Properties { get; set; } = [];
+
+    //    public List<string> Required { get; set; } = [];
+
+    //}
+
+    //public class Property
+    //{
+    //    public string? Type { get; set; }
+    //}
 
     /// <summary>
     /// Generates a chat completion response from the model as an asynchronous stream of chat messages.

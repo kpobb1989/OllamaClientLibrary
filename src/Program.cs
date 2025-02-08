@@ -1,88 +1,88 @@
 ﻿
-using UglyToad.PdfPig.Content;
-using UglyToad.PdfPig;
-using System.Text;
-using Ollama.NET.Extensions;
-using Ollama.NET.Constants;
-using Ollama.NET;
-using Ollama.NET.Dto;
-using Ollama.NET.Dto.ChatCompletion;
+//using UglyToad.PdfPig.Content;
+//using UglyToad.PdfPig;
+//using System.Text;
+//using Ollama.NET.Extensions;
+//using Ollama.NET.Constants;
+//using Ollama.NET;
+//using Ollama.NET.Dto;
+//using Ollama.NET.Dto.ChatCompletion;
 
-using var client = new OllamaClient();
+//using var client = new OllamaClient();
 
-await foreach (var chunk in client.GetChatCompletionAsync("Hi").Select((message, index) => (Message: message, Index: index)))
-{
-    if (chunk.Index == 0)
-    {
-        Console.Write($"{chunk.Message?.Role}: ");
-    }
-
-    Console.Write($"{chunk.Message?.Content}");
-}
-
-Console.ReadKey();
-
-//foreach (var model in await client.ListModelsAsync(model: "deepseek-r1"))
+//await foreach (var chunk in client.GetChatCompletionAsync("Hi").Select((message, index) => (Message: message, Index: index)))
 //{
-//    Console.WriteLine(model.Name);
-//}
-
-//var doc = new StringBuilder();
-
-//using (PdfDocument document = PdfDocument.Open(@"D:\bp-annual-report-and-form-20f-2023.pdf"))
-//{
-//    foreach (Page page in document.GetPages())
+//    if (chunk.Index == 0)
 //    {
-//        string pageText = page.Text;
-
-//        doc.Append(pageText);
+//        Console.Write($"{chunk.Message?.Role}: ");
 //    }
+
+//    Console.Write($"{chunk.Message?.Content}");
 //}
-
-
-
-//var result = await client.GenerateCompletionTextAsync($"What's the name of the model", new OllamaOptions() { Temperature = Temperature.GeneralConversationOrTranslation });
 
 //Console.ReadKey();
 
+////foreach (var model in await client.ListModelsAsync(model: "deepseek-r1"))
+////{
+////    Console.WriteLine(model.Name);
+////}
 
-//Console.WriteLine("CTRL+D to terminate the conversation.");
+////var doc = new StringBuilder();
 
-//var cts = new CancellationTokenSource();
+////using (PdfDocument document = PdfDocument.Open(@"D:\bp-annual-report-and-form-20f-2023.pdf"))
+////{
+////    foreach (Page page in document.GetPages())
+////    {
+////        string pageText = page.Text;
 
-//// Start a task to monitor for CTRL+D key press
-//Task.Run(() =>
-//{
-//    while (true)
-//    {
-//        var keyInfo = Console.ReadKey(intercept: true);
-//        if (keyInfo.Key == ConsoleKey.D && keyInfo.Modifiers == ConsoleModifiers.Control)
-//        {
-//            cts.Cancel();
-//        }
-//    }
-//});
+////        doc.Append(pageText);
+////    }
+////}
 
-//while (true)
-//{
-//    if (cts.Token.IsCancellationRequested)
-//    {
-//        cts = new CancellationTokenSource();
-//    }
 
-//    Console.Write($"{MessageRole.User}: ");
 
-//    var prompt = Console.ReadLine();
+////var result = await client.GenerateCompletionTextAsync($"What's the name of the model", new OllamaOptions() { Temperature = Temperature.GeneralConversationOrTranslation });
 
-//    await foreach (var chunk in client.GetChatCompletionAsync(prompt.AsUserChatMessage(), ct: cts.Token).Select((message, index) => (Message: message, Index: index)))
-//    {
-//        if (chunk.Index == 0)
-//        {
-//            Console.Write($"{chunk.Message?.Role}: ");
-//        }
+////Console.ReadKey();
 
-//        Console.Write($"{chunk.Message?.Content}");
-//    }
 
-//    Console.WriteLine();
-//}
+////Console.WriteLine("CTRL+D to terminate the conversation.");
+
+////var cts = new CancellationTokenSource();
+
+////// Start a task to monitor for CTRL+D key press
+////Task.Run(() =>
+////{
+////    while (true)
+////    {
+////        var keyInfo = Console.ReadKey(intercept: true);
+////        if (keyInfo.Key == ConsoleKey.D && keyInfo.Modifiers == ConsoleModifiers.Control)
+////        {
+////            cts.Cancel();
+////        }
+////    }
+////});
+
+////while (true)
+////{
+////    if (cts.Token.IsCancellationRequested)
+////    {
+////        cts = new CancellationTokenSource();
+////    }
+
+////    Console.Write($"{MessageRole.User}: ");
+
+////    var prompt = Console.ReadLine();
+
+////    await foreach (var chunk in client.GetChatCompletionAsync(prompt.AsUserChatMessage(), ct: cts.Token).Select((message, index) => (Message: message, Index: index)))
+////    {
+////        if (chunk.Index == 0)
+////        {
+////            Console.Write($"{chunk.Message?.Role}: ");
+////        }
+
+////        Console.Write($"{chunk.Message?.Content}");
+////    }
+
+////    Console.WriteLine();
+////}
