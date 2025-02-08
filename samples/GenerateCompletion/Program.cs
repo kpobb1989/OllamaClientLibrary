@@ -8,7 +8,11 @@ using var client = new OllamaClient(new LocalOllamaOptions()
     Temperature = Temperature.DataCleaningOrAnalysis,
 });
 
+Console.Write("Loading...");
+
 var completion = await client.GenerateCompletionAsync<Response>("You are a professional .net developer. Provide a list of all available .NET Core versions for the last 5 years");
+
+Console.Clear();
 
 if (completion == null || completion.Data == null)
 {
@@ -17,7 +21,7 @@ if (completion == null || completion.Data == null)
     return;
 }
 
-foreach (var item in completion.Data.OrderBy(s => s.Version))
+foreach (var item in completion.Data.OrderBy(s => s.ReleaseDate))
 {
     Console.WriteLine($"Version: {item.Version}, ReleaseDate: {item.ReleaseDate}, EndOfLife: {item.EndOfLife}");
 }
