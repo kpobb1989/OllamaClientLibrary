@@ -16,11 +16,14 @@
 	  <RepositoryUrl>https://github.com/kpobb1989/OllamaClientLibrary</RepositoryUrl>
 	  <PackageTags>ollama, ollama-api, client, library, sdk, dotnet, api, ai, deepseek, gpt, llm</PackageTags>
 	  <PackageProjectUrl>https://github.com/kpobb1989/OllamaClientLibrary</PackageProjectUrl>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.72" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />
+	<None Include="..\README.md" Pack="true" PackagePath=""/>
   </ItemGroup>
+
 
 </Project>
