@@ -42,6 +42,10 @@ jobs:
     - name: Run integration tests
       run: dotnet test --no-build --verbosity normal
       working-directory: tests/OllamaClientLibrary.IntegrationTests
+      
+    # Step 7: Clean up Ollama (optional)
+    - name: Stop Ollama container
+      run: docker stop ollama-server
 
   codeql:
     name: "CodeQL"
