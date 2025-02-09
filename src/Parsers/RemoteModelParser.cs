@@ -19,7 +19,7 @@ namespace OllamaClientLibrary.Parsers
     {
         public static async Task<IEnumerable<Model>> ParseAsync(HttpClient client, JsonSerializer jsonSerializer, CancellationToken ct)
         {
-            using var stream = await client.ExecuteAndGetStreamAsync("https://ollama.com/library?sort=newest", HttpMethod.Get, jsonSerializer, ct: ct);
+            using var stream = await client.ExecuteAndGetStreamAsync("https://ollama.com/library?sort=newest", HttpMethod.Get, jsonSerializer, ct: ct).ConfigureAwait(false);
 
             var htmlDoc = new HtmlDocument();
             htmlDoc.Load(stream);
@@ -35,10 +35,11 @@ namespace OllamaClientLibrary.Parsers
 
             var tasks = hrefs.Select(async href =>
             {
-                await semaphore.WaitAsync(ct);
+                await semaphore.WaitAsync(ct).ConfigureAwait(false);
+
                 try
                 {
-                    var models = await GetRemoteModels(client, jsonSerializer, href, ct);
+                    var models = await GetRemoteModels(client, jsonSerializer, href, ct).ConfigureAwait(false);
 
                     foreach (var model in models)
                     {
@@ -51,14 +52,14 @@ namespace OllamaClientLibrary.Parsers
                 }
             }).ToList();
 
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return remoteModels;
         }
 
         private static async Task<IEnumerable<Model>> GetRemoteModels(HttpClient client, JsonSerializer jsonSerializer, string href, CancellationToken ct)
         {
-            using var stream = await client.ExecuteAndGetStreamAsync($"https://ollama.com/{href}/tags", HttpMethod.Get, jsonSerializer, ct: ct);
+            using var stream = await client.ExecuteAndGetStreamAsync($"https://ollama.com/{href}/tags", HttpMethod.Get, jsonSerializer, ct: ct).ConfigureAwait(false);
 
             var htmlDoc = new HtmlDocument();
             htmlDoc.Load(stream);
@@ -70,7 +71,8 @@ namespace OllamaClientLibrary.Parsers
 
             var tasks = modelNodes.Select(async modelNode =>
             {
-                await semaphore.WaitAsync(ct);
+                await semaphore.WaitAsync(ct).ConfigureAwait(false);
+
                 try
                 {
                     var remoteModel = new Model
@@ -133,7 +135,7 @@ namespace OllamaClientLibrary.Parsers
                 }
             }).ToList();
 
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return remoteModels;
         }

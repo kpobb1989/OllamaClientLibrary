@@ -102,7 +102,7 @@ namespace OllamaClientLibrary
         /// <param name="prompt">The prompt to generate completion for.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated completion deserialized to the specified type.</returns>
-        public async Task<T?> GenerateCompletionJsonAsync<T>(string? prompt, CancellationToken ct = default) where T: class
+        public async Task<T?> GenerateCompletionJsonAsync<T>(string? prompt, CancellationToken ct = default) where T : class
         {
             var schema = JsonSchemaGenerator.Generate<T>();
 
@@ -181,11 +181,14 @@ namespace OllamaClientLibrary
                 }
             }
 
-            ChatHistory?.Add(new ChatMessage()
+            if (messageContentBuilder.Length > 0)
             {
-                Role = messageRole ?? MessageRole.Assistant,
-                Content = messageContentBuilder.ToString()
-            });
+                ChatHistory?.Add(new ChatMessage()
+                {
+                    Role = messageRole ?? MessageRole.Assistant,
+                    Content = messageContentBuilder.ToString()
+                });
+            }
         }
 
         /// <summary>
@@ -210,7 +213,7 @@ namespace OllamaClientLibrary
             }
             else
             {
-                var cache = await CacheStorage.GetAsync<IEnumerable<Model>>(RemoteModelsCacheKey, RemoteModelsCacheTime).ConfigureAwait(false);
+                var cache = CacheStorage.Get<IEnumerable<Model>>(RemoteModelsCacheKey, RemoteModelsCacheTime);
 
                 if (cache != null && cache.Any())
                 {
