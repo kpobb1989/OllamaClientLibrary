@@ -234,18 +234,13 @@ namespace OllamaClientLibrary
 
             if (size.HasValue)
             {
-                if (size == ModelSize.Small)
+                models = size switch
                 {
-                    models = models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) <= 2);
-                }
-                else if (size == ModelSize.Medium)
-                {
-                    models = models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) > 2 && SizeConverter.BytesToGigabytes(model.Size.Value) <= 5);
-                }
-                else if (size == ModelSize.Large)
-                {
-                    models = models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) > 5);
-                }
+                    ModelSize.Small => models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) <= 2),
+                    ModelSize.Medium => models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) > 2 && SizeConverter.BytesToGigabytes(model.Size.Value) <= 5),
+                    ModelSize.Large => models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) > 5),
+                    _ => models
+                };
             }
 
             return models.OrderByDescending(s => s.Name).ThenByDescending(s => s.Size).ToList();

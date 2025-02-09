@@ -1,6 +1,9 @@
 ﻿using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.Models;
+
+using System.Linq;
 
 namespace OllamaClientLibrary.IntegrationTests
 {
@@ -13,7 +16,7 @@ namespace OllamaClientLibrary.IntegrationTests
         {
             _client = new(new LocalOllamaOptions()
             {
-                Model = "llama3.1:8b"
+                Model = "llama3.2:1b"
             });
         }
 
@@ -30,8 +33,12 @@ namespace OllamaClientLibrary.IntegrationTests
             var response = await _client.GenerateCompletionTextAsync("Hi, how are you doing?");
 
             // Assert
-            Assert.That(response, Is.Not.Null);
-            Assert.That(response, Is.Not.Empty);
+            Assert.Multiple(() =>
+            {
+                Assert.That(response, Is.Not.Null);
+                Assert.That(response, Is.Not.Empty);
+                Assert.That(response, Is.Not.WhiteSpace);
+            });
         }
 
         [Test]
@@ -41,11 +48,11 @@ namespace OllamaClientLibrary.IntegrationTests
             var response = await _client.GenerateCompletionJsonAsync<PlanetsResponse>("Return a list of all the planet names we have in our solar system");
 
             // Assert
-            Assert.That(response, Is.Not.Null);
-            Assert.That(response.Planets, Is.Not.Null);
             Assert.Multiple(() =>
             {
-                Assert.That(response.Planets.All(s => !string.IsNullOrWhiteSpace(s.PlanetName)), Is.True);
+                Assert.That(response, Is.Not.Null);
+                Assert.That(response?.Planets, Is.Not.Null);
+                Assert.That(response!.Planets.All(s => !string.IsNullOrWhiteSpace(s.PlanetName)), Is.True);
                 Assert.That(response.Planets.Count(), Is.EqualTo(8));
             });
         }
@@ -53,10 +60,9 @@ namespace OllamaClientLibrary.IntegrationTests
         [Test]
         public async Task GetChatCompletionAsync_SimplePrompt_ShouldReturnChatCompletions()
         {
-            // Act
+            // Act & Assert
             await foreach (var chunk in _client.GetChatCompletionAsync("hello"))
             {
-                // Assert
                 Assert.That(chunk, Is.Not.Null);
             }
         }
@@ -79,7 +85,6 @@ namespace OllamaClientLibrary.IntegrationTests
             Assert.Multiple(() =>
             {
                 var history = _client.ChatHistory.Where(s => s.Role == MessageRole.User);
-
                 Assert.That(history.Count(), Is.EqualTo(prompts.Length));
                 Assert.That(history.IntersectBy(prompts, s => s.Content).Count(), Is.EqualTo(prompts.Length));
             });
@@ -192,7 +197,7 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task ListModelsAsync_RemoteModels_ShouldReturnCechedModels()
+        public async Task ListModelsAsync_RemoteModels_ShouldReturnCachedModels()
         {
             // Arrange
             CacheStorage.Clear();
@@ -206,11 +211,81 @@ namespace OllamaClientLibrary.IntegrationTests
             {
                 Assert.That(models, Is.Not.Null);
                 Assert.That(cache, Is.Not.Null);
+                Assert.That(models?.Count(), Is.EqualTo(cache?.Count()));
+                Assert.That(models!.IntersectBy(cache!.Select(s => (s.Name, s.ModifiedAt, s.Size)), s => (s.Name, s.ModifiedAt, s.Size)).Count(), Is.EqualTo(models.Count()));
             });
+        }
+
+        [Test]
+        public async Task ListModelsAsync_FilteringOnRemoteModels_ShouldReturnCachedModels()
+        {
+            // Act
+            var models = await _client.ListModelsAsync("deepseek-r1");
+
+            // Assert
+            Assert.That(models, Is.Not.Null);
+            Assert.That(models.Count(), Is.GreaterThanOrEqualTo(1));
+        }
+
+        [Test]
+        public async Task ListModelsAsync_ModelSizeSmall_ShouldReturnModelsLessThanOrEqualTo2Gb()
+        {
+            // Act
+            var models = await _client.ListModelsAsync(size: ModelSize.Small);
+
+            // Assert
             Assert.Multiple(() =>
             {
-                Assert.That(models?.Count(), Is.EqualTo(cache?.Count()));
-                Assert.That(models.IntersectBy(cache.Select(s => (s.Name, s.ModifiedAt, s.Size)), s => (s.Name, s.ModifiedAt, s.Size)).Count(), Is.EqualTo(models.Count()));
+                Assert.That(models, Is.Not.Null);
+
+                Assert.That(models.All(s => s.Size <= SizeConverter.GigabytesToBytes(2)), Is.True);
+            });
+        }
+
+        [Test]
+        public async Task ListModelsAsync_ModelSizeMedium_ShouldReturnModelsMoreThan2GbAndLessThanOrEqualTo5Gb()
+        {
+            // Act
+            var models = await _client.ListModelsAsync(size: ModelSize.Medium);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(models, Is.Not.Null);
+
+                Assert.That(models.All(s => s.Size > SizeConverter.GigabytesToBytes(2) && s.Size <= SizeConverter.GigabytesToBytes(5)), Is.True);
+            });
+        }
+
+        [Test]
+        public async Task ListModelsAsync_ModelSizeLarge_ShouldReturnModelsMoreThan5Gb()
+        {
+            // Act
+            var models = await _client.ListModelsAsync(size: ModelSize.Large);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(models, Is.Not.Null);
+                Assert.That(models.All(s => s.Size > SizeConverter.GigabytesToBytes(5)), Is.True);
+            });
+        }
+
+        [TestCase(ModelSize.Small, ModelLocation.Local)]
+        [TestCase(ModelSize.Small, ModelLocation.Remote)]
+        public async Task ListModelsAsync_ComplexFilter_ShouldAtLeastOneModel(ModelSize size, ModelLocation location)
+        {
+            // Act
+            var models = await _client.ListModelsAsync(
+                pattern: "llama3.2:1b", 
+                size: size, 
+                location: location);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(models, Is.Not.Null);
+                Assert.That(models.Count(), Is.GreaterThanOrEqualTo(1));
             });
         }
 

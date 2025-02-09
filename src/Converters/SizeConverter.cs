@@ -7,8 +7,13 @@ namespace OllamaClientLibrary.Converters
     /// </summary>
     public static class SizeConverter
     {
-        public static long GigabytesToBytes(long value)
-            => value * 1024 * 1024 * 1024;
+        public static long GigabytesToBytes(long? value)
+        {
+            if (!value.HasValue)
+                return 0;
+
+            return value.Value * 1024 * 1024 * 1024;
+        }
 
         public static double BytesToGigabytes(long? bytes)
         {
