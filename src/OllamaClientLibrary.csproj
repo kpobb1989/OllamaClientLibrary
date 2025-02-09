@@ -17,6 +17,7 @@
 	  <PackageTags>ollama, ollama-api, client, library, sdk, dotnet, api, ai, deepseek, gpt, llm</PackageTags>
 	  <PackageProjectUrl>https://github.com/kpobb1989/OllamaClientLibrary</PackageProjectUrl>
 	  <PackageReadmeFile>README.md</PackageReadmeFile>
+	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
   <ItemGroup>
