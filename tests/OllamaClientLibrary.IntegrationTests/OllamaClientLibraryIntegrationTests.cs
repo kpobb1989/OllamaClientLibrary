@@ -3,8 +3,6 @@ using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.Models;
 
-using System.Linq;
-
 namespace OllamaClientLibrary.IntegrationTests
 {
     public class OllamaClientLibraryIntegrationTests
