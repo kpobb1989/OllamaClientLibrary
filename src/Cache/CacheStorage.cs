@@ -9,7 +9,7 @@ namespace OllamaClientLibrary.Cache
 {
     internal static class CacheStorage
     {
-        public static async Task<T> GetAsync<T>(string key, TimeSpan cacheTime)
+        public static async Task<T?> GetAsync<T>(string key, TimeSpan cacheTime) where T: class
         {
             var filePath = GetFilePath(key);
 

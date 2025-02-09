@@ -88,7 +88,7 @@ namespace OllamaClientLibrary
                 Stream = false
             };
 
-            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct);
+            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
 
             var response = _jsonSerializer.Deserialize<GenerateCompletionResponse<string>>(stream);
 
@@ -102,7 +102,7 @@ namespace OllamaClientLibrary
         /// <param name="prompt">The prompt to generate completion for.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated completion deserialized to the specified type.</returns>
-        public async Task<T> GenerateCompletionJsonAsync<T>(string? prompt, CancellationToken ct = default)
+        public async Task<T?> GenerateCompletionJsonAsync<T>(string? prompt, CancellationToken ct = default) where T: class
         {
             var schema = JsonSchemaGenerator.Generate<T>();
 
@@ -118,7 +118,7 @@ namespace OllamaClientLibrary
                 Stream = false
             };
 
-            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, message, ct);
+            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, message, ct).ConfigureAwait(false);
 
             var response = _jsonSerializer.Deserialize<GenerateCompletionResponse<T>>(stream);
 
@@ -148,7 +148,7 @@ namespace OllamaClientLibrary
                 Stream = true
             };
 
-            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.ChatAapi, HttpMethod.Post, _jsonSerializer, request, ct);
+            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.ChatAapi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
 
             using var reader = new StreamReader(stream);
 
@@ -162,7 +162,7 @@ namespace OllamaClientLibrary
                     break;
                 }
 
-                var line = await reader.ReadLineAsync();
+                var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
                 if (string.IsNullOrWhiteSpace(line)) continue;
 
@@ -202,7 +202,7 @@ namespace OllamaClientLibrary
 
             if (location == ModelLocation.Local)
             {
-                await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.TagsApi, HttpMethod.Get, _jsonSerializer, ct: ct);
+                await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.TagsApi, HttpMethod.Get, _jsonSerializer, ct: ct).ConfigureAwait(false);
 
                 var response = _jsonSerializer.Deserialize<ModelResponse>(stream);
 
@@ -210,7 +210,7 @@ namespace OllamaClientLibrary
             }
             else
             {
-                var cache = await CacheStorage.GetAsync<IEnumerable<Model>>(RemoteModelsCacheKey, RemoteModelsCacheTime);
+                var cache = await CacheStorage.GetAsync<IEnumerable<Model>>(RemoteModelsCacheKey, RemoteModelsCacheTime).ConfigureAwait(false);
 
                 if (cache != null && cache.Any())
                 {
@@ -218,7 +218,7 @@ namespace OllamaClientLibrary
                 }
                 else
                 {
-                    models = await RemoteModelParser.ParseAsync(_httpClient, _jsonSerializer, ct);
+                    models = await RemoteModelParser.ParseAsync(_httpClient, _jsonSerializer, ct).ConfigureAwait(false);
 
                     CacheStorage.Save(RemoteModelsCacheKey, models);
                 }

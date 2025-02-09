@@ -6,7 +6,7 @@ namespace OllamaClientLibrary.Extensions
 {
     internal static class JsonSerializerExtensions
     {
-        public static T Deserialize<T>(this JsonSerializer serializer, Stream stream)
+        public static T? Deserialize<T>(this JsonSerializer serializer, Stream stream) where T : class
         {
             using var reader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(reader);
@@ -15,7 +15,7 @@ namespace OllamaClientLibrary.Extensions
             return response;
         }
 
-        public static T Deserialize<T>(this JsonSerializer serializer, string text)
+        public static T? Deserialize<T>(this JsonSerializer serializer, string text) where T : class
         {
             using var reader = new StringReader(text);
             using var textReader = new JsonTextReader(reader);
