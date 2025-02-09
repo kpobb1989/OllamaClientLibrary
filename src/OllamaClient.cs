@@ -14,8 +14,6 @@ using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Parsers;
 using OllamaClientLibrary.Dto;
 using OllamaClientLibrary.SchemaGenerator;
-
-using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;

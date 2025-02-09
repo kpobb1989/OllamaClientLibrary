@@ -2,6 +2,9 @@
 
 namespace OllamaClientLibrary.Converters
 {
+    /// <summary>
+    /// Provides methods to convert between different size units.
+    /// </summary>
     public static class SizeConverter
     {
         public static long GigabytesToBytes(long value)
