@@ -6,7 +6,7 @@ using var client = new OllamaClient();
 
 Console.Write("Loading...");
 
-var remoteModels = await client.ListModelsAsync(pattern: "deepseek", size: ModelSize.Medium, location: ModelLocation.Remote);
+var remoteModels = await client.ListModelsAsync(pattern: "deepseek", size: ModelSize.Small, location: ModelLocation.Remote);
 
 Console.Clear();
 

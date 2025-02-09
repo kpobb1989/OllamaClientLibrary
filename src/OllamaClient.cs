@@ -14,14 +14,14 @@ using OllamaClientLibrary.Dto.ChatCompletion;
 using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Parsers;
 using OllamaClientLibrary.Dto;
+using OllamaClientLibrary.SchemaGenerator;
 
 using JsonSerializer = Newtonsoft.Json.JsonSerializer;
-using OllamaClientLibrary.SchemaGenerator;
 
 namespace OllamaClientLibrary;
 
 /// <summary>
-/// Client for interacting with the Ollama API.
+/// Represents a client for interacting with the Ollama API.
 /// </summary>
 public class OllamaClient : IDisposable
 {
@@ -33,12 +33,16 @@ public class OllamaClient : IDisposable
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
         DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
         Converters =
-            [
-                new StringEnumConverter(new CamelCaseNamingStrategy())
-            ]
+        [
+            new StringEnumConverter(new CamelCaseNamingStrategy())
+        ]
     });
     private readonly OllamaOptions _options;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OllamaClient"/> class.
+    /// </summary>
+    /// <param name="options">The options for configuring the client.</param>
     public OllamaClient(OllamaOptions? options = null)
     {
         _options = options ?? new LocalOllamaOptions();
@@ -55,16 +59,16 @@ public class OllamaClient : IDisposable
     }
 
     /// <summary>
-    /// Provides the chat history for the conversation.
+    /// Gets or sets the chat history.
     /// </summary>
     public List<ChatMessage>? ChatHistory { get; set; } = [];
 
     /// <summary>
-    /// Generates a text response from the model. It does not track the conversation history.
+    /// Generates completion text asynchronously.
     /// </summary>
-    /// <param name="prompt">The prompt</param>
-    /// <param name="ct">The cancellation token</param>
-    /// <returns>Text</returns>
+    /// <param name="prompt">The prompt to generate completion for.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The generated completion text.</returns>
     public async Task<string?> GenerateCompletionTextAsync(string? prompt, CancellationToken ct = default)
     {
         var request = new GenerateCompletionRequest
@@ -83,12 +87,12 @@ public class OllamaClient : IDisposable
     }
 
     /// <summary>
-    /// Generates a response from the model and deserializes it to the specified type.
+    /// Generates completion asynchronously and deserializes the response to the specified type.
     /// </summary>
     /// <typeparam name="T">The type to deserialize the response to.</typeparam>
-    /// <param name="prompt">The prompt</param>
-    /// <param name="ct">The cancellation token</param>
-    /// <returns>An object of type T</returns>
+    /// <param name="prompt">The prompt to generate completion for.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The generated completion deserialized to the specified type.</returns>
     public async Task<T?> GenerateCompletionAsync<T>(string? prompt, CancellationToken ct = default)
     {
         var schema = JsonSchemaGenerator.Generate<T>();
@@ -114,12 +118,11 @@ public class OllamaClient : IDisposable
     }
 
     /// <summary>
-    /// Generates a chat completion response from the model as an asynchronous stream of chat messages.
+    /// Gets chat completion asynchronously.
     /// </summary>
-    /// <param name="text">The chat message</param>
-    /// <param name="options">The options for generating the response</param>
-    /// <param name="ct">The cancellation token</param>
-    /// <returns>An asynchronous stream of chat messages</returns>
+    /// <param name="text">The text to get chat completion for.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>An asynchronous enumerable of chat messages.</returns>
     public async IAsyncEnumerable<ChatMessage?> GetChatCompletionAsync(string text, [EnumeratorCancellation] CancellationToken ct = default)
     {
         ChatHistory?.Add(text.AsUserChatMessage());
@@ -172,6 +175,14 @@ public class OllamaClient : IDisposable
         });
     }
 
+    /// <summary>
+    /// Lists models asynchronously.
+    /// </summary>
+    /// <param name="pattern">The pattern to filter models by name.</param>
+    /// <param name="size">The size to filter models by.</param>
+    /// <param name="location">The location to filter models by.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>A list of models.</returns>
     public async Task<IEnumerable<Model>> ListModelsAsync(string? pattern = null, ModelSize? size = null, ModelLocation location = ModelLocation.Remote, CancellationToken ct = default)
     {
         IEnumerable<Model> models;
@@ -225,7 +236,7 @@ public class OllamaClient : IDisposable
     }
 
     /// <summary>
-    /// Disposes the HttpClient instance.
+    /// Disposes the resources used by the <see cref="OllamaClient"/> class.
     /// </summary>
     public void Dispose()
     {
