@@ -2,35 +2,46 @@ name: CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "dev" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "dev" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+    # Step 1: Checkout the repository code
     - uses: actions/checkout@v4
+    
+    # Step 2: Set up .NET (for C# projects)
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.0.x
+        dotnet-version: 9.0.x # or whichever version your project uses
         cache: true
         cache-dependency-path: "./src/packages.lock.json"
-    - name: List directory structure
-      run: |
-        echo "Root directory:"
-        ls -R
+        
+    # Step 3: Restore dependencies for the C# project
     - name: Restore dependencies
       run: dotnet restore --use-lock-file
       working-directory: src
+      
+    # Step 4: Build the C# project
     - name: Build
       run: dotnet build --no-restore
       working-directory: src
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-      working-directory: src
+      
+    # Step 5: Install Ollama with the llama3.2:1b model
+    - name: Install Ollama (via Docker) with llama3.2:1b model
+      run: |
+        docker pull ollama/ollama:latest  # Pull latest Ollama image
+        docker run --rm -d --name ollama-server -p 11434:11434 ollama/ollama:latest /bin/bash -c "ollama model load llama3.2:1b"
+        
+    # Step 6: Run the integration tests
+    - name: Run integration tests
+      run: dotnet test --filter IntegrationTests --configuration Release --no-build --verbosity normal
+      working-directory: src/tests
 
   codeql:
     name: "CodeQL"
