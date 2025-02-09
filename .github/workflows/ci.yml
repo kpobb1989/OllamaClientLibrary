@@ -36,24 +36,38 @@ jobs:
         docker pull ollama/ollama:latest  # Pull latest Ollama image
         docker run --rm -d --name ollama-server -p 11434:11434 ollama/ollama:latest /bin/bash -c "ollama model load llama3.2:1b"
         
-    # Step 6: Wait for Ollama server to be ready
+    # Step 6: Get the build agent's IP address
+    - name: Get build agent IP address
+      id: get_ip
+      run: echo "BUILD_AGENT_IP=$(hostname -I | awk '{print $1}')" >> $GITHUB_ENV
+
+    # Step 7: Wait for Ollama server to be ready
     - name: Wait for Ollama server
+      id: wait_for_server
       run: |
-        for i in {1..30}; do
-          if curl -s http://localhost:11434/ | grep -q "Ollama is running"; then
+        for i in {1..5}; do
+          if curl -s http://$BUILD_AGENT_IP:11434/ | grep -q "Ollama is running"; then
             echo "Ollama server is up and running"
+            echo "server_ready=true" >> $GITHUB_ENV
             break
           fi
           echo "Waiting for Ollama server..."
           sleep 5
         done
+        if [ -z "$server_ready" ]; then
+          echo "Ollama server failed to start"
+          exit 1
+        fi
         
-    # Step 7: Run the integration tests
+    # Step 8: Run the integration tests
     - name: Run integration tests
+      if: env.server_ready == 'true'
       run: dotnet test --no-build --verbosity normal
+      env:
+        OLLAMA_SERVER_URL: http://$BUILD_AGENT_IP:11434
       working-directory: tests/OllamaClientLibrary.IntegrationTests
       
-    # Step 8: Clean up Ollama (optional)
+    # Step 9: Clean up Ollama (optional)
     - name: Stop Ollama container
       run: docker stop ollama-server
 

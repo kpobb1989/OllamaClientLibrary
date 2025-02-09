@@ -209,8 +209,11 @@ namespace OllamaClientLibrary.IntegrationTests
             {
                 Assert.That(models, Is.Not.Null);
                 Assert.That(cache, Is.Not.Null);
-                Assert.That(models?.Count(), Is.EqualTo(cache?.Count()));
-                Assert.That(models!.IntersectBy(cache!.Select(s => (s.Name, s.ModifiedAt, s.Size)), s => (s.Name, s.ModifiedAt, s.Size)).Count(), Is.EqualTo(models!.Count()));
+            });
+            Assert.Multiple(() =>
+            {
+                Assert.That(models.Count(), Is.EqualTo(cache?.Count()));
+                Assert.That(models.IntersectBy(cache!.Select(s => (s.Name, s.ModifiedAt, s.Size)), s => (s.Name, s.ModifiedAt, s.Size)).Count(), Is.EqualTo(models.Count()));
             });
         }
 
