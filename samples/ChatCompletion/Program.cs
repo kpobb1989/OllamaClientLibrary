@@ -6,6 +6,7 @@ using var client = new OllamaClient(new LocalOllamaOptions()
 {
     Temperature = Temperature.CreativityWritingOrPoetry
 });
+
 var cts = new CancellationTokenSource();
 
 Console.WriteLine("CTRL+D to terminate the conversation.");
