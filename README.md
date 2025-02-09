@@ -13,7 +13,49 @@ You can install the package via NuGet:
 ```
 dotnet add package OllamaClientLibrary
 ```
+## Usage
+### Generate JSON Completion sample
+- Setup OllamaClient
+```
+using var client = new OllamaClient(new LocalOllamaOptions()
+{
+    Host = "http://localhost:11434", // default host is http://localhost:11434
+    Model = "llama3.2:latest", // default model is "deepseek-r1". Make sure this model is available in your Ollama installation. 
+    Temperature = Temperature.DataCleaningOrAnalysis, // default is Temperature.GeneralConversationOrTranslation
+    ApiKey = "your-api" // optional, by default it is null
+});
+```
+- Create DTO objects
+```
+class Response
+{
+    public List<DotNetCoreVersion>? Data { get; set; }
+}
 
+class DotNetCoreVersion
+{
+    [JsonSchemaFormat("string", @"^([0-9]+).([0-9]+).([0-9]+)$")]
+    public string? Version { get; set; }
+
+    public DateTime? ReleaseDate { get; set; }
+
+    public DateTime? EndOfLife { get; set; }
+}
+```
+- Provide a prompt and get a JSON Completion
+```
+var response = await client.GenerateCompletionJsonAsync<Response>("You are a professional .net developer. Provide a list of all available .NET Core versions for the last 5 years");
+```
+- Display the result
+```
+    if (response?.Data != null)
+    {
+        foreach (var item in response.Data.OrderBy(s => s.ReleaseDate))
+        {
+            Console.WriteLine($"Version: {item.Version}, ReleaseDate: {item.ReleaseDate}, EndOfLife: {item.EndOfLife}");
+        }
+    }
+```
 ## Code samples
 - [Chat Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/ChatCompletion/Program.cs)
 - [Generate JSON Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GenerateCompletionJson/Program.cs)
