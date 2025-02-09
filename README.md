@@ -61,6 +61,99 @@ class DotNetCoreVersion
     public DateTime? EndOfLife { get; set; }
 }
 ```
+
+
+### HTTP Request / Response samples
+
+<details>
+<summary>POST Request</summary>
+
+```json
+{
+    "model": "llama3.2:latest",
+    "prompt": "You are a professional .NET developer. List all available .NET Core versions from the past five years.",
+    "format": {
+        "definitions": {
+            "DotNetCoreVersion": {
+                "type": [
+                    "object",
+                    "null"
+                ],
+                "properties": {
+                    "Version": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "pattern": "^([0-9]+).([0-9]+).([0-9]+)$",
+                        "format": "string"
+                    },
+                    "ReleaseDate": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "EndOfLife": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "Version",
+                    "ReleaseDate",
+                    "EndOfLife"
+                ]
+            }
+        },
+        "type": "object",
+        "properties": {
+            "Data": {
+                "type": [
+                    "array",
+                    "null"
+                ],
+                "items": {
+                    "$ref": "#/definitions/DotNetCoreVersion"
+                }
+            }
+        },
+        "required": [
+            "Data"
+        ]
+    },
+    "stream": false,
+    "options": {
+        "temperature": 1.0
+    }
+}
+```
+</details>
+<details>
+<summary>POST Response</summary>
+
+```json
+{
+    "model": "llama3.2:latest",
+    "created_at": "2025-02-09T18:38:40.4047518Z",
+    "response": "{ \"Data\": [ { \"Version\": \"3.1.0\", \"ReleaseDate\": \"2019-02-07T00:00:00.000Z\" , \"EndOfLife\":\"2022-05-01T00:00:00.000Z\"}, { \"Version\": \"3.1.1\", \"ReleaseDate\": \"2019-11-06T00:00:00.000Z\" , \"EndOfLife\":\"2022-08-02T00:00:00.000Z\"}, { \"Version\": \"3.1.2\", \"ReleaseDate\": \"2019-12-10T00:00:00.000Z\" , \"EndOfLife\":\"2022-11-01T00:00:00.000Z\"}, { \"Version\": \"3.2.0\", \"ReleaseDate\": \"2020-02-13T00:00:00.000Z\" , \"EndOfLife\":\"2023-10-01T00:00:00.000Z\"}, { \"Version\": \"3.2.1\", \"ReleaseDate\": \"2020-05-07T00:00:00.000Z\" , \"EndOfLife\":\"2023-02-28T00:00:00.000Z\"}, { \"Version\": \"3.2.2\", \"ReleaseDate\": \"2020-06-18T00:00:00.000Z\" , \"EndOfLife\":\"2024-01-01T00:00:00.000Z\"}, { \"Version\": \"3.3.0\", \"ReleaseDate\": \"2021-04-26T00:00:00.000Z\" , \"EndOfLife\":\"2025-07-02T00:00:00.000Z\"}, { \"Version\": \"3.3.1\", \"ReleaseDate\": \"2021-08-16T00:00:00.000Z\" , \"EndOfLife\":\"2026-04-01T00:00:00.000Z\"}, { \"Version\": \"3.3.2\", \"ReleaseDate\": \"2021-10-25T00:00:00.000Z\" , \"EndOfLife\":\"2027-05-03T00:00:00.000Z\"} ]}",
+    "done": true,
+    "done_reason": "stop",
+    "context": [...],
+    "total_duration": 11793412400,
+    "load_duration": 3542816600,
+    "prompt_eval_count": 46,
+    "prompt_eval_duration": 212000000,
+    "eval_count": 495,
+    "eval_duration": 8036000000
+}
+```
+</details>
+
 ## More samples
 - [Chat Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/ChatCompletion/Program.cs)
 - [Generate JSON Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GenerateCompletionJson/Program.cs)
