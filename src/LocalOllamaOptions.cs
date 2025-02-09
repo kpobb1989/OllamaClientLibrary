@@ -11,5 +11,4 @@ namespace OllamaClientLibrary
         public override string TagsApi => $"api/tags";
         public override string? ApiKey => null;
     }
-
 }

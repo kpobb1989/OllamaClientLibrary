@@ -9,9 +9,17 @@ using var client = new OllamaClient(new LocalOllamaOptions()
 
 Console.Write("Loading...");
 
-var completion = await client.GenerateCompletionTextAsync("Why .NET is the best platform for creating applications?");
+try
+{
+    var response = await client.GenerateCompletionTextAsync("Why .NET is the best platform for creating applications?");
 
-Console.Clear();
-Console.WriteLine(completion);
+    Console.Clear();
+
+    Console.WriteLine(response);
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error: {ex.Message}");
+}
 
 Console.ReadKey();

@@ -10,18 +10,27 @@ using var client = new OllamaClient(new LocalOllamaOptions()
 
 Console.Write("Loading...");
 
-var completion = await client.GenerateCompletionJsonAsync<Response>("You are a professional .net developer. Provide a list of all available .NET Core versions for the last 5 years");
+Response? response = null;
 
-Console.Clear();
+try
+{
+    response = await client.GenerateCompletionJsonAsync<Response>("You are a professional .net developer. Provide a list of all available .NET Core versions for the last 5 years");
 
-if (completion == null || completion.Data == null)
+    Console.Clear();
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error: {ex.Message}");
+}
+
+if (response == null || response.Data == null)
 {
     Console.WriteLine("No response received from the model.");
 
     return;
 }
 
-foreach (var item in completion.Data.OrderBy(s => s.ReleaseDate))
+foreach (var item in response.Data.OrderBy(s => s.ReleaseDate))
 {
     Console.WriteLine($"Version: {item.Version}, ReleaseDate: {item.ReleaseDate}, EndOfLife: {item.EndOfLife}");
 }
