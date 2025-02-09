@@ -11,6 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: List directory structure
+      run: |
+        echo "Root directory:"
+        ls -R
+        echo "OllamaClientLibrary directory:"
+        ls -R OllamaClientLibrary
+        echo "src directory:"
+        ls -R OllamaClientLibrary/src
+    - name: Restore dependencies
+      run: dotnet restore --use-lock-file
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
     - uses: actions/checkout@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
