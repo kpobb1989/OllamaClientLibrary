@@ -10,7 +10,7 @@ using var client = new OllamaClient(new LocalOllamaOptions()
 
 Console.Write("Loading...");
 
-var completion = await client.GenerateCompletionAsync<Response>("You are a professional .net developer. Provide a list of all available .NET Core versions for the last 5 years");
+var completion = await client.GenerateCompletionJsonAsync<Response>("You are a professional .net developer. Provide a list of all available .NET Core versions for the last 5 years");
 
 Console.Clear();
 

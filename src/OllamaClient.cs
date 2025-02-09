@@ -32,6 +32,7 @@ public class OllamaClient : IDisposable
     {
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
         DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+        TypeNameHandling = TypeNameHandling.Auto,
         Converters =
         [
             new StringEnumConverter(new CamelCaseNamingStrategy())
@@ -81,7 +82,7 @@ public class OllamaClient : IDisposable
 
         await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct);
 
-        var response = _jsonSerializer.Deserialize<GenerateCompletionResponse>(stream);
+        var response = _jsonSerializer.Deserialize<GenerateCompletionResponse<string>>(stream);
 
         return response?.Response;
     }
@@ -93,7 +94,7 @@ public class OllamaClient : IDisposable
     /// <param name="prompt">The prompt to generate completion for.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The generated completion deserialized to the specified type.</returns>
-    public async Task<T?> GenerateCompletionAsync<T>(string? prompt, CancellationToken ct = default)
+    public async Task<T?> GenerateCompletionJsonAsync<T>(string? prompt, CancellationToken ct = default)
     {
         var schema = JsonSchemaGenerator.Generate<T>();
 
@@ -108,13 +109,11 @@ public class OllamaClient : IDisposable
 
         await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, message, ct);
 
-        var response = _jsonSerializer.Deserialize<GenerateCompletionResponse>(stream);
+        var response = _jsonSerializer.Deserialize<GenerateCompletionResponse<T>>(stream);
 
-        if (response?.Response == null) return default;
+        if (response == null || response.Response == null) return default;
 
-        var completion = _jsonSerializer.Deserialize<T?>(response.Response);
-
-        return completion;
+        return response.Response;
     }
 
     /// <summary>
