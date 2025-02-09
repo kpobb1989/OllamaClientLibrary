@@ -20,11 +20,16 @@ namespace OllamaClientLibrary.Dto.GenerateCompletion
             return true;
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
             var responseString = reader.Value?.ToString();
 
-            if(objectType == typeof(string))
+            if (string.IsNullOrEmpty(responseString))
+            {
+                return null;
+            }
+
+            if (objectType == typeof(string))
             {
                 return responseString;
             }

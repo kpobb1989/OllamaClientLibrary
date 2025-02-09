@@ -17,5 +17,4 @@ namespace OllamaClientLibrary.Dto.ChatCompletion
         /// </summary>
         public string? Content { get; set; }
     };
-
 }
