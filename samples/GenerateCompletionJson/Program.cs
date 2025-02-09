@@ -14,7 +14,7 @@ Response? response = null;
 
 try
 {
-    response = await client.GenerateCompletionJsonAsync<Response>("You are a professional .net developer. Provide a list of all available .NET Core versions for the last 5 years");
+    response = await client.GenerateCompletionJsonAsync<Response>("You are a professional .NET developer. List all available .NET Core versions from the past five years.");
 
     Console.Clear();
 }
