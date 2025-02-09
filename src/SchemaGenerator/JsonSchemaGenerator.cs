@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json.Schema.Generation;
-using Newtonsoft.Json.Schema;
+﻿using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Schema.Generation;
+
 using System;
 using System.Collections.Generic;
 

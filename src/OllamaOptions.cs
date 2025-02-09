@@ -8,6 +8,6 @@
         public abstract string GenerateApi { get; }
         public abstract string ChatAapi { get; }
         public abstract string TagsApi { get; }
-        public abstract string? ApiKey { get; }
+        public abstract string? ApiKey { get; set; }
     }
 }

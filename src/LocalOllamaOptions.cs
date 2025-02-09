@@ -9,6 +9,6 @@ namespace OllamaClientLibrary
         public override string GenerateApi => $"api/generate";
         public override string ChatAapi => $"api/chat";
         public override string TagsApi => $"api/tags";
-        public override string? ApiKey => null;
+        public override string? ApiKey { get; set; } = null;
     }
 }

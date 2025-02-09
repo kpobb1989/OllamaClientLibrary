@@ -1,26 +1,28 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using System.Text.RegularExpressions;
+
+using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
-using OllamaClientLibrary.Extensions;
+using OllamaClientLibrary.Dto;
+using OllamaClientLibrary.Dto.ChatCompletion;
 using OllamaClientLibrary.Dto.GenerateCompletion;
 using OllamaClientLibrary.Dto.Models;
-using OllamaClientLibrary.Dto.ChatCompletion;
-using OllamaClientLibrary.Cache;
+using OllamaClientLibrary.Extensions;
 using OllamaClientLibrary.Parsers;
-using OllamaClientLibrary.Dto;
 using OllamaClientLibrary.SchemaGenerator;
+
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
 using System.Linq;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OllamaClientLibrary
 {

@@ -20,7 +20,7 @@ catch (Exception ex)
     Console.WriteLine($"Error: {ex.Message}");
 }
 
-if(remoteModels != null)
+if (remoteModels != null)
 {
     foreach (var (model, index) in remoteModels.OrderBy(s => s.ModifiedAt).Select((model, index) => (model, index + 1)))
     {
