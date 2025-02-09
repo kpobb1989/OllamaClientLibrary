@@ -15,10 +15,6 @@ jobs:
       run: |
         echo "Root directory:"
         ls -R
-        echo "OllamaClientLibrary directory:"
-        ls -R OllamaClientLibrary
-        echo "src directory:"
-        ls -R OllamaClientLibrary/src
     - name: Restore dependencies
       run: dotnet restore --use-lock-file
     - name: Build
