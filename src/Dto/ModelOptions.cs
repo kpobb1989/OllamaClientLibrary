@@ -1,6 +1,7 @@
 ﻿namespace OllamaClientLibrary.Dto
 {
-    public record ModelOptions(float? Temperature)
+    public class ModelOptions
     {
+        public float? Temperature { get; set; }
     }
 }

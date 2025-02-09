@@ -5,7 +5,13 @@ using Newtonsoft.Json;
 using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.Extensions;
 
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OllamaClientLibrary.Parsers
 {
@@ -147,17 +153,32 @@ namespace OllamaClientLibrary.Parsers
                 if (int.TryParse(parts[0], out int value))
                 {
                     var unit = parts[1].ToLower();
-                    return unit switch
+                    switch (unit)
                     {
-                        "second" or "seconds" => now.AddSeconds(-value),
-                        "minute" or "minutes" => now.AddMinutes(-value),
-                        "hour" or "hours" => now.AddHours(-value),
-                        "day" or "days" => now.AddDays(-value),
-                        "week" or "weeks" => now.AddDays(-value * 7),
-                        "month" or "months" => now.AddMonths(-value),
-                        "year" or "years" => now.AddYears(-value),
-                        _ => null,
-                    };
+                        case "second":
+                        case "seconds":
+                            return now.AddSeconds(-value);
+                        case "minute":
+                        case "minutes":
+                            return now.AddMinutes(-value);
+                        case "hour":
+                        case "hours":
+                            return now.AddHours(-value);
+                        case "day":
+                        case "days":
+                            return now.AddDays(-value);
+                        case "week":
+                        case "weeks":
+                            return now.AddDays(-value * 7);
+                        case "month":
+                        case "months":
+                            return now.AddMonths(-value);
+                        case "year":
+                        case "years":
+                            return now.AddYears(-value);
+                        default:
+                            return null;
+                    }
                 }
             }
 

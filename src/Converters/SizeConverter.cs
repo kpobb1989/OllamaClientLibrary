@@ -1,4 +1,6 @@
-﻿namespace OllamaClientLibrary.Converters
+﻿using System;
+
+namespace OllamaClientLibrary.Converters
 {
     public static class SizeConverter
     {

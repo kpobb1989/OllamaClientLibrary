@@ -1,12 +1,15 @@
-﻿using System.Text.Json;
+﻿using Newtonsoft.Json;
+
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using OllamaClientLibrary.Extensions;
 
 namespace OllamaClientLibrary.Cache
 {
     internal static class CacheStorage
     {
-        private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
-
-        public static async Task<T?> GetAsync<T>(string key, TimeSpan cacheTime, CancellationToken ct = default)
+        public static async Task<T> GetAsync<T>(string key, TimeSpan cacheTime)
         {
             var filePath = GetFilePath(key);
 
@@ -21,14 +24,16 @@ namespace OllamaClientLibrary.Cache
 
                 await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
-                var value = await JsonSerializer.DeserializeAsync<T>(stream, cancellationToken: ct);
+                var jsonSerializer = JsonSerializer.Create();
+
+                var value = jsonSerializer.Deserialize<T>(stream);
                 return value;
             }
 
             return default;
         }
 
-        public static async Task SaveAsync<T>(string key, T value, CancellationToken ct = default)
+        public static void Save<T>(string key, T value)
         {
             var filePath = GetFilePath(key);
 
@@ -38,8 +43,14 @@ namespace OllamaClientLibrary.Cache
             }
 
             using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            using var writer = new StreamWriter(stream);
 
-            await JsonSerializer.SerializeAsync(stream, value, Options, ct);
+            var jsonSerializer = JsonSerializer.Create(new JsonSerializerSettings()
+            {
+                Formatting = Formatting.Indented
+            });
+
+            jsonSerializer.Serialize(writer, value);
         }
 
         private static string GetFilePath(string key)

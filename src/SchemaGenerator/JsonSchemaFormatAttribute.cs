@@ -1,9 +1,17 @@
-﻿namespace OllamaClientLibrary.SchemaGenerator
+﻿using System;
+
+namespace OllamaClientLibrary.SchemaGenerator
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public class JsonSchemaFormatAttribute(string format, string? pattern = null) : Attribute
+    public class JsonSchemaFormatAttribute : Attribute
     {
-        public string Format { get; } = format;
-        public string? Pattern { get; } = pattern;
+        public string Format { get; set; }
+        public string Pattern { get; set; }
+
+        public JsonSchemaFormatAttribute(string format, string pattern)
+        {
+            Format = format;
+            Pattern = pattern;
+        }
     }
 }

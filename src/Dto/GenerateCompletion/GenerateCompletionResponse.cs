@@ -1,14 +1,15 @@
 ﻿using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System;
 
 namespace OllamaClientLibrary.Dto.GenerateCompletion
 {
-    public record GenerateCompletionResponse<T>
+    public class GenerateCompletionResponse<T>
     {
         [JsonConverter(typeof(StringToCustomTypeConverter))]
-        public T? Response { get; init; }
+        public T Response { get; set; }
 
-        public string? Model { get; init; }
+        public string Model { get; set; }
     }
 
 
@@ -19,9 +20,15 @@ namespace OllamaClientLibrary.Dto.GenerateCompletion
             return true;
         }
 
-        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var responseString = reader.Value?.ToString();
+
+            if(objectType == typeof(string))
+            {
+                return responseString;
+            }
+
             return responseString != null ? JsonConvert.DeserializeObject(responseString, objectType) : null;
         }
 

@@ -1,6 +1,10 @@
 ﻿using Newtonsoft.Json;
 
+using System.IO;
+using System.Net.Http;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OllamaClientLibrary.Extensions
 {
@@ -25,7 +29,7 @@ namespace OllamaClientLibrary.Extensions
             var response = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, ct);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsStreamAsync(ct);
+            return await response.Content.ReadAsStreamAsync();
         }
     }
 }

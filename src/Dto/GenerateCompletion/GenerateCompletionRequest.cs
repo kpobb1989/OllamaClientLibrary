@@ -1,11 +1,11 @@
 ﻿namespace OllamaClientLibrary.Dto.GenerateCompletion
 {
-    internal record GenerateCompletionRequest
+    internal class GenerateCompletionRequest
     {
-        public string? Model { get; init; }
-        public string? Prompt { get; init; }
-        public object? Format { get; init; }
-        public bool Stream { get; init; }
-        public ModelOptions? Options { get; init; }
+        public string? Model { get; set; }
+        public string? Prompt { get; set; }
+        public object? Format { get; set; }
+        public bool Stream { get; set; }
+        public ModelOptions? Options { get; set; }
     }
 }

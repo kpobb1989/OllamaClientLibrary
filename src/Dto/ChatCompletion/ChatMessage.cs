@@ -5,17 +5,17 @@ namespace OllamaClientLibrary.Dto.ChatCompletion
     /// <summary>
     /// Represents a chat message.
     /// </summary>
-    public record ChatMessage
+    public class ChatMessage
     {
         /// <summary>
         /// The role of the message sender.
         /// </summary>
-        public MessageRole Role { get; init; }
+        public MessageRole Role { get; set; }
 
         /// <summary>
         /// The content of the message.
         /// </summary>
-        public string? Content { get; init; }
+        public string? Content { get; set; }
     };
 
 }

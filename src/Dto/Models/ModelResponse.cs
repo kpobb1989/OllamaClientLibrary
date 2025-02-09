@@ -1,7 +1,9 @@
-﻿namespace OllamaClientLibrary.Dto.Models
+﻿using System.Collections.Generic;
+
+namespace OllamaClientLibrary.Dto.Models
 {
-    internal record ModelResponse
+    internal class ModelResponse
     {
-        public IEnumerable<Model> Models { get; init; } = [];
+        public IEnumerable<Model> Models { get; set; } = new List<Model>();
     }
 }

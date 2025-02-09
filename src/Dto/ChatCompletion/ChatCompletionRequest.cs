@@ -1,11 +1,13 @@
-﻿namespace OllamaClientLibrary.Dto.ChatCompletion
+﻿using System.Collections.Generic;
+
+namespace OllamaClientLibrary.Dto.ChatCompletion
 {
-    internal record ChatCompletionRequest
+    internal class ChatCompletionRequest
     {
-        public string? Model { get; init; }
-        public string? Prompt { get; init; }
-        public IEnumerable<ChatMessage>? Messages { get; init; }
-        public bool Stream { get; init; }
-        public ModelOptions? Options { get; init; }
+        public string? Model { get; set; }
+        public string? Prompt { get; set; }
+        public IEnumerable<ChatMessage>? Messages { get; set; }
+        public bool Stream { get; set; }
+        public ModelOptions? Options { get; set; }
     }
 }

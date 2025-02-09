@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Schema;
-using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 
 namespace OllamaClientLibrary.SchemaGenerator
 {
@@ -8,7 +9,7 @@ namespace OllamaClientLibrary.SchemaGenerator
     {
         public static JSchema Generate<T>()
         {
-            JSchemaGenerator generator = new();
+            var generator = new JSchemaGenerator();
             JSchema schema = generator.Generate(typeof(T));
 
             ApplyCustomAttributes(typeof(T), schema);
