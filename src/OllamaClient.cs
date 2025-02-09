@@ -32,7 +32,6 @@ public class OllamaClient : IDisposable
     {
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
         DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-        TypeNameHandling = TypeNameHandling.Auto,
         Converters =
         [
             new StringEnumConverter(new CamelCaseNamingStrategy())
