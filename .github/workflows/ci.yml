@@ -11,24 +11,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: List directory structure
-      run: |
-        echo "Root directory:"
-        ls -R
-    - name: Restore dependencies
-      run: dotnet restore --use-lock-file
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-
     - uses: actions/checkout@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
         cache: true
-        cache-dependency-path: "OllamaClientLibrary/src/packages.lock.json"
+        cache-dependency-path: "./src/packages.lock.json"
+    - name: List directory structure
+      run: |
+        echo "Root directory:"
+        ls -R
     - name: Restore dependencies
       run: dotnet restore --use-lock-file
     - name: Build
