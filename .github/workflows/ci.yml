@@ -41,7 +41,7 @@ jobs:
     # Step 6: Run the integration tests
     - name: Run integration tests
       run: dotnet test --filter IntegrationTests --configuration Release --no-build --verbosity normal
-      working-directory: tests
+      working-directory: tests/OllamaClientLibrary.IntegrationTests
 
   codeql:
     name: "CodeQL"
