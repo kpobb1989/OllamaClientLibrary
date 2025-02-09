@@ -23,12 +23,7 @@ dotnet add package OllamaClientLibrary
 ### Generate JSON Completion sample
 ```
 // Setup OllamaClient
-
-using var client = new OllamaClient(); // If no options are provided, LocalOllamaOptions will be used by default.
-
-// or
-
-using var client = new OllamaClient(new LocalOllamaOptions()
+using var client = new OllamaClient(new LocalOllamaOptions() // If no options are provided, LocalOllamaOptions will be used by default.
 {
     Host = "http://localhost:11434", // Default host is http://localhost:11434
     Model = "llama3.2:latest", // Default model is "deepseek-r1". Ensure this model is available in your Ollama installation.
@@ -37,7 +32,6 @@ using var client = new OllamaClient(new LocalOllamaOptions()
 });
 
 // Call Ollama API
-
 var response = await client.GenerateCompletionJsonAsync<Response>(
     "You are a professional .NET developer. List all available .NET Core versions from the past five years."
 );
