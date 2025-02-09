@@ -22,7 +22,7 @@ using var client = new OllamaClient(new LocalOllamaOptions()
     Host = "http://localhost:11434", // default host is http://localhost:11434
     Model = "llama3.2:latest", // default model is "deepseek-r1". Make sure this model is available in your Ollama installation. 
     Temperature = Temperature.DataCleaningOrAnalysis, // default is Temperature.GeneralConversationOrTranslation
-    ApiKey = "your-api" // optional, by default it is null
+    ApiKey = "your-api-key" // optional, by default it is null
 });
 ```
 - Create DTO objects
@@ -56,7 +56,7 @@ var response = await client.GenerateCompletionJsonAsync<Response>("You are a pro
         }
     }
 ```
-## Code samples
+## More samples
 - [Chat Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/ChatCompletion/Program.cs)
 - [Generate JSON Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GenerateCompletionJson/Program.cs)
 - [Generate Text Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GenerateCompletionText/Program.cs)
