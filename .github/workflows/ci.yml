@@ -43,7 +43,6 @@ jobs:
         
     # Step 10: Run the integration tests
     - name: Run integration tests
-      if: env.server_ready == 'true'
       run: dotnet test --no-build --verbosity normal
       working-directory: tests/OllamaClientLibrary.IntegrationTests
       
