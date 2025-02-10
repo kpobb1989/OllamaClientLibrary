@@ -45,13 +45,11 @@ jobs:
     - name: Run integration tests
       if: env.server_ready == 'true'
       run: dotnet test --no-build --verbosity normal
-      env:
-        OLLAMA_SERVER_URL: http://$BUILD_AGENT_IP:11434
       working-directory: tests/OllamaClientLibrary.IntegrationTests
       
     # Step 11: Clean up Ollama
     - name: Stop Ollama container
-      run: docker stop ollama-server
+      run: docker stop ollama
 
   codeql:
     name: "CodeQL"
