@@ -9,54 +9,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Step 1: Checkout the repository code
     - uses: actions/checkout@v4
     
+    # Step 2: Set up .NET (for C# projects)
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.0.x
+        dotnet-version: 9.0.x # or whichever version your project uses
         cache: true
         cache-dependency-path: "./src/packages.lock.json"
         
+    # Step 3: Restore dependencies for the C# project
     - name: Restore dependencies
       run: dotnet restore --use-lock-file
       working-directory: src
       
+    # Step 4: Build the C# project
     - name: Build
       run: dotnet build --no-restore
       working-directory: src
       
+    # Step 5: Pull Ollama Docker image
     - name: Pull Ollama Docker image
       run: docker pull ollama/ollama:latest
       
-    - name: Load Docker volume from cache
-      id: load-cache
-      uses: actions/cache@v3
-      with:
-        path: /root/.ollama
-        key: ollama-volume-${{ github.sha }}
-        restore-keys: |
-          ollama-volume-
-      
+    # Step 6: Run Ollama server container
     - name: Run Ollama server container
-      run: docker run -d -v /root/.ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama:latest
+      run: docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama:latest
 
+    # Step 7: Install a model to the ollama server
     - name: Load qwen:0.5b model into Ollama server
       run: docker exec ollama ollama run qwen:0.5b
-      if: steps.load-cache.outputs.cache-hit != 'true'
         
+    # Step 8: Run the integration tests
     - name: Run integration tests
       run: dotnet test --no-build --verbosity normal
       working-directory: tests/OllamaClientLibrary.IntegrationTests
       
+    # Step 9: Clean up Ollama
     - name: Stop Ollama container
       run: docker stop ollama
-      
-    - name: Save Docker volume to cache
-      uses: actions/cache@v3
-      with:
-        path: /root/.ollama
-        key: ollama-volume-${{ github.sha }}
 
   codeql:
     name: "CodeQL"
