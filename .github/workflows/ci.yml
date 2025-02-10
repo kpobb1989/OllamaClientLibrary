@@ -32,21 +32,22 @@ jobs:
       
     # Step 5: Pull Ollama Docker image
     - name: Pull Ollama Docker image
-      run: docker pull ollama/ollama:latest  # Pull latest Ollama image
+      run: docker pull ollama/ollama:latest
       
     # Step 6: Run Ollama server container
     - name: Run Ollama server container
       run: docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama:latest
 
+    # Step 7: Run the integration tests
     - name: Load llama3.2:1b model into Ollama server
       run: docker exec ollama ollama run llama3.2:1b
         
-    # Step 10: Run the integration tests
+    # Step 8: Run the integration tests
     - name: Run integration tests
       run: dotnet test --no-build --verbosity normal
       working-directory: tests/OllamaClientLibrary.IntegrationTests
       
-    # Step 11: Clean up Ollama
+    # Step 9: Clean up Ollama
     - name: Stop Ollama container
       run: docker stop ollama
 

@@ -5,6 +5,7 @@
     /// </summary>
     public enum ModelSize
     {
+        Tiny,
         Small,
         Medium,
         Large

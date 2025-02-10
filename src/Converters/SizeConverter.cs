@@ -5,14 +5,20 @@ namespace OllamaClientLibrary.Converters
     /// <summary>
     /// Provides methods to convert between different size units.
     /// </summary>
+
+    /// <summary>
+    /// Provides methods to convert between different size units.
+    /// </summary>
     public static class SizeConverter
     {
-        public static long GigabytesToBytes(long? value)
+        private const long BytesInOneGB = 1_073_741_824L;
+
+        public static long GigabytesToBytes(double? value)
         {
             if (!value.HasValue)
                 return 0;
 
-            return value.Value * 1024 * 1024 * 1024;
+            return (long)(value.Value * BytesInOneGB);
         }
 
         public static double BytesToGigabytes(long? bytes)
@@ -20,9 +26,8 @@ namespace OllamaClientLibrary.Converters
             if (!bytes.HasValue)
                 return 0;
 
-            const long BytesInOneGB = 1024L * 1024 * 1024;
-
-            return Math.Round((double)bytes / BytesInOneGB, 2);
+            return (double)bytes.Value / BytesInOneGB;
         }
     }
+
 }
