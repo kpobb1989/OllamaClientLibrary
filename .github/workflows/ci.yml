@@ -33,9 +33,6 @@ jobs:
     # Step 5: Pull Ollama Docker image
     - name: Pull Ollama Docker image
       run: docker pull ollama/ollama:latest  # Pull latest Ollama image
-
-    - name: Print Ollama container logs
-      run: docker logs ollama
       
     # Step 6: Run Ollama server container
     - name: Run Ollama server container
