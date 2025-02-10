@@ -51,14 +51,14 @@ jobs:
     - name: Wait for Ollama server
       id: wait_for_server
       run: |
-        for i in {1..5}; do
+        for i in {1..10}; do
           if curl -s http://$BUILD_AGENT_IP:11434/ | grep -q "Ollama is running"; then
             echo "Ollama server is up and running"
             echo "server_ready=true" >> $GITHUB_ENV
             break
           fi
           echo "Waiting for Ollama server..."
-          sleep 5
+          sleep 10
         done
         if [ -z "$server_ready" ]; then
           echo "Ollama server failed to start"
