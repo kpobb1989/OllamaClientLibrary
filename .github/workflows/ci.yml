@@ -40,29 +40,6 @@ jobs:
 
     - name: Load llama3.2:1b model into Ollama server
       run: docker exec ollama ollama run llama3.2:1b
-      
-    # Step 8: Get the build agent's IP address
-    - name: Get build agent IP address
-      id: get_ip
-      run: echo "BUILD_AGENT_IP=$(hostname -I | awk '{print $1}')" >> $GITHUB_ENV
-
-    # Step 9: Wait for Ollama server to be ready
-    - name: Wait for Ollama server
-      id: wait_for_server
-      run: |
-        for i in {1..10}; do
-          if curl -s http://$BUILD_AGENT_IP:11434/ | grep -q "Ollama is running"; then
-            echo "Ollama server is up and running"
-            echo "server_ready=true" >> $GITHUB_ENV
-            break
-          fi
-          echo "Waiting for Ollama server..."
-          sleep 10
-        done
-        if [ -z "$server_ready" ]; then
-          echo "Ollama server failed to start"
-          exit 1
-        fi
         
     # Step 10: Run the integration tests
     - name: Run integration tests
