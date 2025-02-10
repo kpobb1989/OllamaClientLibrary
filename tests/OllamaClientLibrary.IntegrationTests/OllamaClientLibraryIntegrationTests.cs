@@ -7,6 +7,8 @@ namespace OllamaClientLibrary.IntegrationTests
 {
     public class OllamaClientLibraryIntegrationTests
     {
+        private const string Model = "qwen:0.5b";
+
         private OllamaClient _client;
 
         [SetUp]
@@ -14,7 +16,7 @@ namespace OllamaClientLibrary.IntegrationTests
         {
             _client = new(new LocalOllamaOptions()
             {
-                Model = "llama3.2:1b"
+                Model = Model
             });
         }
 
@@ -40,10 +42,10 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task GenerateCompletionTextAsync_ListOfPlanets_ShouldReturnAtLeastOnePlanet()
+        public async Task GenerateCompletionTextAsync_ListOfPlanets_ShouldReturnEightPlanetNames()
         {
             // Act
-            var response = await _client.GenerateCompletionJsonAsync<PlanetsResponse>("Return a list of all the planet names we have in our solar system");
+            var response = await _client.GenerateCompletionJsonAsync<PlanetsResponse>("Please provide a list of all the planet names in our solar system. The list should include Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.");
 
             // Assert
             Assert.Multiple(() =>
@@ -287,13 +289,13 @@ namespace OllamaClientLibrary.IntegrationTests
             });
         }
 
-        [TestCase(ModelSize.Small, ModelLocation.Local)]
-        [TestCase(ModelSize.Small, ModelLocation.Remote)]
-        public async Task ListModelsAsync_ComplexFilter_ShouldAtLeastOneModel(ModelSize size, ModelLocation location)
+        [TestCase(Model, ModelSize.Tiny, ModelLocation.Local)]
+        [TestCase(Model, ModelSize.Tiny, ModelLocation.Remote)]
+        public async Task ListModelsAsync_ComplexFilter_ShouldReturnAtLeastOneModel(string pattern, ModelSize size, ModelLocation location)
         {
             // Act
             var models = await _client.ListModelsAsync(
-                pattern: "llama3.2:1b", 
+                pattern: pattern, 
                 size: size, 
                 location: location);
 
