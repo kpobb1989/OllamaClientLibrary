@@ -1,4 +1,6 @@
-﻿namespace OllamaClientLibrary.Dto.GenerateCompletion
+﻿using System.Collections.Generic;
+
+namespace OllamaClientLibrary.Dto.GenerateCompletion
 {
     internal class GenerateCompletionRequest
     {
@@ -7,5 +9,6 @@
         public object? Format { get; set; }
         public bool Stream { get; set; }
         public ModelOptions? Options { get; set; }
+        public List<long>? Context { get; set; }
     }
 }

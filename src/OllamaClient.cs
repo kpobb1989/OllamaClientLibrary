@@ -66,6 +66,11 @@ namespace OllamaClientLibrary
         }
 
         /// <summary>
+        /// Gets or sets the conversation history for text and json generation completions.
+        /// </summary>
+        public List<long> GenerateHistory { get; set; } = new List<long>();
+
+        /// <summary>
         /// Gets or sets the chat history.
         /// </summary>
         public List<ChatMessage> ChatHistory { get; set; } = new List<ChatMessage>();
@@ -89,7 +94,17 @@ namespace OllamaClientLibrary
                 Stream = false
             };
 
+            if (_options.KeepConversationHistory)
+            {
+                request.Context = GenerateHistory;
+            }
+
             var response = await _httpClient.ExecuteAndGetJsonAsync<GenerateCompletionResponse<string>>(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
+
+            if (_options.KeepConversationHistory && response?.Context != null)
+            {
+                GenerateHistory = response.Context;
+            }
 
             return response?.Response;
         }
@@ -105,7 +120,7 @@ namespace OllamaClientLibrary
         {
             var schema = JsonSchemaGenerator.Generate<T>();
 
-            var message = new GenerateCompletionRequest
+            var request = new GenerateCompletionRequest
             {
                 Model = _options.Model,
                 Options = new ModelOptions()
@@ -117,7 +132,17 @@ namespace OllamaClientLibrary
                 Stream = false
             };
 
-            var response = await _httpClient.ExecuteAndGetJsonAsync<GenerateCompletionResponse<T>>(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, message, ct).ConfigureAwait(false);
+            if (_options.KeepConversationHistory)
+            {
+                request.Context = GenerateHistory;
+            }
+
+            var response = await _httpClient.ExecuteAndGetJsonAsync<GenerateCompletionResponse<T>>(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
+
+            if (_options.KeepConversationHistory && response?.Context != null)
+            {
+                GenerateHistory = response?.Context;
+            }
 
             if (response == null || response.Response == null) return default;
 
@@ -132,7 +157,10 @@ namespace OllamaClientLibrary
         /// <returns>An asynchronous enumerable of chat messages.</returns>
         public async IAsyncEnumerable<ChatMessage?> GetChatCompletionAsync(string text, [EnumeratorCancellation] CancellationToken ct = default)
         {
-            ChatHistory?.Add(text.AsUserChatMessage());
+            if (_options.KeepConversationHistory)
+            {
+                ChatHistory?.Add(text.AsUserChatMessage());
+            }
 
             var request = new ChatCompletionRequest
             {
@@ -149,7 +177,7 @@ namespace OllamaClientLibrary
 
             using var reader = new StreamReader(stream);
 
-            var messageContentBuilder = new StringBuilder();
+            var conversation = new StringBuilder();
             MessageRole? messageRole = null;
 
             while (!reader.EndOfStream)
@@ -171,19 +199,19 @@ namespace OllamaClientLibrary
 
                     if (response.Message != null && !string.IsNullOrEmpty(response.Message.Content))
                     {
-                        messageContentBuilder.Append(response.Message.Content);
+                        conversation.Append(response.Message.Content);
                     }
 
                     yield return response.Message;
                 }
             }
 
-            if (messageContentBuilder.Length > 0)
+            if (_options.KeepConversationHistory && conversation.Length > 0)
             {
                 ChatHistory?.Add(new ChatMessage()
                 {
                     Role = messageRole ?? MessageRole.Assistant,
-                    Content = messageContentBuilder.ToString()
+                    Content = conversation.ToString()
                 });
             }
         }

@@ -42,6 +42,39 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
+        public async Task GenerateTextCompletionAsync_KeepConversationHistoryTrue_ShouldStoreGenerationHistory()
+        {
+            // Arrange
+            _client = new(new OllamaOptions()
+            {
+                Model = Model
+            });
+
+            // Act
+            await _client.GenerateTextCompletionAsync("Hi, how are you doing?");
+
+            // Assert
+            Assert.That(_client.GenerateHistory, Is.Not.Empty);
+        }
+
+        [Test]
+        public async Task GenerateTextCompletionAsync_KeepConversationHistoryFalse_ShouldNotStoreGenerationHistory()
+        {
+            // Arrange
+            _client = new(new OllamaOptions()
+            {
+                Model = Model,
+                KeepConversationHistory = false
+            });
+
+            // Act
+            await _client.GenerateTextCompletionAsync("Hi, how are you doing?");
+
+            // Assert
+            Assert.That(_client.GenerateHistory, Is.Empty);
+        }
+
+        [Test]
         public async Task GenerateJsonCompletionAsync_ListOfPlanets_ShouldReturnEightPlanetNames()
         {
             // Act
@@ -65,6 +98,46 @@ namespace OllamaClientLibrary.IntegrationTests
             {
                 Assert.That(chunk, Is.Not.Null);
             }
+        }
+
+        [Test]
+        public async Task GetChatCompletionAsync_KeepConversationHistoryTrue_ShouldStoreChatHistory()
+        {
+            // Arrange
+            _client = new(new OllamaOptions()
+            {
+                Model = Model,
+                KeepConversationHistory = true 
+            });
+
+            // Act
+            await foreach (var chunk in _client.GetChatCompletionAsync("hello"))
+            {
+                Assert.That(chunk, Is.Not.Null);
+            }
+
+            // Assert
+            Assert.That(_client.ChatHistory.Count > 0, Is.True);
+        }
+
+        [Test]
+        public async Task GetChatCompletionAsync_KeepConversationHistoryFalse_ShouldNotStoreChatHistory()
+        {
+            // Arrange
+            _client = new(new OllamaOptions()
+            {
+                Model = Model,
+                KeepConversationHistory = false
+            });
+
+            // Act
+            await foreach (var chunk in _client.GetChatCompletionAsync("hello"))
+            {
+                Assert.That(chunk, Is.Not.Null);
+            }
+
+            // Assert
+            Assert.That(_client.ChatHistory.Count == 0, Is.True);
         }
 
         [Test]
