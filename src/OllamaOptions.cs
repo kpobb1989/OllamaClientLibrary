@@ -1,13 +1,16 @@
-﻿namespace OllamaClientLibrary
+﻿using System;
+
+namespace OllamaClientLibrary
 {
-    public abstract class OllamaOptions
+    public class OllamaOptions
     {
-        public abstract string Model { get; set; }
-        public abstract float? Temperature { get; set; }
-        public abstract string Host { get; set; }
-        public abstract string GenerateApi { get; }
-        public abstract string ChatAapi { get; }
-        public abstract string TagsApi { get; }
-        public abstract string? ApiKey { get; set; }
+        public string Model { get; set; } = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "deepseek-r1";
+        public float? Temperature { get; set; } = Constants.Temperature.GeneralConversationOrTranslation;
+        public string Host { get; set; } = Environment.GetEnvironmentVariable("OLLAMA_SERVER_URL") ?? "http://localhost:11434";
+        public string GenerateApi { get; set; } = $"api/generate";
+        public string ChatApi { get; set; } = $"api/chat";
+        public string TagsApi { get; set; } = $"api/tags";
+        public string EmbeddingsApi { get; set; } = $"api/embed";
+        public string? ApiKey { get; set; } = Environment.GetEnvironmentVariable("OLLAMA_API_KEY") ?? null;
     }
 }

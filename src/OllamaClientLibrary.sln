@@ -5,9 +5,9 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OllamaClientLibrary", "OllamaClientLibrary.csproj", "{6CFD024B-19DC-4DCD-8C84-62D964E3284B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatCompletion", "..\samples\ChatCompletion\ChatCompletion.csproj", "{8F233322-BD4C-401D-98A4-AFFA22BF7255}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetChatCompletion", "..\samples\GetChatCompletion\GetChatCompletion.csproj", "{8F233322-BD4C-401D-98A4-AFFA22BF7255}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateCompletionText", "..\samples\GenerateCompletionText\GenerateCompletionText.csproj", "{4B6783FC-BF58-4E5F-AB5D-F35823041B52}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateTextCompletion", "..\samples\GenerateTextCompletion\GenerateTextCompletion.csproj", "{4B6783FC-BF58-4E5F-AB5D-F35823041B52}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}"
 EndProject
@@ -15,11 +15,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ListRemoteModels", "..\samp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ListLocalModels", "..\samples\ListLocalModels\ListLocalModels.csproj", "{D67DF766-35CE-4AB1-A4C8-9A2F8D818E6F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateCompletionJson", "..\samples\GenerateCompletionJson\GenerateCompletionJson.csproj", "{27FE15A7-70DE-4AD9-B521-8D50515F8895}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateJsonCompletion", "..\samples\GenerateJsonCompletion\GenerateJsonCompletion.csproj", "{27FE15A7-70DE-4AD9-B521-8D50515F8895}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{EB00C611-E0B6-4E3E-A36E-54F902BFF9C3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OllamaClientLibrary.IntegrationTests", "..\tests\OllamaClientLibrary.IntegrationTests\OllamaClientLibrary.IntegrationTests.csproj", "{48D36F74-B1DA-454E-8E21-2DF291576649}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetEmbeddingCompletion", "..\samples\GetEmbeddingCompletion\GetEmbeddingCompletion.csproj", "{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,10 @@ Global
 		{48D36F74-B1DA-454E-8E21-2DF291576649}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48D36F74-B1DA-454E-8E21-2DF291576649}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48D36F74-B1DA-454E-8E21-2DF291576649}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,6 +72,7 @@ Global
 		{D67DF766-35CE-4AB1-A4C8-9A2F8D818E6F} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
 		{27FE15A7-70DE-4AD9-B521-8D50515F8895} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
 		{48D36F74-B1DA-454E-8E21-2DF291576649} = {EB00C611-E0B6-4E3E-A36E-54F902BFF9C3}
+		{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3BD5083D-67CA-49CC-8742-019FD127DF3E}

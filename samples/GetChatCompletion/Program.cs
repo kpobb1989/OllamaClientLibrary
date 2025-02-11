@@ -2,7 +2,7 @@
 using OllamaClientLibrary;
 using OllamaClientLibrary.Constants;
 
-using var client = new OllamaClient(new LocalOllamaOptions()
+using var client = new OllamaClient(new OllamaOptions()
 {
     Temperature = Temperature.CreativityWritingOrPoetry
 });

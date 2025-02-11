@@ -6,6 +6,7 @@ OllamaClientLibrary is a .NET Standard 2.1 library for interacting with the Olla
 - Generate text completions. Provide a prompt and get a simple text response.
 - Generate JSON completions with an automatically recognized JSON schema of the response DTO, so you no longer need to specify it in the prompt.
 - Generate chat completions with streaming. The library provides access to the conversation history, allowing you to store it in the database if needed.
+- Generate embeddings for a given text. The library provides functionality to convert text into numerical vectors (embeddings) that can be used for various machine learning tasks such as similarity search, clustering, and classification. This is useful for applications like semantic search, recommendation systems, and natural language understanding.
 - List available local and remote models with filtering options. Now you have access to see all models installed on your local machine, as well as all models available on [Ollama's library](https://ollama.com/library)
 
 ## Prerequisites: Install Ollama locally
@@ -23,7 +24,7 @@ dotnet add package OllamaClientLibrary
 ### Generate JSON Completion sample
 ```
 // Setup OllamaClient
-using var client = new OllamaClient(new LocalOllamaOptions() // If no options are provided, LocalOllamaOptions will be used by default.
+using var client = new OllamaClient(new OllamaOptions() // If no options are provided, OllamaOptions will be used by default.
 {
     Host = "http://localhost:11434", // Default host is http://localhost:11434
     Model = "llama3.2:latest", // Default model is "deepseek-r1". Ensure this model is available in your Ollama installation.
@@ -32,7 +33,7 @@ using var client = new OllamaClient(new LocalOllamaOptions() // If no options ar
 });
 
 // Call Ollama API
-var response = await client.GenerateCompletionJsonAsync<Response>(
+var response = await client.GenerateJsonCompletionAsync<Response>(
     "You are a professional .NET developer. List all available .NET Core versions from the past five years."
 );
 
@@ -155,9 +156,9 @@ class DotNetCoreVersion
 </details>
 
 ## More samples
-- [Chat Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/ChatCompletion/Program.cs)
-- [Generate JSON Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GenerateCompletionJson/Program.cs)
-- [Generate Text Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GenerateCompletionText/Program.cs)
+- [Chat Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetChatCompletion/Program.cs)
+- [Generate JSON Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GenerateJsonCompletion/Program.cs)
+- [Generate Text Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GenerateTextCompletion/Program.cs)
 - [List Local Models](
 https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/ListLocalModels/Program.cs)
 - [List Remote Models](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/ListRemoteModels/Program.cs)

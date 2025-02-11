@@ -14,7 +14,7 @@ namespace OllamaClientLibrary.IntegrationTests
         [SetUp]
         public void Setup()
         {
-            _client = new(new LocalOllamaOptions()
+            _client = new(new OllamaOptions()
             {
                 Model = Model
             });
@@ -27,10 +27,10 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task GenerateCompletionTextAsync_SimplePrompt_ShouldReturnTextCompletion()
+        public async Task GenerateTextCompletionAsync_SimplePrompt_ShouldReturnTextCompletion()
         {
             // Act
-            var response = await _client.GenerateCompletionTextAsync("Hi, how are you doing?");
+            var response = await _client.GenerateTextCompletionAsync("Hi, how are you doing?");
 
             // Assert
             Assert.Multiple(() =>
@@ -42,10 +42,10 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task GenerateCompletionTextAsync_ListOfPlanets_ShouldReturnEightPlanetNames()
+        public async Task GenerateJsonCompletionAsync_ListOfPlanets_ShouldReturnEightPlanetNames()
         {
             // Act
-            var response = await _client.GenerateCompletionJsonAsync<PlanetsResponse>("Please provide a list of all the planet names in our solar system. The list should include Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.");
+            var response = await _client.GenerateJsonCompletionAsync<PlanetsResponse>("Please provide a list of all the planet names in our solar system. The list should include Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.");
 
             // Assert
             Assert.Multiple(() =>

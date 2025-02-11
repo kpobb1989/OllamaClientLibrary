@@ -7,6 +7,7 @@ using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto;
 using OllamaClientLibrary.Dto.ChatCompletion;
+using OllamaClientLibrary.Dto.EmbeddingCompletion;
 using OllamaClientLibrary.Dto.GenerateCompletion;
 using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.Extensions;
@@ -51,7 +52,7 @@ namespace OllamaClientLibrary
         /// <param name="options">The options for configuring the client.</param>
         public OllamaClient(OllamaOptions? options = null)
         {
-            _options = options ?? new LocalOllamaOptions();
+            _options = options ?? new OllamaOptions();
 
             _httpClient = new HttpClient()
             {
@@ -75,7 +76,7 @@ namespace OllamaClientLibrary
         /// <param name="prompt">The prompt to generate completion for.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated completion text.</returns>
-        public async Task<string?> GenerateCompletionTextAsync(string? prompt, CancellationToken ct = default)
+        public async Task<string?> GenerateTextCompletionAsync(string? prompt, CancellationToken ct = default)
         {
             var request = new GenerateCompletionRequest
             {
@@ -96,13 +97,13 @@ namespace OllamaClientLibrary
         }
 
         /// <summary>
-        /// Generates completion asynchronously and deserializes the response to the specified type.
+        /// Generates completion asynchronously and deserialize the response to the specified type.
         /// </summary>
         /// <typeparam name="T">The type to deserialize the response to.</typeparam>
         /// <param name="prompt">The prompt to generate completion for.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated completion deserialized to the specified type.</returns>
-        public async Task<T?> GenerateCompletionJsonAsync<T>(string? prompt, CancellationToken ct = default) where T : class
+        public async Task<T?> GenerateJsonCompletionAsync<T>(string? prompt, CancellationToken ct = default) where T : class
         {
             var schema = JsonSchemaGenerator.Generate<T>();
 
@@ -148,7 +149,7 @@ namespace OllamaClientLibrary
                 Stream = true
             };
 
-            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.ChatAapi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
+            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
 
             using var reader = new StreamReader(stream);
 
@@ -245,6 +246,25 @@ namespace OllamaClientLibrary
             }
 
             return models.OrderByDescending(s => s.Name).ThenByDescending(s => s.Size).ToList();
+        }
+
+        public async Task<double[][]> GetEmbeddingAsync(string[] input, CancellationToken ct = default)
+        {
+            var request = new EmbeddingCompletionRequest
+            {
+                Model = _options.Model,
+                Input = input,
+                Options = new ModelOptions()
+                {
+                    Temperature = _options.Temperature
+                },
+            };
+
+            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.EmbeddingsApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
+
+            var response = _jsonSerializer.Deserialize<EmbeddingCompletionResponse>(stream);
+
+            return response?.Embeddings ?? Array.Empty<double[]>();
         }
 
         /// <summary>
