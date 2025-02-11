@@ -10,6 +10,13 @@ namespace OllamaClientLibrary.Extensions
 {
     internal static class HttpClientExtensions
     {
+        public static async Task<T?> ExecuteAndGetJsonAsync<T>(this HttpClient httpClient, string requestUri, HttpMethod method, JsonSerializer jsonSerializer, object? request = null, CancellationToken ct = default) where T : class
+        {
+            using var stream = await ExecuteAndGetStreamAsync(httpClient, requestUri, method, jsonSerializer, request, ct).ConfigureAwait(false);
+
+            return jsonSerializer.Deserialize<T>(stream);
+        }
+
         public static async Task<Stream> ExecuteAndGetStreamAsync(this HttpClient httpClient, string requestUri, HttpMethod method, JsonSerializer jsonSerializer, object? request = null, CancellationToken ct = default)
         {
             HttpRequestMessage httpRequestMessage;
@@ -26,10 +33,10 @@ namespace OllamaClientLibrary.Extensions
                 httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, requestUri);
             }
 
-            var response = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, ct);
+            var response = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsStreamAsync();
+            return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         }
     }
 }

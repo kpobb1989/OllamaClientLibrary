@@ -39,7 +39,7 @@ namespace OllamaClientLibrary.Parsers
 
                 try
                 {
-                    var models = await GetRemoteModels(client, jsonSerializer, href, ct).ConfigureAwait(false);
+                    var models = await GetRemoteModelsAsync(client, jsonSerializer, href, ct).ConfigureAwait(false);
 
                     foreach (var model in models)
                     {
@@ -57,7 +57,7 @@ namespace OllamaClientLibrary.Parsers
             return remoteModels;
         }
 
-        private static async Task<IEnumerable<Model>> GetRemoteModels(HttpClient client, JsonSerializer jsonSerializer, string href, CancellationToken ct)
+        private static async Task<IEnumerable<Model>> GetRemoteModelsAsync(HttpClient client, JsonSerializer jsonSerializer, string href, CancellationToken ct)
         {
             using var stream = await client.ExecuteAndGetStreamAsync($"https://ollama.com/{href}/tags", HttpMethod.Get, jsonSerializer, ct: ct).ConfigureAwait(false);
 

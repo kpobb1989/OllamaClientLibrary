@@ -89,9 +89,7 @@ namespace OllamaClientLibrary
                 Stream = false
             };
 
-            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
-
-            var response = _jsonSerializer.Deserialize<GenerateCompletionResponse<string>>(stream);
+            var response = await _httpClient.ExecuteAndGetJsonAsync<GenerateCompletionResponse<string>>(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
 
             return response?.Response;
         }
@@ -119,9 +117,7 @@ namespace OllamaClientLibrary
                 Stream = false
             };
 
-            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, message, ct).ConfigureAwait(false);
-
-            var response = _jsonSerializer.Deserialize<GenerateCompletionResponse<T>>(stream);
+            var response = await _httpClient.ExecuteAndGetJsonAsync<GenerateCompletionResponse<T>>(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, message, ct).ConfigureAwait(false);
 
             if (response == null || response.Response == null) return default;
 
@@ -206,9 +202,7 @@ namespace OllamaClientLibrary
 
             if (location == ModelLocation.Local)
             {
-                await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.TagsApi, HttpMethod.Get, _jsonSerializer, ct: ct).ConfigureAwait(false);
-
-                var response = _jsonSerializer.Deserialize<ModelResponse>(stream);
+                var response = await _httpClient.ExecuteAndGetJsonAsync<ModelResponse>(_options.TagsApi, HttpMethod.Get, _jsonSerializer, ct: ct).ConfigureAwait(false);
 
                 models = response?.Models ?? new List<Model>();
             }
@@ -248,6 +242,12 @@ namespace OllamaClientLibrary
             return models.OrderByDescending(s => s.Name).ThenByDescending(s => s.Size).ToList();
         }
 
+        /// <summary>
+        /// Gets embeddings for the specified input asynchronously.
+        /// </summary>
+        /// <param name="input">The input text to generate embeddings for.</param>
+        /// <param name="ct">The cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a jagged array of doubles representing the embeddings.</returns>
         public async Task<double[][]> GetEmbeddingAsync(string[] input, CancellationToken ct = default)
         {
             var request = new EmbeddingCompletionRequest
@@ -260,9 +260,7 @@ namespace OllamaClientLibrary
                 },
             };
 
-            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.EmbeddingsApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
-
-            var response = _jsonSerializer.Deserialize<EmbeddingCompletionResponse>(stream);
+            var response = await _httpClient.ExecuteAndGetJsonAsync<EmbeddingCompletionResponse>(_options.EmbeddingsApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
 
             return response?.Embeddings ?? Array.Empty<double[]>();
         }
