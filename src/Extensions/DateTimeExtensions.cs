@@ -9,9 +9,14 @@ namespace OllamaClientLibrary.Extensions
             var now = DateTime.UtcNow;
             var parts = relativeTime.Split(' ');
 
-            if (relativeTime.ToLower() == "yesterday")
+            if (string.Equals(relativeTime, "yesterday", StringComparison.OrdinalIgnoreCase))
             {
                 return now.AddDays(-1);
+            }
+
+            if (string.Equals(relativeTime, "an hour ago", StringComparison.OrdinalIgnoreCase))
+            {
+                return now.AddHours(-1);
             }
 
             if (parts.Length >= 2)
