@@ -1,26 +1,14 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
-
-using OllamaClientLibrary.Cache;
+﻿
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
-using OllamaClientLibrary.Dto;
 using OllamaClientLibrary.Dto.ChatCompletion;
-using OllamaClientLibrary.Dto.EmbeddingCompletion;
-using OllamaClientLibrary.Dto.GenerateCompletion;
 using OllamaClientLibrary.Dto.Models;
-using OllamaClientLibrary.Extensions;
-using OllamaClientLibrary.Parsers;
-using OllamaClientLibrary.SchemaGenerator;
+using OllamaClientLibrary.HttpClients;
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,19 +20,7 @@ namespace OllamaClientLibrary
     /// </summary>
     public class OllamaClient : IDisposable
     {
-        private readonly string RemoteModelsCacheKey = "remote-models";
-        private readonly TimeSpan RemoteModelsCacheTime = TimeSpan.FromHours(1);
-        private readonly HttpClient _httpClient;
-        private readonly JsonSerializer _jsonSerializer = JsonSerializer.Create(new JsonSerializerSettings()
-        {
-            ContractResolver = new CamelCasePropertyNamesContractResolver(),
-            DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-            Converters = new List<JsonConverter>()
-            {
-                new StringEnumConverter(new CamelCaseNamingStrategy())
-            }
-        });
-        private readonly OllamaOptions _options;
+        private readonly OllamaHttpClient _httpClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OllamaClient"/> class.
@@ -52,28 +28,18 @@ namespace OllamaClientLibrary
         /// <param name="options">The options for configuring the client.</param>
         public OllamaClient(OllamaOptions? options = null)
         {
-            _options = options ?? new OllamaOptions();
-
-            _httpClient = new HttpClient()
-            {
-                BaseAddress = new Uri(_options.Host)
-            };
-
-            if (!string.IsNullOrEmpty(_options.ApiKey))
-            {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_options.ApiKey}");
-            }
+            _httpClient = new OllamaHttpClient(options);
         }
 
         /// <summary>
         /// Gets or sets the conversation history for text and json generation completions.
         /// </summary>
-        public List<long> GenerateHistory { get; set; } = new List<long>();
+        public List<long> GenerateHistory => _httpClient.GenerateHistory;
 
         /// <summary>
         /// Gets or sets the chat history.
         /// </summary>
-        public List<ChatMessage> ChatHistory { get; set; } = new List<ChatMessage>();
+        public List<ChatMessage> ChatHistory => _httpClient.ChatHistory;
 
         /// <summary>
         /// Generates completion text asynchronously.
@@ -82,32 +48,7 @@ namespace OllamaClientLibrary
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated completion text.</returns>
         public async Task<string?> GenerateTextCompletionAsync(string? prompt, CancellationToken ct = default)
-        {
-            var request = new GenerateCompletionRequest
-            {
-                Model = _options.Model,
-                Options = new ModelOptions()
-                {
-                    Temperature = _options.Temperature
-                },
-                Prompt = prompt,
-                Stream = false
-            };
-
-            if (_options.KeepConversationHistory)
-            {
-                request.Context = GenerateHistory;
-            }
-
-            var response = await _httpClient.ExecuteAndGetJsonAsync<GenerateCompletionResponse<string>>(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
-
-            if (_options.KeepConversationHistory && response?.Context != null)
-            {
-                GenerateHistory = response.Context;
-            }
-
-            return response?.Response;
-        }
+            => await _httpClient.GenerateTextCompletionAsync(prompt, ct).ConfigureAwait(false);
 
         /// <summary>
         /// Generates completion asynchronously and deserialize the response to the specified type.
@@ -117,37 +58,7 @@ namespace OllamaClientLibrary
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated completion deserialized to the specified type.</returns>
         public async Task<T?> GenerateJsonCompletionAsync<T>(string? prompt, CancellationToken ct = default) where T : class
-        {
-            var schema = JsonSchemaGenerator.Generate<T>();
-
-            var request = new GenerateCompletionRequest
-            {
-                Model = _options.Model,
-                Options = new ModelOptions()
-                {
-                    Temperature = _options.Temperature
-                },
-                Prompt = prompt,
-                Format = schema,
-                Stream = false
-            };
-
-            if (_options.KeepConversationHistory)
-            {
-                request.Context = GenerateHistory;
-            }
-
-            var response = await _httpClient.ExecuteAndGetJsonAsync<GenerateCompletionResponse<T>>(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
-
-            if (_options.KeepConversationHistory && response?.Context != null)
-            {
-                GenerateHistory = response?.Context;
-            }
-
-            if (response == null || response.Response == null) return default;
-
-            return response.Response;
-        }
+            => await _httpClient.GenerateJsonCompletionAsync<T>(prompt, ct).ConfigureAwait(false);
 
         /// <summary>
         /// Gets chat completion asynchronously.
@@ -157,62 +68,9 @@ namespace OllamaClientLibrary
         /// <returns>An asynchronous enumerable of chat messages.</returns>
         public async IAsyncEnumerable<ChatMessage?> GetChatCompletionAsync(string text, [EnumeratorCancellation] CancellationToken ct = default)
         {
-            if (_options.KeepConversationHistory)
+            await foreach (var message in _httpClient.GetChatCompletionAsync(text, ct).ConfigureAwait(false))
             {
-                ChatHistory?.Add(text.AsUserChatMessage());
-            }
-
-            var request = new ChatCompletionRequest
-            {
-                Model = _options.Model,
-                Options = new ModelOptions()
-                {
-                    Temperature = _options.Temperature
-                },
-                Messages = ChatHistory,
-                Stream = true
-            };
-
-            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
-
-            using var reader = new StreamReader(stream);
-
-            var conversation = new StringBuilder();
-            MessageRole? messageRole = null;
-
-            while (!reader.EndOfStream)
-            {
-                if (ct.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                if (string.IsNullOrWhiteSpace(line)) continue;
-
-                var response = _jsonSerializer.Deserialize<ChatCompletionResponse>(line);
-
-                if (response != null)
-                {
-                    messageRole ??= response.Message?.Role;
-
-                    if (response.Message != null && !string.IsNullOrEmpty(response.Message.Content))
-                    {
-                        conversation.Append(response.Message.Content);
-                    }
-
-                    yield return response.Message;
-                }
-            }
-
-            if (_options.KeepConversationHistory && conversation.Length > 0)
-            {
-                ChatHistory?.Add(new ChatMessage()
-                {
-                    Role = messageRole ?? MessageRole.Assistant,
-                    Content = conversation.ToString()
-                });
+                yield return message;
             }
         }
 
@@ -230,24 +88,11 @@ namespace OllamaClientLibrary
 
             if (location == ModelLocation.Local)
             {
-                var response = await _httpClient.ExecuteAndGetJsonAsync<ModelResponse>(_options.TagsApi, HttpMethod.Get, _jsonSerializer, ct: ct).ConfigureAwait(false);
-
-                models = response?.Models ?? new List<Model>();
+                models = await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false);
             }
             else
             {
-                var cache = CacheStorage.Get<IEnumerable<Model>>(RemoteModelsCacheKey, RemoteModelsCacheTime);
-
-                if (cache != null && cache.Any())
-                {
-                    models = cache;
-                }
-                else
-                {
-                    models = await RemoteModelParser.ParseAsync(_httpClient, _jsonSerializer, ct).ConfigureAwait(false);
-
-                    CacheStorage.Save(RemoteModelsCacheKey, models);
-                }
+               models = await _httpClient.ListRemoteModelsAsync(ct).ConfigureAwait(false);
             }
 
             if (!string.IsNullOrEmpty(pattern))
@@ -277,21 +122,7 @@ namespace OllamaClientLibrary
         /// <param name="ct">The cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a jagged array of doubles representing the embeddings.</returns>
         public async Task<double[][]> GetEmbeddingAsync(string[] input, CancellationToken ct = default)
-        {
-            var request = new EmbeddingCompletionRequest
-            {
-                Model = _options.Model,
-                Input = input,
-                Options = new ModelOptions()
-                {
-                    Temperature = _options.Temperature
-                },
-            };
-
-            var response = await _httpClient.ExecuteAndGetJsonAsync<EmbeddingCompletionResponse>(_options.EmbeddingsApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
-
-            return response?.Embeddings ?? Array.Empty<double[]>();
-        }
+            => await _httpClient.GetEmbeddingAsync(input, ct).ConfigureAwait(false);
 
         /// <summary>
         /// Disposes the resources used by the <see cref="OllamaClient"/> class.

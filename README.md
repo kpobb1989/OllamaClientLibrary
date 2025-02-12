@@ -11,9 +11,9 @@ OllamaClientLibrary is a .NET Standard 2.1 library for interacting with the Olla
 
 ## Prerequisites: Install Ollama locally
 1. Download and install Ollama from https://ollama.com/download
-2. Ensure Ollama is running by executing `ollama run deepseek-r1` in your terminal
-3. (Optional) Install specific models using `ollama pull <model-name>`, e.g., `ollama pull llama3.2:latest`. List of available models you can find on [Ollama's library](https://ollama.com/library)
-4. Verify installation with `ollama list` to check available models
+2. Run `ollama run deepseek-r1` in your terminal to start Ollama and install the required models.
+3. (Optional) Install specific models using `ollama pull <model-name>`, e.g., `ollama pull llama3.2:latest`. A list of available models can be found on [Ollama's library](https://ollama.com/library)
+4. Verify installation with `ollama list` to check installed models on your local machine
 
 ## Installation
 You can install the package via NuGet:

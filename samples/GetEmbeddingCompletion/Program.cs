@@ -44,11 +44,6 @@ Console.WriteLine("\nGenerating embeddings for questions...");
 try
 {
     double[][] questionEmbeddings = await client.GetEmbeddingAsync(questions);
-    if (questionEmbeddings.Length != questions.Length)
-    {
-        Console.WriteLine("Error: Number of question embeddings does not match number of questions.");
-        return;
-    }
 
     for (int i = 0; i < questions.Length; i++) // Correct loop condition
     {
