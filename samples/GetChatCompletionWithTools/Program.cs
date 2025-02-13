@@ -12,7 +12,7 @@ var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperature));
 
 var response = await client.GetChatTextCompletionAsync("What is the weather today in Paris?", tool);
 
-Console.WriteLine($"Response: {response}");
+Console.WriteLine($"Temperature: {response}");
 
 Console.ReadKey();
 
@@ -23,7 +23,7 @@ public class Weather
     [Description("The location to get the weather for, e.g. San Francisco, CA")] string location,
     [Description("The format to return the weather in, e.g. 'celsius' or 'fahrenheit'")] Format format)
     {
-        return 0;
+        return 23;
     }
     public enum Format
     {

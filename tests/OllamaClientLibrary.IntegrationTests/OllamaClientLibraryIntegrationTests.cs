@@ -2,6 +2,8 @@
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.Models;
+using OllamaClientLibrary.IntegrationTests.Tools;
+using OllamaClientLibrary.Tools;
 
 namespace OllamaClientLibrary.IntegrationTests
 {
@@ -181,6 +183,20 @@ namespace OllamaClientLibrary.IntegrationTests
             // Assert
             Assert.That(_client.ChatHistory, Has.Count.EqualTo(2));
         }
+
+        //qwen:0.5b does not support tools
+        //[Test]
+        //public async Task GetChatTextCompletionAsync_WithTools_ShouldResponseTemperature()
+        //{
+        //    // Arrange
+        //    var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperature));
+
+        //    // Act
+        //    var response = await _client.GetChatTextCompletionAsync("What is the weather today in Paris?", tool);
+
+        //    // Assert
+        //    Assert.That(response, Is.EquivalentTo("23"));
+        //}
 
         [Test]
         public async Task ListModelsAsync_LocalModels_ShouldReturnAtLeastOneModel()
