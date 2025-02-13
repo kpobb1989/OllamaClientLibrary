@@ -48,8 +48,8 @@ namespace OllamaClientLibrary
         public string EmbeddingsApi { get; set; } = $"api/embed";
 
         /// <summary>
-        /// Gets or sets a value indicating whether to keep the conversation history. Defaults to true.
+        /// Gets or sets a value indicating whether to keep the chat history. Defaults to true.
         /// </summary>
-        public bool KeepConversationHistory { get; set; } = true;
+        public bool KeepChatHistory { get; set; } = true;
     }
 }

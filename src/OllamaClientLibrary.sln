@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OllamaClientLibrary.Integra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetEmbeddingCompletion", "..\samples\GetEmbeddingCompletion\GetEmbeddingCompletion.csproj", "{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetChatCompletionWithTools", "..\samples\GetChatCompletionWithTools\GetChatCompletionWithTools.csproj", "{58C04F67-AEAF-463F-BB18-E6DC322087BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,10 @@ Global
 		{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58C04F67-AEAF-463F-BB18-E6DC322087BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58C04F67-AEAF-463F-BB18-E6DC322087BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58C04F67-AEAF-463F-BB18-E6DC322087BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58C04F67-AEAF-463F-BB18-E6DC322087BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -73,6 +79,7 @@ Global
 		{27FE15A7-70DE-4AD9-B521-8D50515F8895} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
 		{48D36F74-B1DA-454E-8E21-2DF291576649} = {EB00C611-E0B6-4E3E-A36E-54F902BFF9C3}
 		{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
+		{58C04F67-AEAF-463F-BB18-E6DC322087BF} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3BD5083D-67CA-49CC-8742-019FD127DF3E}

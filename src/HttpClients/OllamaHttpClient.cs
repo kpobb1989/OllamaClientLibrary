@@ -9,6 +9,7 @@ using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Dto;
 using OllamaClientLibrary.Dto.ChatCompletion;
+using OllamaClientLibrary.Dto.ChatCompletion.Tools;
 using OllamaClientLibrary.Dto.EmbeddingCompletion;
 using OllamaClientLibrary.Dto.GenerateCompletion;
 using OllamaClientLibrary.Dto.Models;
@@ -60,8 +61,6 @@ namespace OllamaClientLibrary.HttpClients
             }
         }
 
-        public List<long> GenerateHistory { get; set; } = new List<long>();
-
         public List<ChatMessage> ChatHistory { get; set; } = new List<ChatMessage>();
 
         public async Task<string?> GenerateTextCompletionAsync(string? prompt, CancellationToken ct = default)
@@ -77,17 +76,7 @@ namespace OllamaClientLibrary.HttpClients
                 Stream = false
             };
 
-            if (_options.KeepConversationHistory)
-            {
-                request.Context = GenerateHistory;
-            }
-
             var response = await _httpClient.ExecuteAndGetJsonAsync<GenerateCompletionResponse<string>>(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
-
-            if (_options.KeepConversationHistory && response?.Context != null)
-            {
-                GenerateHistory = response.Context;
-            }
 
             return response?.Response;
         }
@@ -108,31 +97,21 @@ namespace OllamaClientLibrary.HttpClients
                 Stream = false
             };
 
-            if (_options.KeepConversationHistory)
-            {
-                request.Context = GenerateHistory;
-            }
-
             var response = await _httpClient.ExecuteAndGetJsonAsync<GenerateCompletionResponse<T>>(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
-
-            if (_options.KeepConversationHistory && response?.Context != null)
-            {
-                GenerateHistory = response.Context;
-            }
 
             if (response == null || response.Response == null) return default;
 
             return response.Response;
         }
 
-        public async IAsyncEnumerable<ChatMessage?> GetChatCompletionAsync(string text, [EnumeratorCancellation] CancellationToken ct = default)
+        public async IAsyncEnumerable<ChatMessage?> GetChatCompletionAsync(string text, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
         {
-            if (_options.KeepConversationHistory)
+            if (_options.KeepChatHistory)
             {
                 ChatHistory?.Add(new ChatMessage()
                 {
                     Role = MessageRole.User,
-                    Content = text
+                    Content = text,
                 });
             }
 
@@ -144,8 +123,13 @@ namespace OllamaClientLibrary.HttpClients
                     Temperature = _options.Temperature
                 },
                 Messages = ChatHistory,
-                Stream = true
+                Stream = true,
             };
+
+            if (tool != null)
+            {
+                request.Tools = new List<Tool>() { tool };
+            }
 
             await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
 
@@ -176,11 +160,18 @@ namespace OllamaClientLibrary.HttpClients
                         conversation.Append(response.Message.Content);
                     }
 
+                    if (tool != null && response.Message?.ToolCalls?.FirstOrDefault()?.Arguments is { } arguments)
+                    {
+                        var result = Tools.Tools.Invoke(tool, arguments);
+
+                        response.Message.Content = result?.ToString();
+                    }
+
                     yield return response.Message;
                 }
             }
 
-            if (_options.KeepConversationHistory && conversation.Length > 0)
+            if (_options.KeepChatHistory && conversation.Length > 0)
             {
                 ChatHistory?.Add(new ChatMessage()
                 {
@@ -188,6 +179,43 @@ namespace OllamaClientLibrary.HttpClients
                     Content = conversation.ToString()
                 });
             }
+        }
+
+        public async Task<string?> GetChatTextCompletionAsync(string text, Tool? tool = null, CancellationToken ct = default)
+        {
+            var request = new ChatCompletionRequest
+            {
+                Model = _options.Model,
+                Options = new ModelOptions()
+                {
+                    Temperature = _options.Temperature
+                },
+                Messages = new[]
+                {
+                    new ChatMessage()
+                    {
+                        Role = MessageRole.User,
+                        Content = text
+                    },
+                },
+                Stream = false,
+            };
+
+            if (tool != null)
+            {
+                request.Tools = new List<Tool>() { tool };
+            }
+
+            var response = await _httpClient.ExecuteAndGetJsonAsync<ChatCompletionResponse>(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
+
+            if (tool != null && response?.Message?.ToolCalls?.FirstOrDefault()?.Arguments is { } arguments)
+            {
+                var result = Tools.Tools.Invoke(tool, arguments);
+
+                response.Message.Content = result?.ToString();
+            }
+
+            return response?.Message?.Content;
         }
 
         public async Task<double[][]> GetEmbeddingAsync(string[] input, CancellationToken ct = default)
@@ -237,7 +265,7 @@ namespace OllamaClientLibrary.HttpClients
             _httpClient.Dispose();
         }
 
-        public async Task<IEnumerable<Model>> GetRemoteModelsAsync(CancellationToken ct)
+        private async Task<IEnumerable<Model>> GetRemoteModelsAsync(CancellationToken ct)
         {
             using var stream = await _httpClient.ExecuteAndGetStreamAsync("https://ollama.com/library?sort=newest", HttpMethod.Get, _jsonSerializer, ct: ct).ConfigureAwait(false);
 

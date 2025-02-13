@@ -12,7 +12,5 @@ namespace OllamaClientLibrary.Dto.GenerateCompletion
         public T? Response { get; set; }
 
         public string? Model { get; set; }
-
-        public List<long>? Context { get; set; }
     }
 }

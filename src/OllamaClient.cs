@@ -2,8 +2,10 @@
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.ChatCompletion;
+using OllamaClientLibrary.Dto.ChatCompletion.Tools;
 using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.HttpClients;
+using OllamaClientLibrary.Tools;
 
 using System;
 using System.Collections.Generic;
@@ -30,11 +32,6 @@ namespace OllamaClientLibrary
         {
             _httpClient = new OllamaHttpClient(options);
         }
-
-        /// <summary>
-        /// Gets or sets the conversation history for text and json generation completions.
-        /// </summary>
-        public List<long> GenerateHistory => _httpClient.GenerateHistory;
 
         /// <summary>
         /// Gets or sets the chat history.
@@ -66,13 +63,23 @@ namespace OllamaClientLibrary
         /// <param name="text">The text to get chat completion for.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>An asynchronous enumerable of chat messages.</returns>
-        public async IAsyncEnumerable<ChatMessage?> GetChatCompletionAsync(string text, [EnumeratorCancellation] CancellationToken ct = default)
+        public async IAsyncEnumerable<ChatMessage?> GetChatCompletionAsync(string text, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
         {
-            await foreach (var message in _httpClient.GetChatCompletionAsync(text, ct).ConfigureAwait(false))
+            await foreach (var message in _httpClient.GetChatCompletionAsync(text, tool, ct).ConfigureAwait(false))
             {
+                if (tool != null && message?.ToolCalls?.FirstOrDefault()?.Arguments is { } arguments)
+                {
+                    var result = Tools.Tools.Invoke(tool, arguments);
+
+                    message.Content = result?.ToString();
+                }
+
                 yield return message;
             }
         }
+
+        public async Task<string?> GetChatTextCompletionAsync(string text, Tool? tool = null, CancellationToken ct = default)
+            => await _httpClient.GetChatTextCompletionAsync(text, tool, ct).ConfigureAwait(false);
 
         /// <summary>
         /// Lists models asynchronously.

@@ -42,39 +42,6 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task GenerateTextCompletionAsync_KeepConversationHistoryTrue_ShouldStoreGenerationHistory()
-        {
-            // Arrange
-            _client = new(new OllamaOptions()
-            {
-                Model = Model
-            });
-
-            // Act
-            await _client.GenerateTextCompletionAsync("Hi, how are you doing?");
-
-            // Assert
-            Assert.That(_client.GenerateHistory, Is.Not.Empty);
-        }
-
-        [Test]
-        public async Task GenerateTextCompletionAsync_KeepConversationHistoryFalse_ShouldNotStoreGenerationHistory()
-        {
-            // Arrange
-            _client = new(new OllamaOptions()
-            {
-                Model = Model,
-                KeepConversationHistory = false
-            });
-
-            // Act
-            await _client.GenerateTextCompletionAsync("Hi, how are you doing?");
-
-            // Assert
-            Assert.That(_client.GenerateHistory, Is.Empty);
-        }
-
-        [Test]
         public async Task GenerateJsonCompletionAsync_ListOfPlanets_ShouldReturnEightPlanetNames()
         {
             // Act
@@ -101,13 +68,13 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task GetChatCompletionAsync_KeepConversationHistoryTrue_ShouldStoreChatHistory()
+        public async Task GetChatCompletionAsync_KeepChatHistoryTrue_ShouldStoreChatHistory()
         {
             // Arrange
             _client = new(new OllamaOptions()
             {
                 Model = Model,
-                KeepConversationHistory = true 
+                KeepChatHistory = true 
             });
 
             // Act
@@ -117,17 +84,17 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.ChatHistory.Count > 0, Is.True);
+            Assert.That(_client.ChatHistory.Count, Is.GreaterThan(0));
         }
 
         [Test]
-        public async Task GetChatCompletionAsync_KeepConversationHistoryFalse_ShouldNotStoreChatHistory()
+        public async Task GetChatCompletionAsync_KeepChatHistoryFalse_ShouldNotStoreChatHistory()
         {
             // Arrange
             _client = new(new OllamaOptions()
             {
                 Model = Model,
-                KeepConversationHistory = false
+                KeepChatHistory = false
             });
 
             // Act
@@ -137,7 +104,7 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.ChatHistory.Count == 0, Is.True);
+            Assert.That(_client.ChatHistory.Count, Is.EqualTo(0));
         }
 
         [Test]
@@ -206,7 +173,7 @@ namespace OllamaClientLibrary.IntegrationTests
             var cts = new CancellationTokenSource();
 
             // Act
-            await foreach (var _ in _client.GetChatCompletionAsync("hi", cts.Token))
+            await foreach (var _ in _client.GetChatCompletionAsync("hi", ct: cts.Token))
             {
                 cts.Cancel();
             }

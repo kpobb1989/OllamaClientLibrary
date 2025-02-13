@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using OllamaClientLibrary.Dto.ChatCompletion.Tools;
+
+using System.Collections.Generic;
 
 namespace OllamaClientLibrary.Dto.ChatCompletion
 {
@@ -9,5 +11,7 @@ namespace OllamaClientLibrary.Dto.ChatCompletion
         public IEnumerable<ChatMessage>? Messages { get; set; }
         public bool Stream { get; set; }
         public ModelOptions? Options { get; set; }
+
+        public IEnumerable<Tool>? Tools { get; set; }
     }
 }
