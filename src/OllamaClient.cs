@@ -2,7 +2,7 @@
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.ChatCompletion;
-using OllamaClientLibrary.Dto.ChatCompletion.Tools;
+using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.HttpClients;
 using OllamaClientLibrary.Tools;
@@ -67,9 +67,9 @@ namespace OllamaClientLibrary
         {
             await foreach (var message in _httpClient.GetChatCompletionAsync(text, tool, ct).ConfigureAwait(false))
             {
-                if (tool != null && message?.ToolCalls?.FirstOrDefault()?.Arguments is { } arguments)
+                if (tool != null && message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
                 {
-                    var result = Tools.Tools.Invoke(tool, arguments);
+                    var result = Tools.ToolFactory.Invoke(tool, arguments);
 
                     message.Content = result?.ToString();
                 }

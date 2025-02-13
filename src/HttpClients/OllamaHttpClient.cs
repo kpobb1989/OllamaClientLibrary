@@ -9,7 +9,7 @@ using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Dto;
 using OllamaClientLibrary.Dto.ChatCompletion;
-using OllamaClientLibrary.Dto.ChatCompletion.Tools;
+using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 using OllamaClientLibrary.Dto.EmbeddingCompletion;
 using OllamaClientLibrary.Dto.GenerateCompletion;
 using OllamaClientLibrary.Dto.Models;
@@ -160,9 +160,9 @@ namespace OllamaClientLibrary.HttpClients
                         conversation.Append(response.Message.Content);
                     }
 
-                    if (tool != null && response.Message?.ToolCalls?.FirstOrDefault()?.Arguments is { } arguments)
+                    if (tool != null && response.Message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
                     {
-                        var result = Tools.Tools.Invoke(tool, arguments);
+                        var result = Tools.ToolFactory.Invoke(tool, arguments);
 
                         response.Message.Content = result?.ToString();
                     }
@@ -208,9 +208,9 @@ namespace OllamaClientLibrary.HttpClients
 
             var response = await _httpClient.ExecuteAndGetJsonAsync<ChatCompletionResponse>(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
 
-            if (tool != null && response?.Message?.ToolCalls?.FirstOrDefault()?.Arguments is { } arguments)
+            if (tool != null && response?.Message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
             {
-                var result = Tools.Tools.Invoke(tool, arguments);
+                var result = Tools.ToolFactory.Invoke(tool, arguments);
 
                 response.Message.Content = result?.ToString();
             }

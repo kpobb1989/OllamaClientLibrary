@@ -1,8 +1,7 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 using OllamaClientLibrary.Constants;
-using OllamaClientLibrary.Tools;
+using OllamaClientLibrary.Dto.ChatCompletion.Tools.Response;
 
 using System.Collections.Generic;
 
@@ -23,15 +22,11 @@ namespace OllamaClientLibrary.Dto.ChatCompletion
         /// </summary>
         public string? Content { get; set; }
 
+
+        /// <summary>
+        /// The tool calls
+        /// </summary>
         [JsonProperty("tool_calls")]
         public List<ToolCall>? ToolCalls { get; set; }
-    }
-
-    [JsonConverter(typeof(ToolCallConverter))]
-    public class ToolCall
-    {
-        public int Index { get; set; }
-        public string? Name { get; set; }
-        public Dictionary<string, object?>? Arguments { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using OllamaClientLibrary.Dto.ChatCompletion.Tools;
+using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Reflection;
 
 namespace OllamaClientLibrary.Tools
 {
-    public static class Tools
+    public static class ToolFactory
     {
         public static object? Invoke(Tool tool, Dictionary<string, object?>? arguments)
         {
