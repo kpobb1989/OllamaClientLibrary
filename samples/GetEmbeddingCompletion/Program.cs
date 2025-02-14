@@ -1,16 +1,14 @@
 ﻿using OllamaClientLibrary;
 
-using var client = new OllamaClient(new OllamaOptions()
-{
-    Model = "llama3.1:8b" // Ensure this model is available
-});
+using var client = new OllamaClient();
 
 // Step 1: Store a single comprehensive fact
-string statement = "I live in California and work as a software engineer.";
+string statement = "I live in California and work as a software engineer at a leading tech company. I have over ten years of experience in the software development industry, specializing in full-stack development. I hold a master's degree in computer science from a prestigious university. In my current role, I lead a team of developers working on innovative projects that leverage cutting-edge technologies such as artificial intelligence, machine learning, and cloud computing. I am passionate about coding, problem-solving, and continuously learning new skills to stay updated with the latest industry trends. Outside of work, I enjoy hiking, reading tech blogs, and contributing to open-source projects.";
+
 
 List<(double[] Embedding, string Statement)> embeddingsToStatements = [];
 
-Console.WriteLine("Generating embedding for the statement...");
+Console.WriteLine("Generating embeddings for the statement...");
 
 try
 {
@@ -31,15 +29,27 @@ catch (Exception ex)
 
 // Step 2: Generate embeddings for multiple questions
 string[] questions =
-[
-            "Do I work in California?",
-            "Do I live in the United States?",
-            "Do I work as a developer?"
-];
+{
+    "Where do I live?",
+    "What is my profession?",
+    "Which state do I live in?",
+    "What company do I work for?",
+    "How many years of experience do I have in the software development industry?",
+    "What is my area of specialization in software development?",
+    "What degree do I hold?",
+    "From which type of institution did I receive my master's degree?",
+    "What is my current role at work?",
+    "What kind of projects do I work on?",
+    "What technologies do I use in my projects?",
+    "What are my passions related to my profession?",
+    "What do I enjoy doing outside of work?",
+    "What kind of blogs do I read?",
+    "What kind of projects do I contribute to outside of work?"
+};
 
 List<(double[] Embedding, string Question)> embeddingsToQuestions = [];
 
-Console.WriteLine("\nGenerating embeddings for questions...");
+Console.WriteLine("Generating embeddings for questions...");
 
 try
 {
@@ -62,8 +72,6 @@ foreach (var (Embedding, Question) in embeddingsToQuestions)
     double maxSimilarity = 0;
     string bestMatch = "I am not sure.";
 
-    Console.WriteLine($"\nProcessing Question: {Question}");
-
     foreach (var statementEntry in embeddingsToStatements)
     {
         double similarity = CosineSimilarity(statementEntry.Embedding, Embedding);
@@ -76,7 +84,6 @@ foreach (var (Embedding, Question) in embeddingsToQuestions)
     }
 
     Console.WriteLine($"\nQuestion: {Question}");
-    Console.WriteLine($"Best Matched Fact: {bestMatch}");
     Console.WriteLine($"Cosine Similarity: {maxSimilarity:F4}");
 
     // Step 4: Answer based on similarity and call deepseek for corrections
@@ -92,10 +99,9 @@ foreach (var (Embedding, Question) in embeddingsToQuestions)
     }
 }
 
-Console.WriteLine("\nProcessing complete. Press any key to exit.");
 Console.ReadKey();
 
-// Method to calculate cosine similarity between two vectors
+// Method to calculate cosine similarity between two vectors. Ideally, a specialized database should be used for vector comparisons.
 static double CosineSimilarity(double[] vectorA, double[] vectorB)
 {
     if (vectorA.Length != vectorB.Length)
