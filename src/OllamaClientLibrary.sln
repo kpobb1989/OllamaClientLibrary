@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OllamaClientLibrary.Integra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetEmbeddingCompletion", "..\samples\GetEmbeddingCompletion\GetEmbeddingCompletion.csproj", "{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetChatCompletionWithTools", "..\samples\GetChatCompletionWithTools\GetChatCompletionWithTools.csproj", "{58C04F67-AEAF-463F-BB18-E6DC322087BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetChatTextCompletionWithTools", "..\samples\GetChatTextCompletionWithTools\GetChatTextCompletionWithTools.csproj", "{58C04F67-AEAF-463F-BB18-E6DC322087BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

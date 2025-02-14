@@ -2,6 +2,8 @@
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.SchemaGenerator;
 
+using System.ComponentModel;
+
 using var client = new OllamaClient(new OllamaOptions()
 {
     Temperature = Temperature.DataCleaningOrAnalysis,
@@ -43,10 +45,13 @@ class Response
 
 class DotNetCoreVersion
 {
+    [Description("Version number in the format of Major.Minor.Patch")]
     [JsonSchemaFormat("string", @"^([0-9]+).([0-9]+).([0-9]+)$")]
     public string? Version { get; set; }
 
+    [Description("Release date of the version")]
     public DateTime? ReleaseDate { get; set; }
 
+    [Description("End of life date of the version")]
     public DateTime? EndOfLife { get; set; }
 }
