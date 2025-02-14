@@ -24,6 +24,11 @@ dotnet add package OllamaClientLibrary
 ## Usage
 ### Generate JSON Completion sample
 ```
+using OllamaClientLibrary;
+using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.SchemaGenerator;
+using System.ComponentModel;
+
 // Setup OllamaClient
 using var client = new OllamaClient(new OllamaOptions() // If no options are provided, OllamaOptions will be used by default.
 {
