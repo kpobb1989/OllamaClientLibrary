@@ -2,6 +2,8 @@
 
 using OllamaClientLibrary.Converters;
 
+using System.Collections.Generic;
+
 namespace OllamaClientLibrary.Dto.GenerateCompletion
 {
     internal class GenerateCompletionResponse<T> where T: class

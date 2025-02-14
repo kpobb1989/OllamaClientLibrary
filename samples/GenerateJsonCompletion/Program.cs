@@ -2,9 +2,10 @@
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.SchemaGenerator;
 
-using var client = new OllamaClient(new LocalOllamaOptions()
+using System.ComponentModel;
+
+using var client = new OllamaClient(new OllamaOptions()
 {
-    Model = "llama3.2:latest", // make sure this model is available in your Ollama installation
     Temperature = Temperature.DataCleaningOrAnalysis,
 });
 
@@ -14,7 +15,7 @@ Response? response = null;
 
 try
 {
-    response = await client.GenerateCompletionJsonAsync<Response>("You are a professional .NET developer. List all available .NET Core versions from the past five years.");
+    response = await client.GenerateJsonCompletionAsync<Response>("You are a professional .NET developer. List all available .NET Core versions from the past five years.");
 
     Console.Clear();
 }
@@ -44,10 +45,13 @@ class Response
 
 class DotNetCoreVersion
 {
+    [Description("Version number in the format of Major.Minor.Patch")]
     [JsonSchemaFormat("string", @"^([0-9]+).([0-9]+).([0-9]+)$")]
     public string? Version { get; set; }
 
+    [Description("Release date of the version")]
     public DateTime? ReleaseDate { get; set; }
 
+    [Description("End of life date of the version")]
     public DateTime? EndOfLife { get; set; }
 }

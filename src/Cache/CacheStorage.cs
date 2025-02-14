@@ -7,22 +7,24 @@ using OllamaClientLibrary.Extensions;
 
 namespace OllamaClientLibrary.Cache
 {
-    internal static class CacheStorage
+    public static class CacheStorage
     {
-        public static async Task<T?> GetAsync<T>(string key, TimeSpan cacheTime) where T: class
+        public static T? Get<T>(string key, TimeSpan? cacheTime = null) where T : class
         {
+            cacheTime ??= TimeSpan.FromHours(1);
+
             var filePath = GetFilePath(key);
 
             if (File.Exists(filePath))
             {
                 var fileInfo = new FileInfo(filePath);
 
-                if ((DateTime.UtcNow - fileInfo.LastWriteTimeUtc).Ticks > cacheTime.Ticks)
+                if ((DateTime.UtcNow - fileInfo.LastWriteTimeUtc).Ticks > cacheTime?.Ticks)
                 {
                     return default;
                 }
 
-                await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
                 var jsonSerializer = JsonSerializer.Create();
 
@@ -53,11 +55,33 @@ namespace OllamaClientLibrary.Cache
             jsonSerializer.Serialize(writer, value);
         }
 
+        public static void Clear()
+        {
+            var cachePath = Path.Combine(AppContext.BaseDirectory, "cache");
+
+            if (!Directory.Exists(cachePath))
+            {
+                return;
+            }
+
+            var files = Directory.GetFiles(cachePath, "*.json");
+
+            foreach (var file in files)
+            {
+                File.Delete(file);
+            }
+        }
+
         private static string GetFilePath(string key)
         {
-            var localPath = AppContext.BaseDirectory;
+            var cachePath = Path.Combine(AppContext.BaseDirectory, "cache");
 
-            var filePath = Path.Combine(localPath, $"{key}.json");
+            if (!Directory.Exists(cachePath))
+            {
+                Directory.CreateDirectory(cachePath);
+            }
+
+            var filePath = Path.Combine(cachePath, $"{key}.json");
 
             return filePath;
         }

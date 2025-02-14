@@ -1,13 +1,55 @@
-﻿namespace OllamaClientLibrary
+﻿using System;
+
+namespace OllamaClientLibrary
 {
-    public abstract class OllamaOptions
+    /// <summary>
+    /// Represents the options for configuring the Ollama client.
+    /// </summary>
+    public class OllamaOptions
     {
-        public abstract string Model { get; set; }
-        public abstract float? Temperature { get; set; }
-        public abstract string Host { get; set; }
-        public abstract string GenerateApi { get; }
-        public abstract string ChatAapi { get; }
-        public abstract string TagsApi { get; }
-        public abstract string? ApiKey { get; set; }
+        /// <summary>
+        /// Gets or sets the model to be used. Defaults to the value of the "OLLAMA_MODEL" environment variable or "qwen2.5:1.5b".
+        /// </summary>
+        public string Model { get; set; } = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "qwen2.5:1.5b";
+
+        /// <summary>
+        /// Gets or sets the host URL of the Ollama server. Defaults to the value of the "OLLAMA_SERVER_URL" environment variable or "http://localhost:11434".
+        /// </summary>
+        public string Host { get; set; } = Environment.GetEnvironmentVariable("OLLAMA_SERVER_URL") ?? "http://localhost:11434";
+
+        /// <summary>
+        /// Gets or sets the API key for authentication. Defaults to the value of the "OLLAMA_API_KEY" environment variable or null.
+        /// </summary>
+        public string? ApiKey { get; set; } = Environment.GetEnvironmentVariable("OLLAMA_API_KEY") ?? null;
+
+        /// <summary>
+        /// Gets or sets the temperature for the model's response. Defaults to a general conversation or translation temperature.
+        /// </summary>
+        public float? Temperature { get; set; } = Constants.Temperature.GeneralConversationOrTranslation;
+
+        /// <summary>
+        /// Gets or sets the API endpoint for generating responses. Defaults to "api/generate".
+        /// </summary>
+        public string GenerateApi { get; set; } = $"api/generate";
+
+        /// <summary>
+        /// Gets or sets the API endpoint for chat interactions. Defaults to "api/chat".
+        /// </summary>
+        public string ChatApi { get; set; } = $"api/chat";
+
+        /// <summary>
+        /// Gets or sets the API endpoint for retrieving tags. Defaults to "api/tags".
+        /// </summary>
+        public string TagsApi { get; set; } = $"api/tags";
+
+        /// <summary>
+        /// Gets or sets the API endpoint for generating embeddings. Defaults to "api/embed".
+        /// </summary>
+        public string EmbeddingsApi { get; set; } = $"api/embed";
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to keep the chat history. Defaults to true.
+        /// </summary>
+        public bool KeepChatHistory { get; set; } = true;
     }
 }

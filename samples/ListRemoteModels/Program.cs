@@ -11,7 +11,7 @@ IEnumerable<Model>? remoteModels = null;
 
 try
 {
-    remoteModels = await client.ListModelsAsync(pattern: "deepseek", size: ModelSize.Small, location: ModelLocation.Remote);
+    remoteModels = await client.ListModelsAsync(size: ModelSize.Small, location: ModelLocation.Remote);
 
     Console.Clear();
 }
@@ -22,9 +22,9 @@ catch (Exception ex)
 
 if (remoteModels != null)
 {
-    foreach (var (model, index) in remoteModels.OrderBy(s => s.ModifiedAt).Select((model, index) => (model, index + 1)))
+    foreach (var (model, index) in remoteModels.Select((model, index) => (model, index + 1)))
     {
-        Console.WriteLine($"{index}) Name:{model.Name} Size:{SizeConverter.BytesToGigabytes(model.Size)}GB ModifiedAt: {model.ModifiedAt}");
+        Console.WriteLine($"{index}) {model.Name} Size:{SizeConverter.BytesToGigabytes(model.Size):F2}GB ModifiedAt: {model.ModifiedAt}");
     }
 }
 
