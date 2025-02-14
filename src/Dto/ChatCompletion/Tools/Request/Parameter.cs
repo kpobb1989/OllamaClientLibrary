@@ -1,8 +1,7 @@
-﻿using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
-
+﻿
 using System.Collections.Generic;
 
-namespace OllamaClientLibrary.Dto.ChatCompletion.Tools
+namespace OllamaClientLibrary.Dto.ChatCompletion.Tools.Request
 {
     public class Parameter
     {

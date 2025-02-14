@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 
 namespace OllamaClientLibrary
 {
@@ -48,8 +49,18 @@ namespace OllamaClientLibrary
         public string EmbeddingsApi { get; set; } = $"api/embed";
 
         /// <summary>
+        /// Gets or sets the API endpoint for pulling models. Defaults to "api/pull".
+        /// </summary>
+        public string PullApi { get; set; } = $"api/pull";
+
+        /// <summary>
         /// Gets or sets a value indicating whether to keep the chat history. Defaults to true.
         /// </summary>
         public bool KeepChatHistory { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the HTTP message handler to be used. Defaults to a new instance of <see cref="HttpClientHandler"/>.
+        /// </summary>
+        public HttpMessageHandler HttpMessageHandler { get; set; } = new HttpClientHandler();
     }
 }

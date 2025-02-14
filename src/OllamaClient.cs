@@ -4,8 +4,8 @@ using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.ChatCompletion;
 using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 using OllamaClientLibrary.Dto.Models;
+using OllamaClientLibrary.Dto.PullModel;
 using OllamaClientLibrary.HttpClients;
-using OllamaClientLibrary.Tools;
 
 using System;
 using System.Collections.Generic;
@@ -23,6 +23,7 @@ namespace OllamaClientLibrary
     public class OllamaClient : IDisposable
     {
         private readonly OllamaHttpClient _httpClient;
+        private readonly OllamaOptions? _options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OllamaClient"/> class.
@@ -30,7 +31,9 @@ namespace OllamaClientLibrary
         /// <param name="options">The options for configuring the client.</param>
         public OllamaClient(OllamaOptions? options = null)
         {
-            _httpClient = new OllamaHttpClient(options);
+            _options = options ?? new OllamaOptions();
+
+            _httpClient = new OllamaHttpClient(_options);
         }
 
         /// <summary>
@@ -107,7 +110,7 @@ namespace OllamaClientLibrary
             }
             else
             {
-               models = await _httpClient.ListRemoteModelsAsync(ct).ConfigureAwait(false);
+                models = await _httpClient.ListRemoteModelsAsync(ct).ConfigureAwait(false);
             }
 
             if (!string.IsNullOrEmpty(pattern))
@@ -139,6 +142,25 @@ namespace OllamaClientLibrary
         public async Task<double[][]> GetEmbeddingAsync(string[] input, CancellationToken ct = default)
             => await _httpClient.GetEmbeddingAsync(input, ct).ConfigureAwait(false);
 
+        public async Task PullModelAsync(string modelName, IProgress<PullModelProgress>? progress = null, CancellationToken ct = default)
+        {
+            var models = await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false);
+
+            if (models == null || !models.Any(model => string.Equals(model.Name, _options?.Model, StringComparison.OrdinalIgnoreCase)))
+            {
+                await _httpClient.PullModelAsync(modelName, progress, ct).ConfigureAwait(false);
+            }
+            else
+            {
+                progress?.Report(new PullModelProgress()
+                {
+                    Status = $"The model {modelName} is already installed",
+                    Percentage = 100
+                });
+            }
+
+        }
+
         /// <summary>
         /// Disposes the resources used by the <see cref="OllamaClient"/> class.
         /// </summary>
@@ -147,6 +169,19 @@ namespace OllamaClientLibrary
             _httpClient.Dispose();
 
             GC.SuppressFinalize(this);
+        }
+
+
+        /// <summary>
+        /// Installs the model specified in the options.
+        /// </summary>
+        /// <param name="ct">The cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        public async Task InstallModelAsync(CancellationToken ct = default)
+        {
+            var model = _options?.Model ?? "qwen2.5:1.5b";
+
+            await PullModelAsync(model, null, ct: ct).ConfigureAwait(false);
         }
     }
 }

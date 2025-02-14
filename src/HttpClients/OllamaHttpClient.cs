@@ -13,6 +13,7 @@ using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 using OllamaClientLibrary.Dto.EmbeddingCompletion;
 using OllamaClientLibrary.Dto.GenerateCompletion;
 using OllamaClientLibrary.Dto.Models;
+using OllamaClientLibrary.Dto.PullModel;
 using OllamaClientLibrary.Extensions;
 using OllamaClientLibrary.SchemaGenerator;
 
@@ -46,13 +47,13 @@ namespace OllamaClientLibrary.HttpClients
             }
         });
 
-        public OllamaHttpClient(OllamaOptions? options)
+        public OllamaHttpClient(OllamaOptions options)
         {
-            _options = options ?? new OllamaOptions();
+            _options = options;
 
-            _httpClient = new HttpClient()
+            _httpClient = new HttpClient(options.HttpMessageHandler)
             {
-                BaseAddress = new Uri(_options.Host)
+                BaseAddress = new Uri(_options.Host),
             };
 
             if (!string.IsNullOrEmpty(_options.ApiKey))
@@ -257,6 +258,54 @@ namespace OllamaClientLibrary.HttpClients
                 CacheStorage.Save(RemoteModelsCacheKey, models);
 
                 return models;
+            }
+        }
+
+        public async Task PullModelAsync(string modelName, IProgress<PullModelProgress>? progress, CancellationToken ct)
+        {
+            var request = new PullModelRequest()
+            {
+                Model = modelName,
+                Stream = true
+            };
+
+            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.PullApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
+
+            using var reader = new StreamReader(stream);
+
+            double lastReportedPercentage = -1;
+
+            while (!reader.EndOfStream)
+            {
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var response = JsonConvert.DeserializeObject<PullModelResponse>(line);
+
+                if (response != null)
+                {
+                    if (!string.IsNullOrEmpty(response.Error))
+                    {
+                        throw new InvalidOperationException($"Error pulling model: {response.Error}");
+                    }
+
+                    if (response.Percentage >= 0 && response.Percentage <= 100 && response.Percentage > lastReportedPercentage)
+                    {
+                        lastReportedPercentage = response.Percentage;
+                        progress?.Report(new PullModelProgress
+                        {
+                            Status = response.Status,
+                            Percentage = response.Percentage
+                        });
+                    }
+                }
+
             }
         }
 

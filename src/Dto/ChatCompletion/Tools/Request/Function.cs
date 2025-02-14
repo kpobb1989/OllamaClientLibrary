@@ -1,4 +1,4 @@
-﻿namespace OllamaClientLibrary.Dto.ChatCompletion.Tools
+﻿namespace OllamaClientLibrary.Dto.ChatCompletion.Tools.Request
 {
     public class Function
     {
