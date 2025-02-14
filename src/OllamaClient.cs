@@ -146,7 +146,7 @@ namespace OllamaClientLibrary
         {
             var models = await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false);
 
-            if (models == null || !models.Any(model => string.Equals(model.Name, _options?.Model, StringComparison.OrdinalIgnoreCase)))
+            if (models == null || !models.Any(model => string.Equals(model.Name, modelName, StringComparison.OrdinalIgnoreCase)))
             {
                 await _httpClient.PullModelAsync(modelName, progress, ct).ConfigureAwait(false);
             }
