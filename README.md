@@ -30,7 +30,7 @@ using var client = new OllamaClient(new OllamaOptions() // If no options are pro
     Host = "http://localhost:11434", // Default host is http://localhost:11434
     Model = "qwen2.5:1.5b", // Default model is "qwen2.5:1.5b". Ensure this model is available in your Ollama installation.
     Temperature = Temperature.DataCleaningOrAnalysis, // Default temperature is Temperature.GeneralConversationOrTranslation
-    KeepChatHistory = false, // Default is true. Tthe library will keep the chat history in memory.
+    KeepChatHistory = false, // Default is true. The library will keep the chat history in memory.
     ApiKey = "your-api-key" // Optional. It is not required by default for the local setup
 });
 
