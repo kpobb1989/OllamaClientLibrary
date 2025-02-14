@@ -78,8 +78,16 @@ namespace OllamaClientLibrary
             }
         }
 
+        /// <summary>
+        /// Gets chat text completion asynchronously.
+        /// </summary>
+        /// <param name="text">The text to get chat completion for.</param>
+        /// <param name="tool">The tool to use for generating the completion, if any.</param>
+        /// <param name="ct">The cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the generated chat text completion.</returns>
         public async Task<string?> GetChatTextCompletionAsync(string text, Tool? tool = null, CancellationToken ct = default)
             => await _httpClient.GetChatTextCompletionAsync(text, tool, ct).ConfigureAwait(false);
+
 
         /// <summary>
         /// Lists models asynchronously.
