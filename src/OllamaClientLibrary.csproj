@@ -11,7 +11,7 @@
 	  <EmbedUntrackedSources>true</EmbedUntrackedSources>
 	  <SourceLinkCreate>true</SourceLinkCreate>
 	  <Authors>Oleksandr Kushnir</Authors>
-	  <Version>1.0.1</Version>
+	  <Version>1.1.0</Version>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
 	  <RepositoryUrl>https://github.com/kpobb1989/OllamaClientLibrary</RepositoryUrl>
 	  <PackageTags>ollama, ollama-api, client, library, sdk, dotnet, api, ai, deepseek, gpt, llm</PackageTags>
