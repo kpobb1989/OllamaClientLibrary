@@ -8,9 +8,9 @@ namespace OllamaClientLibrary
     public class OllamaOptions
     {
         /// <summary>
-        /// Gets or sets the model to be used. Defaults to the value of the "OLLAMA_MODEL" environment variable or "deepseek-r1".
+        /// Gets or sets the model to be used. Defaults to the value of the "OLLAMA_MODEL" environment variable or "qwen2.5:1.5b".
         /// </summary>
-        public string Model { get; set; } = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "deepseek-r1";
+        public string Model { get; set; } = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "qwen2.5:1.5b";
 
         /// <summary>
         /// Gets or sets the host URL of the Ollama server. Defaults to the value of the "OLLAMA_SERVER_URL" environment variable or "http://localhost:11434".

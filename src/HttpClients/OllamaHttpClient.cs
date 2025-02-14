@@ -198,7 +198,7 @@ namespace OllamaClientLibrary.HttpClients
                         Content = text
                     },
                 },
-                Stream = false,
+                Stream = true,
             };
 
             if (tool != null)
@@ -313,6 +313,7 @@ namespace OllamaClientLibrary.HttpClients
             htmlDoc.Load(stream);
 
             var modelNodes = htmlDoc.DocumentNode.SelectNodes("//div[@class='flex px-4 py-3']");
+
             var remoteModels = new List<Model>();
 
             var semaphore = new SemaphoreSlim(5);
@@ -323,6 +324,7 @@ namespace OllamaClientLibrary.HttpClients
 
                 try
                 {
+
                     var remoteModel = new Model
                     {
                         Name = modelNode.SelectSingleNode(".//a[@class='group']").GetAttributeValue("href", null)?.Split("/").Last()
@@ -330,6 +332,7 @@ namespace OllamaClientLibrary.HttpClients
 
                     // Extract size and modified date
                     var infoNode = modelNode.SelectSingleNode(".//div[@class='flex items-baseline space-x-1 text-[13px] text-neutral-500']/span");
+
                     if (infoNode != null)
                     {
                         var infoText = infoNode.InnerText.Trim();
@@ -365,11 +368,11 @@ namespace OllamaClientLibrary.HttpClients
                             var dateText = parts[2].Trim();
                             if (DateTime.TryParse(dateText, out DateTime modifiedAt))
                             {
-                                remoteModel.ModifiedAt = modifiedAt;
+                                remoteModel.ModifiedAt = modifiedAt.Date;
                             }
                             else
                             {
-                                remoteModel.ModifiedAt = dateText.AsDateTime();
+                                remoteModel.ModifiedAt = dateText.AsDateTime()?.Date;
                             }
                         }
                     }

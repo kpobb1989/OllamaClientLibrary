@@ -119,7 +119,7 @@ namespace OllamaClientLibrary
                 };
             }
 
-            return models.OrderByDescending(s => s.Name).ThenByDescending(s => s.Size).ToList();
+            return models.OrderBy(s => s.Size ?? 0).ToList();
         }
 
         /// <summary>

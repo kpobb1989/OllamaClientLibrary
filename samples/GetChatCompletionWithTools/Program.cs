@@ -3,10 +3,7 @@ using OllamaClientLibrary.Tools;
 
 using System.ComponentModel;
 
-using var client = new OllamaClient(new OllamaOptions()
-{
-    Model = "llama3.2:latest"
-});
+using var client = new OllamaClient();
 
 var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperature));
 

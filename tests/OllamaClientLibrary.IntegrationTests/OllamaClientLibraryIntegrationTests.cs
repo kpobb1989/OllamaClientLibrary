@@ -9,7 +9,7 @@ namespace OllamaClientLibrary.IntegrationTests
 {
     public class OllamaClientLibraryIntegrationTests
     {
-        private const string Model = "qwen:0.5b";
+        private const string Model = "qwen2.5:1.5b";
 
         private OllamaClient _client;
 
@@ -55,7 +55,7 @@ namespace OllamaClientLibrary.IntegrationTests
                 Assert.That(response, Is.Not.Null);
                 Assert.That(response?.Planets, Is.Not.Null);
                 Assert.That(response!.Planets.All(s => !string.IsNullOrWhiteSpace(s.PlanetName)), Is.True);
-                Assert.That(response.Planets.Count(), Is.GreaterThanOrEqualTo(1));
+                Assert.That(response.Planets.Count(), Is.GreaterThan(0));
             });
         }
 
@@ -184,19 +184,18 @@ namespace OllamaClientLibrary.IntegrationTests
             Assert.That(_client.ChatHistory, Has.Count.EqualTo(2));
         }
 
-        //qwen:0.5b does not support tools
-        //[Test]
-        //public async Task GetChatTextCompletionAsync_WithTools_ShouldResponseTemperature()
-        //{
-        //    // Arrange
-        //    var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperature));
+        [Test]
+        public async Task GetChatTextCompletionAsync_WithTools_ShouldResponseTemperature()
+        {
+            // Arrange
+            var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperature));
 
-        //    // Act
-        //    var response = await _client.GetChatTextCompletionAsync("What is the weather today in Paris?", tool);
+            // Act
+            var response = await _client.GetChatTextCompletionAsync("What is the weather today in Paris?", tool);
 
-        //    // Assert
-        //    Assert.That(response, Is.EquivalentTo("23"));
-        //}
+            // Assert
+            Assert.That(response, Is.EquivalentTo("23"));
+        }
 
         [Test]
         public async Task ListModelsAsync_LocalModels_ShouldReturnAtLeastOneModel()
@@ -345,8 +344,8 @@ namespace OllamaClientLibrary.IntegrationTests
             });
         }
 
-        [TestCase(Model, ModelSize.Tiny, ModelLocation.Local)]
-        [TestCase(Model, ModelSize.Tiny, ModelLocation.Remote)]
+        [TestCase(Model, ModelSize.Small, ModelLocation.Local)]
+        [TestCase(Model, ModelSize.Small, ModelLocation.Remote)]
         public async Task ListModelsAsync_ComplexFilter_ShouldReturnAtLeastOneModel(string pattern, ModelSize size, ModelLocation location)
         {
             // Act

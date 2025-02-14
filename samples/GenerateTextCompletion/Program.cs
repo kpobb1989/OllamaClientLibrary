@@ -3,7 +3,6 @@ using OllamaClientLibrary.Constants;
 
 using var client = new OllamaClient(new OllamaOptions()
 {
-    Model = "llama3.2:latest", // make sure this model is available in your Ollama installation
     Temperature = Temperature.CodingOrMath
 });
 
