@@ -1,6 +1,6 @@
 ﻿
 using OllamaClientLibrary;
-using OllamaClientLibrary.Dto.PullModel;
+using OllamaClientLibrary.Models;
 
 using var client = new OllamaClient();
 
@@ -11,7 +11,7 @@ var modelName = Console.ReadLine()!;
 try
 {
 
-    var progress = new Progress<PullModelProgress>(progress =>
+    var progress = new Progress<OllamaPullModelProgress>(progress =>
     {
         Console.Write($"\rProgress: {Math.Round(progress.Percentage)}% - Status: {progress?.Status}");
     });

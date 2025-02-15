@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 
-namespace OllamaClientLibrary
+namespace OllamaClientLibrary.Models
 {
     /// <summary>
     /// Represents the options for configuring the Ollama client.
@@ -32,11 +32,6 @@ namespace OllamaClientLibrary
         /// Gets or sets the temperature for the model's response. Defaults to a general conversation or translation temperature.
         /// </summary>
         public float? Temperature { get; set; } = Constants.Temperature.GeneralConversationOrTranslation;
-
-        /// <summary>
-        /// Gets or sets the API endpoint for generating responses. Defaults to "api/generate".
-        /// </summary>
-        public string GenerateApi { get; set; } = $"api/generate";
 
         /// <summary>
         /// Gets or sets the API endpoint for chat interactions. Defaults to "api/chat".

@@ -2,20 +2,19 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Serialization;
 
 using OllamaClientLibrary.Cache;
-
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Dto;
 using OllamaClientLibrary.Dto.ChatCompletion;
 using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 using OllamaClientLibrary.Dto.EmbeddingCompletion;
-using OllamaClientLibrary.Dto.GenerateCompletion;
 using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.Dto.PullModel;
 using OllamaClientLibrary.Extensions;
-using OllamaClientLibrary.SchemaGenerator;
+using OllamaClientLibrary.Models;
 
 using System;
 using System.Collections.Concurrent;
@@ -24,14 +23,15 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 
 namespace OllamaClientLibrary.HttpClients
 {
     internal class OllamaHttpClient : IDisposable
     {
+        private readonly JSchemaGenerator JsonSchemaGenerator = new JSchemaGenerator();
         private readonly string RemoteModelsCacheKey = "remote-models";
         private readonly TimeSpan RemoteModelsCacheTime = TimeSpan.FromHours(1);
         private readonly HttpClient _httpClient;
@@ -41,6 +41,7 @@ namespace OllamaClientLibrary.HttpClients
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
             DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+            NullValueHandling = NullValueHandling.Ignore,
             Converters = new List<JsonConverter>()
             {
                 new StringEnumConverter(new CamelCaseNamingStrategy())
@@ -62,60 +63,8 @@ namespace OllamaClientLibrary.HttpClients
             }
         }
 
-        public List<ChatMessage> ChatHistory { get; set; } = new List<ChatMessage>();
-
-        public async Task<string?> GenerateTextCompletionAsync(string? prompt, CancellationToken ct = default)
+        public async Task<ChatCompletionResponse<T>?> GetCompletionAsync<T>(string? prompt, Tool? tool = null, CancellationToken ct = default) where T : class
         {
-            var request = new GenerateCompletionRequest
-            {
-                Model = _options.Model,
-                Options = new ModelOptions()
-                {
-                    Temperature = _options.Temperature
-                },
-                Prompt = prompt,
-                Stream = false
-            };
-
-            var response = await _httpClient.ExecuteAndGetJsonAsync<GenerateCompletionResponse<string>>(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
-
-            return response?.Response;
-        }
-
-        public async Task<T?> GenerateJsonCompletionAsync<T>(string? prompt, CancellationToken ct = default) where T : class
-        {
-            var schema = JsonSchemaGenerator.Generate<T>();
-
-            var request = new GenerateCompletionRequest
-            {
-                Model = _options.Model,
-                Options = new ModelOptions()
-                {
-                    Temperature = _options.Temperature
-                },
-                Prompt = prompt,
-                Format = schema,
-                Stream = false
-            };
-
-            var response = await _httpClient.ExecuteAndGetJsonAsync<GenerateCompletionResponse<T>>(_options.GenerateApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
-
-            if (response == null || response.Response == null) return default;
-
-            return response.Response;
-        }
-
-        public async IAsyncEnumerable<ChatMessage?> GetChatCompletionAsync(string text, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
-        {
-            if (_options.KeepChatHistory)
-            {
-                ChatHistory?.Add(new ChatMessage()
-                {
-                    Role = MessageRole.User,
-                    Content = text,
-                });
-            }
-
             var request = new ChatCompletionRequest
             {
                 Model = _options.Model,
@@ -123,21 +72,39 @@ namespace OllamaClientLibrary.HttpClients
                 {
                     Temperature = _options.Temperature
                 },
-                Messages = ChatHistory,
-                Stream = true,
+                Messages = new[]
+                {
+                    new ChatMessageRequest()
+                    {
+                        Role = MessageRole.User,
+                        Content = prompt
+                    },
+                },
+                Format = typeof(T) != typeof(string) ? JsonSchemaGenerator.Generate(typeof(T)) : null,
+                Tools = tool != null ? new List<Tool>() { tool } : null,
+                Stream = false
             };
 
-            if (tool != null)
+            return await _httpClient.ExecuteAndGetJsonAsync<ChatCompletionResponse<T>>(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false); ;
+        }
+
+        public async IAsyncEnumerable<ChatCompletionResponse<string>> GetChatCompletionAsync(IEnumerable<ChatMessageRequest> messages, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
+        {
+            var request = new ChatCompletionRequest
             {
-                request.Tools = new List<Tool>() { tool };
-            }
+                Model = _options.Model,
+                Options = new ModelOptions()
+                {
+                    Temperature = _options.Temperature
+                },
+                Messages = messages,
+                Stream = true,
+                Tools = tool != null ? new List<Tool>() { tool } : null
+            };
 
             await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
 
             using var reader = new StreamReader(stream);
-
-            var conversation = new StringBuilder();
-            MessageRole? messageRole = null;
 
             while (!reader.EndOfStream)
             {
@@ -150,76 +117,16 @@ namespace OllamaClientLibrary.HttpClients
 
                 if (string.IsNullOrWhiteSpace(line)) continue;
 
-                var response = _jsonSerializer.Deserialize<ChatCompletionResponse>(line);
+                var response = _jsonSerializer.Deserialize<ChatCompletionResponse<string>>(line);
 
                 if (response != null)
                 {
-                    messageRole ??= response.Message?.Role;
-
-                    if (response.Message != null && !string.IsNullOrEmpty(response.Message.Content))
-                    {
-                        conversation.Append(response.Message.Content);
-                    }
-
-                    if (tool != null && response.Message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
-                    {
-                        var result = Tools.ToolFactory.Invoke(tool, arguments);
-
-                        response.Message.Content = result?.ToString();
-                    }
-
-                    yield return response.Message;
+                    yield return response;
                 }
             }
-
-            if (_options.KeepChatHistory && conversation.Length > 0)
-            {
-                ChatHistory?.Add(new ChatMessage()
-                {
-                    Role = messageRole ?? MessageRole.Assistant,
-                    Content = conversation.ToString()
-                });
-            }
         }
 
-        public async Task<string?> GetChatTextCompletionAsync(string text, Tool? tool = null, CancellationToken ct = default)
-        {
-            var request = new ChatCompletionRequest
-            {
-                Model = _options.Model,
-                Options = new ModelOptions()
-                {
-                    Temperature = _options.Temperature
-                },
-                Messages = new[]
-                {
-                    new ChatMessage()
-                    {
-                        Role = MessageRole.User,
-                        Content = text
-                    },
-                },
-                Stream = true,
-            };
-
-            if (tool != null)
-            {
-                request.Tools = new List<Tool>() { tool };
-            }
-
-            var response = await _httpClient.ExecuteAndGetJsonAsync<ChatCompletionResponse>(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
-
-            if (tool != null && response?.Message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
-            {
-                var result = Tools.ToolFactory.Invoke(tool, arguments);
-
-                response.Message.Content = result?.ToString();
-            }
-
-            return response?.Message?.Content;
-        }
-
-        public async Task<double[][]> GetEmbeddingAsync(string[] input, CancellationToken ct = default)
+        public async Task<double[][]> GetEmbeddingCompletionAsync(string[] input, CancellationToken ct = default)
         {
             var request = new EmbeddingCompletionRequest
             {
@@ -261,7 +168,7 @@ namespace OllamaClientLibrary.HttpClients
             }
         }
 
-        public async Task PullModelAsync(string modelName, IProgress<PullModelProgress>? progress, CancellationToken ct)
+        public async Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress, CancellationToken ct)
         {
             var request = new PullModelRequest()
             {
@@ -298,7 +205,7 @@ namespace OllamaClientLibrary.HttpClients
                     if (response.Percentage >= 0 && response.Percentage <= 100 && response.Percentage > lastReportedPercentage)
                     {
                         lastReportedPercentage = response.Percentage;
-                        progress?.Report(new PullModelProgress
+                        progress?.Report(new OllamaPullModelProgress
                         {
                             Status = response.Status,
                             Percentage = response.Percentage

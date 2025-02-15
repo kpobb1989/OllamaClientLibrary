@@ -1,5 +1,6 @@
 ﻿using OllamaClientLibrary;
 using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Models;
 
 using var client = new OllamaClient(new OllamaOptions()
 {
@@ -10,7 +11,7 @@ Console.Write("Loading...");
 
 try
 {
-    var response = await client.GenerateTextCompletionAsync("Why .NET is the best platform for creating applications?");
+    var response = await client.GetTextCompletionAsync("Why .NET is the best platform for creating applications?");
 
     Console.Clear();
 

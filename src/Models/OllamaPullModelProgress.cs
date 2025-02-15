@@ -1,6 +1,6 @@
-﻿namespace OllamaClientLibrary.Dto.PullModel
+﻿namespace OllamaClientLibrary.Models
 {
-    public class PullModelProgress
+    public class OllamaPullModelProgress
     {
         public string? Status { get; set; }
         public double Percentage { get; set; }

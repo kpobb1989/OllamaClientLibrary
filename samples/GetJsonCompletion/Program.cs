@@ -1,6 +1,8 @@
-﻿using OllamaClientLibrary;
+﻿using Newtonsoft.Json;
+
+using OllamaClientLibrary;
 using OllamaClientLibrary.Constants;
-using OllamaClientLibrary.SchemaGenerator;
+using OllamaClientLibrary.Models;
 
 using System.ComponentModel;
 
@@ -15,7 +17,7 @@ Response? response = null;
 
 try
 {
-    response = await client.GenerateJsonCompletionAsync<Response>("You are a professional .NET developer. List all available .NET Core versions from the past five years.");
+    response = await client.GetJsonCompletionAsync<Response>("You are a professional .NET developer. List all available .NET Core versions from the past five years.");
 
     Console.Clear();
 }
@@ -46,7 +48,6 @@ class Response
 class DotNetCoreVersion
 {
     [Description("Version number in the format of Major.Minor.Patch")]
-    [JsonSchemaFormat("string", @"^([0-9]+).([0-9]+).([0-9]+)$")]
     public string? Version { get; set; }
 
     [Description("Release date of the version")]
