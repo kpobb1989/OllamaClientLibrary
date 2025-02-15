@@ -9,6 +9,11 @@ namespace OllamaClientLibrary
     public class OllamaOptions
     {
         /// <summary>
+        /// Gets or sets the HTTP message handler to be used. Defaults to a new instance of <see cref="HttpClientHandler"/>.
+        /// </summary>
+        public HttpMessageHandler HttpMessageHandler { get; set; } = new HttpClientHandler();
+
+        /// <summary>
         /// Gets or sets the model to be used. Defaults to the value of the "OLLAMA_MODEL" environment variable or "qwen2.5:1.5b".
         /// </summary>
         public string Model { get; set; } = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "qwen2.5:1.5b";
@@ -58,9 +63,9 @@ namespace OllamaClientLibrary
         /// </summary>
         public bool KeepChatHistory { get; set; } = true;
 
-        /// <summary>
-        /// Gets or sets the HTTP message handler to be used. Defaults to a new instance of <see cref="HttpClientHandler"/>.
+
+        /// Gets or sets a value indicating whether to automatically install the model if it is not already installed. Defaults to false.
         /// </summary>
-        public HttpMessageHandler HttpMessageHandler { get; set; } = new HttpClientHandler();
+        public bool AutoInstallModel { get; set; } = false;
     }
 }

@@ -48,7 +48,11 @@ namespace OllamaClientLibrary
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated completion text.</returns>
         public async Task<string?> GenerateTextCompletionAsync(string? prompt, CancellationToken ct = default)
-            => await _httpClient.GenerateTextCompletionAsync(prompt, ct).ConfigureAwait(false);
+        {
+            await AutoInstallModelAsync(ct).ConfigureAwait(false);
+
+            return await _httpClient.GenerateTextCompletionAsync(prompt, ct).ConfigureAwait(false);
+        }
 
         /// <summary>
         /// Generates completion asynchronously and deserialize the response to the specified type.
@@ -58,7 +62,11 @@ namespace OllamaClientLibrary
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated completion deserialized to the specified type.</returns>
         public async Task<T?> GenerateJsonCompletionAsync<T>(string? prompt, CancellationToken ct = default) where T : class
-            => await _httpClient.GenerateJsonCompletionAsync<T>(prompt, ct).ConfigureAwait(false);
+        {
+            await AutoInstallModelAsync(ct).ConfigureAwait(false);
+
+            return await _httpClient.GenerateJsonCompletionAsync<T>(prompt, ct).ConfigureAwait(false);
+        }
 
         /// <summary>
         /// Gets chat completion asynchronously.
@@ -68,6 +76,8 @@ namespace OllamaClientLibrary
         /// <returns>An asynchronous enumerable of chat messages.</returns>
         public async IAsyncEnumerable<ChatMessage?> GetChatCompletionAsync(string text, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
         {
+            await AutoInstallModelAsync(ct).ConfigureAwait(false);
+
             await foreach (var message in _httpClient.GetChatCompletionAsync(text, tool, ct).ConfigureAwait(false))
             {
                 if (tool != null && message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
@@ -89,7 +99,11 @@ namespace OllamaClientLibrary
         /// <param name="ct">The cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the generated chat text completion.</returns>
         public async Task<string?> GetChatTextCompletionAsync(string text, Tool? tool = null, CancellationToken ct = default)
-            => await _httpClient.GetChatTextCompletionAsync(text, tool, ct).ConfigureAwait(false);
+        {
+            await AutoInstallModelAsync(ct).ConfigureAwait(false);
+
+            return await _httpClient.GetChatTextCompletionAsync(text, tool, ct).ConfigureAwait(false);
+        }
 
 
         /// <summary>
@@ -140,7 +154,11 @@ namespace OllamaClientLibrary
         /// <param name="ct">The cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a jagged array of doubles representing the embeddings.</returns>
         public async Task<double[][]> GetEmbeddingAsync(string[] input, CancellationToken ct = default)
-            => await _httpClient.GetEmbeddingAsync(input, ct).ConfigureAwait(false);
+        {
+            await AutoInstallModelAsync(ct).ConfigureAwait(false);
+
+            return await _httpClient.GetEmbeddingAsync(input, ct).ConfigureAwait(false);
+        }
 
         public async Task PullModelAsync(string modelName, IProgress<PullModelProgress>? progress = null, CancellationToken ct = default)
         {
@@ -171,17 +189,14 @@ namespace OllamaClientLibrary
             GC.SuppressFinalize(this);
         }
 
-
-        /// <summary>
-        /// Installs the model specified in the options.
-        /// </summary>
-        /// <param name="ct">The cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        public async Task InstallModelAsync(CancellationToken ct = default)
+        private async Task AutoInstallModelAsync(CancellationToken ct = default)
         {
-            var model = _options?.Model ?? "qwen2.5:1.5b";
+            if (_options != null && _options.AutoInstallModel)
+            {
+                var model = _options?.Model ?? "qwen2.5:1.5b";
 
-            await PullModelAsync(model, null, ct: ct).ConfigureAwait(false);
+                await PullModelAsync(model, null, ct: ct).ConfigureAwait(false);
+            }
         }
     }
 }
