@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 
+using OllamaClientLibrary.Extensions;
+
 using System;
 using System.IO;
-using System.Threading.Tasks;
-using OllamaClientLibrary.Extensions;
 
 namespace OllamaClientLibrary.Cache
 {

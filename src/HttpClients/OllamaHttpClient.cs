@@ -300,21 +300,21 @@ namespace OllamaClientLibrary.HttpClients
                             var sizeText = parts[1].Trim();
                             if (sizeText.EndsWith("GB"))
                             {
-                                if (float.TryParse(sizeText.Replace("GB", "").Trim(), out float size))
+                                if (float.TryParse(sizeText.Replace("GB", string.Empty).Trim(), out float size))
                                 {
                                     remoteModel.Size = (long)Math.Round(size * 1024 * 1024 * 1024); // Convert GB to bytes
                                 }
                             }
                             else if (sizeText.EndsWith("MB"))
                             {
-                                if (float.TryParse(sizeText.Replace("MB", "").Trim(), out float size))
+                                if (float.TryParse(sizeText.Replace("MB", string.Empty).Trim(), out float size))
                                 {
                                     remoteModel.Size = (long)Math.Round(size * 1024 * 1024); // Convert MB to bytes
                                 }
                             }
                             else if (sizeText.EndsWith("TB"))
                             {
-                                if (float.TryParse(sizeText.Replace("TB", "").Trim(), out float size))
+                                if (float.TryParse(sizeText.Replace("TB", string.Empty).Trim(), out float size))
                                 {
                                     remoteModel.Size = (long)Math.Round(size * 1024 * 1024 * 1024 * 1024); // Convert TB to bytes
                                 }

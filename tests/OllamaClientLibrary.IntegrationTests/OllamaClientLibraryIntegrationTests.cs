@@ -6,8 +6,6 @@ using OllamaClientLibrary.IntegrationTests.Tools;
 using OllamaClientLibrary.Models;
 using OllamaClientLibrary.Tools;
 
-using System.Numerics;
-
 namespace OllamaClientLibrary.IntegrationTests
 {
     public class OllamaClientLibraryIntegrationTests
