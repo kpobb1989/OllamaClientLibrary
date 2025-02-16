@@ -80,7 +80,7 @@ namespace OllamaClientLibrary.HttpClients
                 },
                 Format = typeof(T) != typeof(string) ? JsonSchemaGenerator.Generate(typeof(T)) : null,
                 Tools = tool != null ? new List<Tool>() { tool } : null,
-                Stream = tool != null,
+                Stream = false
             };
 
             return await _httpClient.ExecuteAndGetJsonAsync<ChatCompletionResponse<T>>(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
