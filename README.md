@@ -1,5 +1,6 @@
 # OllamaClientLibrary
-OllamaClientLibrary is a .NET Standard 2.1 library for interacting with the Ollama API. It provides functionality to generate text completions and chat completions using various models.
+OllamaClientLibrary is a .NET Standard 2.1 library designed to interact seamlessly with the Ollama API. It offers robust functionality for generating text and chat completions using a variety of models. This library simplifies the process of configuring and utilizing the Ollama API, making it easier for developers to integrate advanced text generation capabilities into their applications.
+
 
 ## Features
 - Predefined configuration for the local Ollama setup, such as host, model, temperature, timeout, etc.
@@ -37,13 +38,14 @@ Install-Package OllamaClientLibrary
 ### Generate JSON Completion sample
 ```
 using OllamaClientLibrary;
+using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Models;
 
 using System.ComponentModel;
 
 // Setup OllamaClient
-using var client = new OllamaClient(new OllamaOptions() // If no options are provided, OllamaOptions will be used with the default settings
+using IOllamaClient client = new OllamaClient(new OllamaOptions() // If no options are provided, OllamaOptions will be used with the default settings
 {
     Host = "http://localhost:11434", // Default host is http://localhost:11434
     Model = "qwen2.5:1.5b", // Default model is "qwen2.5:1.5b"
@@ -98,7 +100,7 @@ class DotNetCore
 - [Pull Model](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/PullModel/Program.cs)
 
 ## Changelog
-- **v1.2.0**: Renamed methods to be more descriptive, added `AutoInstallModel` and `Timeout` properties to `OllamaOptions`, started using the chat completion API instead of the generate API, and added the pull model API.
+- **v1.2.0**: Renamed methods to be more descriptive, added `AutoInstallModel` and `Timeout` properties to `OllamaOptions`, started using the chat completion API instead of the generate API, and added the pull model API, added IOllamaClient interface.
 - **v1.1.0**: Changed the default model to `qwen2.5:1.5b`, fixed parsing of `ModifiedAt` for the Models list endpoint, added support for Tools, added Chat History, added integration tests, and configured CI.
 - **v1.0.1**: Allowed setting the `ApiKey` in `OllamaOptions`.
 - **v1.0.0**: Initial release with basic functionality for text and chat completions.

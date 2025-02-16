@@ -1,11 +1,12 @@
 ﻿using OllamaClientLibrary;
+using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Models;
 
 using System.ComponentModel;
 
 // Setup OllamaClient
-using var client = new OllamaClient(new OllamaOptions() // If no options are provided, OllamaOptions will be used with the default settings
+using IOllamaClient client = new OllamaClient(new OllamaOptions() // If no options are provided, OllamaOptions will be used with the default settings
 {
     Host = "http://localhost:11434", // Default host is http://localhost:11434
     Model = "qwen2.5:1.5b", // Default model is "qwen2.5:1.5b"
