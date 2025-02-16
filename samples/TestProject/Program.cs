@@ -9,7 +9,7 @@ using IOllamaClient client = new OllamaClient(new OllamaOptions() // If no optio
 {
     Host = "http://localhost:11434", // Default host is http://localhost:11434
     Model = "qwen2.5:1.5b", // Default model is "qwen2.5:1.5b"
-    Temperature = Temperature.DataCleaningOrAnalysis, // Optional. Default temperature is Temperature.GeneralConversationOrTranslation
+    Temperature = Temperature.DataCleaningOrAnalysis, // Default temperature is Temperature.GeneralConversationOrTranslation
     KeepChatHistory = false, // Default is true. The library will keep the chat history in memory.
     AutoInstallModel = true, // Default is false. The library will automatically install the model if it is not available on your local machine
     Timeout = TimeSpan.FromSeconds(30), // Default is 60 seconds.
