@@ -28,7 +28,7 @@ namespace OllamaClientLibrary.Abstractions
         /// <param name="tool">The tool to use for the completion.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>An asynchronous enumerable of chat messages.</returns>
-        IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string prompt, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default);
+        IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string prompt, Tool? tool = null, CancellationToken ct = default);
 
         /// <summary>
         /// Gets embeddings for the specified input asynchronously.
@@ -39,7 +39,7 @@ namespace OllamaClientLibrary.Abstractions
         Task<double[][]> GetEmbeddingCompletionAsync(string[] input, CancellationToken ct = default);
 
         /// <summary>
-        /// Gets JSON completion asynchronously and deserializes the response to the specified type.
+        /// Gets JSON completion asynchronously and deserialize the response to the specified type.
         /// </summary>
         /// <typeparam name="T">The type to deserialize the response to.</typeparam>
         /// <param name="prompt">The prompt to generate completion for.</param>

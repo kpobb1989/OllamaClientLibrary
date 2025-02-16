@@ -1,6 +1,6 @@
-﻿namespace OllamaClientLibrary.Models
+﻿namespace OllamaClientLibrary.Abstractions
 {
-    public class OllamaPullModelProgress
+    public sealed class OllamaPullModelProgress
     {
         public string? Status { get; set; }
         public double Percentage { get; set; }

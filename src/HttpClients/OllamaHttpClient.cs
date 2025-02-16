@@ -5,6 +5,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Serialization;
 
+using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Dto;
@@ -14,7 +15,6 @@ using OllamaClientLibrary.Dto.EmbeddingCompletion;
 using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.Dto.PullModel;
 using OllamaClientLibrary.Extensions;
-using OllamaClientLibrary.Models;
 
 using System;
 using System.Collections.Concurrent;

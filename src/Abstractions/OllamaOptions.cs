@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 
-namespace OllamaClientLibrary.Models
+namespace OllamaClientLibrary.Abstractions
 {
     /// <summary>
     /// Represents the options for configuring the Ollama client.

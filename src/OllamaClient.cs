@@ -5,7 +5,6 @@ using OllamaClientLibrary.Dto.ChatCompletion;
 using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.HttpClients;
-using OllamaClientLibrary.Models;
 using OllamaClientLibrary.Tools;
 
 using System;
@@ -19,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace OllamaClientLibrary
 {
-    public class OllamaClient : IOllamaClient
+    public sealed class OllamaClient : IOllamaClient
     {
         private readonly OllamaHttpClient _httpClient;
         private readonly OllamaOptions _options;

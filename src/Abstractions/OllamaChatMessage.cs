@@ -1,8 +1,8 @@
 ﻿using OllamaClientLibrary.Constants;
 
-namespace OllamaClientLibrary.Models
+namespace OllamaClientLibrary.Abstractions
 {
-    public class OllamaChatMessage
+    public sealed class OllamaChatMessage
     {
         /// <summary>
         /// The role of the message sender.
