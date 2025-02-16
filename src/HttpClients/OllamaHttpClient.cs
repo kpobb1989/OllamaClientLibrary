@@ -52,9 +52,10 @@ namespace OllamaClientLibrary.HttpClients
         {
             _options = options;
 
-            _httpClient = new HttpClient(options.HttpMessageHandler)
+            _httpClient = new HttpClient()
             {
                 BaseAddress = new Uri(_options.Host),
+                Timeout = _options.Timeout
             };
 
             if (!string.IsNullOrEmpty(_options.ApiKey))

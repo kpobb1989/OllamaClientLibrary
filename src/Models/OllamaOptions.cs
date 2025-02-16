@@ -9,11 +9,6 @@ namespace OllamaClientLibrary.Models
     public class OllamaOptions
     {
         /// <summary>
-        /// Gets or sets the HTTP message handler to be used. Defaults to a new instance of <see cref="HttpClientHandler"/>.
-        /// </summary>
-        public HttpMessageHandler HttpMessageHandler { get; set; } = new HttpClientHandler();
-
-        /// <summary>
         /// Gets or sets the model to be used. Defaults to the value of the "OLLAMA_MODEL" environment variable or "qwen2.5:1.5b".
         /// </summary>
         public string Model { get; set; } = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "qwen2.5:1.5b";
@@ -62,5 +57,10 @@ namespace OllamaClientLibrary.Models
         /// Gets or sets a value indicating whether to automatically install the model if it is not already installed. Defaults to false.
         /// </summary>
         public bool AutoInstallModel { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the timeout for HTTP requests. Defaults to 60 seconds.
+        /// </summary>
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(60);
     }
 }
