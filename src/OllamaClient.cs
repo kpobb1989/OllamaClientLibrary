@@ -4,7 +4,6 @@ using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.ChatCompletion;
 using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
-using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.HttpClients;
 using OllamaClientLibrary.Tools;
 
@@ -114,23 +113,33 @@ namespace OllamaClientLibrary
             return await _httpClient.GetEmbeddingCompletionAsync(input, ct).ConfigureAwait(false);
         }
 
-        public async Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default)
+        public async Task PullModelAsync(string model, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default)
         {
             var models = await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false);
 
-            if (models == null || !models.Any(model => string.Equals(model.Name, modelName, StringComparison.OrdinalIgnoreCase)))
+            if (models == null || !models.Any(s => string.Equals(s.Name, model, StringComparison.OrdinalIgnoreCase)))
             {
-                await _httpClient.PullModelAsync(modelName, progress, ct).ConfigureAwait(false);
+                await _httpClient.PullModelAsync(model, progress, ct).ConfigureAwait(false);
             }
             else
             {
                 progress?.Report(new OllamaPullModelProgress()
                 {
-                    Status = $"The model {modelName} is already installed",
+                    Status = $"The model {model} is already installed",
                     Percentage = 100
                 });
             }
 
+        }
+
+        public async Task DeleteModelAsync(string model, CancellationToken ct = default)
+        {
+            var models = await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false);
+
+            if (models.Any(s => string.Equals(s.Name, model, StringComparison.OrdinalIgnoreCase)))
+            {
+                await _httpClient.DeleteModelAsync(model, ct).ConfigureAwait(false);
+            }
         }
 
         public async Task<IEnumerable<OllamaModel>> ListModelsAsync(string? pattern = null, ModelSize? size = null, ModelLocation location = ModelLocation.Remote, CancellationToken ct = default)

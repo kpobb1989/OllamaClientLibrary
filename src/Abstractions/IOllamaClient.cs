@@ -68,10 +68,18 @@ namespace OllamaClientLibrary.Abstractions
         /// <summary>
         /// Pulls a model asynchronously.
         /// </summary>
-        /// <param name="modelName">The name of the model to pull.</param>
+        /// <param name="model">The name of the model to pull.</param>
         /// <param name="progress">An optional progress reporter to report the status of the model pull.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default);
+        Task PullModelAsync(string model, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Deletes a model asynchronously.
+        /// </summary>
+        /// <param name="model">The name of the model to delete.</param>
+        /// <param name="ct">The cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        Task DeleteModelAsync(string model, CancellationToken ct = default);
     }
 }

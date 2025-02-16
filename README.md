@@ -12,6 +12,7 @@ OllamaClientLibrary is a .NET Standard 2.1 library designed to interact seamless
 - Get embeddings completions for a given text. The library provides functionality to convert text into numerical vectors (embeddings) that can be used for various machine learning tasks such as similarity search, clustering, and classification. This is useful for applications like semantic search, recommendation systems, and natural language understanding.
 - List available local and remote models with filtering options. Now you have access to see all models installed on your local machine, as well as all models available on [Ollama's library](https://ollama.com/library)
 - Pull a model from [Ollama's library](https://ollama.com/library) to your local machine.
+- Delete a model from the local machine
 
 ## Prerequisites: 
 ### Setting Up Ollama Server
@@ -89,7 +90,7 @@ class DotNetCore
 ```
 
 ## More samples
-- [Chat Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetChatCompletion/Program.cs)
+- [Get Chat Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetChatCompletion/Program.cs)
 - [Get Embedding Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetEmbeddingCompletion/Program.cs)
 - [Get JSON Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetJsonCompletion/Program.cs)
 - [Get Text Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetTextCompletion/Program.cs)
@@ -97,6 +98,7 @@ class DotNetCore
 - [List Local Models](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/ListLocalModels/Program.cs)
 - [List Remote Models](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/ListRemoteModels/Program.cs)
 - [Pull Model](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/PullModel/Program.cs)
+- [Delete Model](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/DeleteModel/Program.cs)
 
 ## Changelog
 - **v1.2.0**: Renamed methods to be more descriptive, added `AutoInstallModel` and `Timeout` properties to `OllamaOptions`, started using the chat completion API instead of the generate API, and added the pull model API, added IOllamaClient interface.

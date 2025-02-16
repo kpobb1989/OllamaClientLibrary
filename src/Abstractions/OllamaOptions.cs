@@ -34,7 +34,7 @@ namespace OllamaClientLibrary.Abstractions
         public string ChatApi { get; set; } = $"api/chat";
 
         /// <summary>
-        /// Gets or sets the API endpoint for retrieving tags. Defaults to "api/tags".
+        /// Gets or sets the API endpoint for retrieving local models. Defaults to "api/tags".
         /// </summary>
         public string TagsApi { get; set; } = $"api/tags";
 
@@ -46,13 +46,17 @@ namespace OllamaClientLibrary.Abstractions
         /// <summary>
         /// Gets or sets the API endpoint for pulling models. Defaults to "api/pull".
         /// </summary>
-        public string PullApi { get; set; } = $"api/pull";
+        public string PullModelApi { get; set; } = $"api/pull";
+
+        /// <summary>
+        /// Gets or sets the API endpoint for deleting models. Defaults to "api/delete".
+        /// </summary>
+        public string DeleteModelApi { get; set; } = $"api/delete";
 
         /// <summary>
         /// Gets or sets a value indicating whether to keep the chat history. Defaults to true.
         /// </summary>
         public bool KeepChatHistory { get; set; } = true;
-
 
         /// Gets or sets a value indicating whether to automatically install the model if it is not already installed. Defaults to false.
         /// </summary>

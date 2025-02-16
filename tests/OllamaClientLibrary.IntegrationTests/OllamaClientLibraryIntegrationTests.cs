@@ -184,7 +184,7 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task GetTextCompletionAsync_WithTools_ShouldResponseTemperature()
+        public async Task GetTextCompletionAsync_WithTools_ShouldReturnTemperature()
         {
             // Arrange
             var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperature));
@@ -359,6 +359,37 @@ namespace OllamaClientLibrary.IntegrationTests
                 Assert.That(models, Is.Not.Null);
                 Assert.That(models.Count(), Is.GreaterThanOrEqualTo(1));
             });
+        }
+
+        [Test]
+        public async Task PullModelAsync_PullTinyModel_ShouldPullTheModel()
+        {
+            // Arrange
+            var tinyModel = "all-minilm:v2";
+
+            // Act
+            await _client.PullModelAsync(tinyModel);
+
+            // Assert
+            var localModels = await _client.ListModelsAsync(tinyModel, location: ModelLocation.Local);
+
+            Assert.That(localModels.FirstOrDefault()?.Name, Is.EquivalentTo(tinyModel));
+        }
+
+        [Test]
+        public async Task DeleteModelAsync_DeleteExistingModel_ShouldDeleteTheModel()
+        {
+            // Arrange
+            var tinyModel = "all-minilm:v2";
+            await _client.PullModelAsync(tinyModel);
+
+            // Act
+            await _client.DeleteModelAsync(tinyModel);
+
+            // Assert
+            var localModels = await _client.ListModelsAsync(tinyModel, location: ModelLocation.Local);
+
+            Assert.That(localModels.Count(), Is.EqualTo(0));
         }
 
         record PlanetResponse(IEnumerable<Planet> Data);

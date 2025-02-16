@@ -1,5 +1,4 @@
-﻿
-using OllamaClientLibrary;
+﻿using OllamaClientLibrary;
 using OllamaClientLibrary.Abstractions;
 
 using var client = new OllamaClient();
