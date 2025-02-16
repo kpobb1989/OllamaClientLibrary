@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -17,16 +18,18 @@ namespace OllamaClientLibrary.Extensions
             return jsonSerializer.Deserialize<T>(stream);
         }
 
-        public static async Task<Stream> ExecuteAndGetStreamAsync(this HttpClient httpClient, string requestUri, HttpMethod method, JsonSerializer jsonSerializer, object? request = null, CancellationToken ct = default)
+        public static async Task<Stream> ExecuteAndGetStreamAsync(this HttpClient httpClient, string requestUri, HttpMethod method, JsonSerializer? jsonSerializer = null, object? request = null, CancellationToken ct = default)
         {
             HttpRequestMessage httpRequestMessage;
 
             if (method == HttpMethod.Post)
             {
-                httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri)
+                httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri);
+
+                if (request != null && jsonSerializer != null)
                 {
-                    Content = new StringContent(jsonSerializer.Serialize(request), Encoding.UTF8, "application/json")
-                };
+                    httpRequestMessage.Content = new StringContent(jsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+                }
             }
             else
             {

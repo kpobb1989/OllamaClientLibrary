@@ -1,5 +1,4 @@
-﻿using OllamaClientLibrary.Dto.ChatCompletion.Tools;
-using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
+﻿using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 
 using System;
 using System.Collections.Generic;

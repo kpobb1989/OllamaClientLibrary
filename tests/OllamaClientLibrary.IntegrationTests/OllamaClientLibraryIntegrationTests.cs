@@ -1,7 +1,7 @@
-﻿using OllamaClientLibrary.Cache;
+﻿using OllamaClientLibrary.Abstractions;
+using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
-using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.IntegrationTests.Tools;
 using OllamaClientLibrary.Tools;
 
@@ -29,10 +29,10 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task GenerateTextCompletionAsync_SimplePrompt_ShouldReturnTextCompletion()
+        public async Task GetTextCompletionAsync_SimplePrompt_ShouldReturnTextCompletion()
         {
             // Act
-            var response = await _client.GenerateTextCompletionAsync("Hi, how are you doing?");
+            var response = await _client.GetTextCompletionAsync("Hi, how are you doing?");
 
             // Assert
             Assert.Multiple(() =>
@@ -44,18 +44,17 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task GenerateJsonCompletionAsync_ListOfPlanets_ShouldReturnEightPlanetNames()
+        public async Task GetJsonCompletionAsync_ListOfPlanets_ShouldReturnEightPlanetNames()
         {
             // Act
-            var response = await _client.GenerateJsonCompletionAsync<PlanetsResponse>("Please provide a list of all the planet names in our solar system. The list should include Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.");
+            var response = await _client.GetJsonCompletionAsync<PlanetResponse> ("Please provide a list of all the planet names in our solar system. The list should include Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.");
 
             // Assert
             Assert.Multiple(() =>
             {
                 Assert.That(response, Is.Not.Null);
-                Assert.That(response?.Planets, Is.Not.Null);
-                Assert.That(response!.Planets.All(s => !string.IsNullOrWhiteSpace(s.PlanetName)), Is.True);
-                Assert.That(response.Planets.Count(), Is.GreaterThan(0));
+                Assert.That(response?.Data?.All(s => !string.IsNullOrWhiteSpace(s.PlanetName)), Is.True);
+                Assert.That(response?.Data?.Count(), Is.GreaterThan(0));
             });
         }
 
@@ -76,7 +75,7 @@ namespace OllamaClientLibrary.IntegrationTests
             _client = new(new OllamaOptions()
             {
                 Model = Model,
-                KeepChatHistory = true 
+                KeepChatHistory = true
             });
 
             // Act
@@ -86,7 +85,7 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.ChatHistory.Count, Is.GreaterThan(0));
+            Assert.That(_client.ChatHistory, Is.Not.Empty);
         }
 
         [Test]
@@ -185,13 +184,13 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task GetChatTextCompletionAsync_WithTools_ShouldResponseTemperature()
+        public async Task GetTextCompletionAsync_WithTools_ShouldResponseTemperature()
         {
             // Arrange
             var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperature));
 
             // Act
-            var response = await _client.GetChatTextCompletionAsync("What is the weather today in Paris?", tool);
+            var response = await _client.GetTextCompletionAsync("What is the weather today in Paris?", tool);
 
             // Assert
             Assert.That(response, Is.EquivalentTo("23"));
@@ -245,7 +244,7 @@ namespace OllamaClientLibrary.IntegrationTests
 
             // Act
             await _client.ListModelsAsync(location: ModelLocation.Remote);
-            var cache = CacheStorage.Get<IEnumerable<Model>>("remote-models");
+            var cache = CacheStorage.Get<IEnumerable<OllamaModel>>("remote-models");
 
             // Assert
             Assert.That(cache?.Count(), Is.GreaterThanOrEqualTo(1));
@@ -259,7 +258,7 @@ namespace OllamaClientLibrary.IntegrationTests
 
             // Act
             var models = await _client.ListModelsAsync(location: ModelLocation.Remote);
-            var cache = CacheStorage.Get<IEnumerable<Model>>("remote-models");
+            var cache = CacheStorage.Get<IEnumerable<OllamaModel>>("remote-models");
 
             // Assert
             Assert.Multiple(() =>
@@ -350,8 +349,8 @@ namespace OllamaClientLibrary.IntegrationTests
         {
             // Act
             var models = await _client.ListModelsAsync(
-                pattern: pattern, 
-                size: size, 
+                pattern: pattern,
+                size: size,
                 location: location);
 
             // Assert
@@ -362,7 +361,8 @@ namespace OllamaClientLibrary.IntegrationTests
             });
         }
 
-        record PlanetsResponse(IEnumerable<Planet> Planets);
+        record PlanetResponse(IEnumerable<Planet> Data);
+
         record Planet(string PlanetName);
     }
 }

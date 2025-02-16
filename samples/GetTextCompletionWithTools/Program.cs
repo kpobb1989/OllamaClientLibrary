@@ -7,7 +7,7 @@ using var client = new OllamaClient();
 
 var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperature));
 
-var response = await client.GetChatTextCompletionAsync("What is the weather today in Paris?", tool);
+var response = await client.GetTextCompletionAsync("What is the weather today in Paris?", tool);
 
 Console.WriteLine($"Temperature: {response}");
 

@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Net.Http;
 
-namespace OllamaClientLibrary
+namespace OllamaClientLibrary.Abstractions
 {
     /// <summary>
     /// Represents the options for configuring the Ollama client.
@@ -28,11 +29,6 @@ namespace OllamaClientLibrary
         public float? Temperature { get; set; } = Constants.Temperature.GeneralConversationOrTranslation;
 
         /// <summary>
-        /// Gets or sets the API endpoint for generating responses. Defaults to "api/generate".
-        /// </summary>
-        public string GenerateApi { get; set; } = $"api/generate";
-
-        /// <summary>
         /// Gets or sets the API endpoint for chat interactions. Defaults to "api/chat".
         /// </summary>
         public string ChatApi { get; set; } = $"api/chat";
@@ -48,8 +44,23 @@ namespace OllamaClientLibrary
         public string EmbeddingsApi { get; set; } = $"api/embed";
 
         /// <summary>
+        /// Gets or sets the API endpoint for pulling models. Defaults to "api/pull".
+        /// </summary>
+        public string PullApi { get; set; } = $"api/pull";
+
+        /// <summary>
         /// Gets or sets a value indicating whether to keep the chat history. Defaults to true.
         /// </summary>
         public bool KeepChatHistory { get; set; } = true;
+
+
+        /// Gets or sets a value indicating whether to automatically install the model if it is not already installed. Defaults to false.
+        /// </summary>
+        public bool AutoInstallModel { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the timeout for HTTP requests. Defaults to 60 seconds.
+        /// </summary>
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(60);
     }
 }

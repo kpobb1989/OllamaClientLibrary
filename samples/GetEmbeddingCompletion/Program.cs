@@ -12,7 +12,7 @@ Console.WriteLine("Generating embeddings for the statement...");
 
 try
 {
-    double[][] embeddings = await client.GetEmbeddingAsync([statement]);
+    double[][] embeddings = await client.GetEmbeddingCompletionAsync([statement]);
     if (embeddings.Length != 1)
     {
         Console.WriteLine("Error: Number of embeddings does not match number of statements.");
@@ -53,7 +53,7 @@ Console.WriteLine("Generating embeddings for questions...");
 
 try
 {
-    double[][] questionEmbeddings = await client.GetEmbeddingAsync(questions);
+    double[][] questionEmbeddings = await client.GetEmbeddingCompletionAsync(questions);
 
     for (int i = 0; i < questions.Length; i++) // Correct loop condition
     {
@@ -133,7 +133,7 @@ static async Task<string?> GenerateRefinedAnswer(OllamaClient client, string sta
                         $"Question:\n{question}\n\n" +
                         $"Answer:";
 
-        return await client.GenerateTextCompletionAsync(prompt);
+        return await client.GetTextCompletionAsync(prompt);
     }
     catch (Exception ex)
     {

@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OllamaClientLibrary", "Olla
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetChatCompletion", "..\samples\GetChatCompletion\GetChatCompletion.csproj", "{8F233322-BD4C-401D-98A4-AFFA22BF7255}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateTextCompletion", "..\samples\GenerateTextCompletion\GenerateTextCompletion.csproj", "{4B6783FC-BF58-4E5F-AB5D-F35823041B52}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetTextCompletion", "..\samples\GetTextCompletion\GetTextCompletion.csproj", "{4B6783FC-BF58-4E5F-AB5D-F35823041B52}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}"
 EndProject
@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ListRemoteModels", "..\samp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ListLocalModels", "..\samples\ListLocalModels\ListLocalModels.csproj", "{D67DF766-35CE-4AB1-A4C8-9A2F8D818E6F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateJsonCompletion", "..\samples\GenerateJsonCompletion\GenerateJsonCompletion.csproj", "{27FE15A7-70DE-4AD9-B521-8D50515F8895}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetJsonCompletion", "..\samples\GetJsonCompletion\GetJsonCompletion.csproj", "{27FE15A7-70DE-4AD9-B521-8D50515F8895}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{EB00C611-E0B6-4E3E-A36E-54F902BFF9C3}"
 EndProject
@@ -23,7 +23,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OllamaClientLibrary.Integra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetEmbeddingCompletion", "..\samples\GetEmbeddingCompletion\GetEmbeddingCompletion.csproj", "{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetChatTextCompletionWithTools", "..\samples\GetChatTextCompletionWithTools\GetChatTextCompletionWithTools.csproj", "{58C04F67-AEAF-463F-BB18-E6DC322087BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetTextCompletionWithTools", "..\samples\GetTextCompletionWithTools\GetTextCompletionWithTools.csproj", "{58C04F67-AEAF-463F-BB18-E6DC322087BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PullModel", "..\samples\PullModel\PullModel.csproj", "{B1E2DEC1-FABA-4D00-9E65-8009CAAFDA32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject", "..\samples\TestProject\TestProject.csproj", "{E854C09D-414B-41D2-BB3A-8510C54D4268}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,6 +71,14 @@ Global
 		{58C04F67-AEAF-463F-BB18-E6DC322087BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58C04F67-AEAF-463F-BB18-E6DC322087BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58C04F67-AEAF-463F-BB18-E6DC322087BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1E2DEC1-FABA-4D00-9E65-8009CAAFDA32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1E2DEC1-FABA-4D00-9E65-8009CAAFDA32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1E2DEC1-FABA-4D00-9E65-8009CAAFDA32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1E2DEC1-FABA-4D00-9E65-8009CAAFDA32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E854C09D-414B-41D2-BB3A-8510C54D4268}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E854C09D-414B-41D2-BB3A-8510C54D4268}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E854C09D-414B-41D2-BB3A-8510C54D4268}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E854C09D-414B-41D2-BB3A-8510C54D4268}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,6 +92,8 @@ Global
 		{48D36F74-B1DA-454E-8E21-2DF291576649} = {EB00C611-E0B6-4E3E-A36E-54F902BFF9C3}
 		{C772A8E7-D28C-4CB7-B9EA-F7F563BBDD01} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
 		{58C04F67-AEAF-463F-BB18-E6DC322087BF} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
+		{B1E2DEC1-FABA-4D00-9E65-8009CAAFDA32} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
+		{E854C09D-414B-41D2-BB3A-8510C54D4268} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3BD5083D-67CA-49CC-8742-019FD127DF3E}

@@ -1,5 +1,6 @@
 ﻿
 using OllamaClientLibrary;
+using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Constants;
 
 using var client = new OllamaClient(new OllamaOptions()
@@ -9,14 +10,14 @@ using var client = new OllamaClient(new OllamaOptions()
 
 var cts = new CancellationTokenSource();
 
-Console.WriteLine("CTRL+D to terminate the conversation.");
+Console.WriteLine("CTRL+C to terminate the conversation.");
 #pragma warning disable CS4014
 Task.Run(() =>
 {
     while (true)
     {
         var keyInfo = Console.ReadKey(intercept: true);
-        if (keyInfo.Key == ConsoleKey.D && keyInfo.Modifiers == ConsoleModifiers.Control)
+        if (keyInfo.Key == ConsoleKey.C && keyInfo.Modifiers == ConsoleModifiers.Control)
         {
             cts.Cancel();
         }
