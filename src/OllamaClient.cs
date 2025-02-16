@@ -84,6 +84,7 @@ namespace OllamaClientLibrary
         /// Gets chat completion asynchronously.
         /// </summary>
         /// <param name="prompt">The prompt to get chat completion for.</param>
+        /// <param name="tool">The tool to use for the completion.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>An asynchronous enumerable of chat messages.</returns>
         public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string prompt, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
@@ -148,6 +149,13 @@ namespace OllamaClientLibrary
             return await _httpClient.GetEmbeddingCompletionAsync(input, ct).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Pulls a model asynchronously. If the model is already installed, reports the progress as 100%.
+        /// </summary>
+        /// <param name="modelName">The name of the model to pull.</param>
+        /// <param name="progress">An optional progress reporter to report the status of the model pull.</param>
+        /// <param name="ct">The cancellation token.</param>
+        /// <returns>A task that represents the asynchronous op
         public async Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default)
         {
             var models = await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false);
