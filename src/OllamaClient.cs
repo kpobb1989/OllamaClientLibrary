@@ -1,4 +1,5 @@
 ﻿using OllamaClientLibrary.Abstractions;
+using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.ChatCompletion;
@@ -20,6 +21,8 @@ namespace OllamaClientLibrary
 {
     public sealed class OllamaClient : IOllamaClient
     {
+        private readonly string RemoteModelsCacheKey = "remote-models";
+        private readonly TimeSpan RemoteModelsCacheTime = TimeSpan.FromHours(1);
         private readonly OllamaHttpClient _httpClient;
         private readonly OllamaOptions _options;
 
@@ -130,17 +133,28 @@ namespace OllamaClientLibrary
 
         }
 
-        public async Task<IEnumerable<Model>> ListModelsAsync(string? pattern = null, ModelSize? size = null, ModelLocation location = ModelLocation.Remote, CancellationToken ct = default)
+        public async Task<IEnumerable<OllamaModel>> ListModelsAsync(string? pattern = null, ModelSize? size = null, ModelLocation location = ModelLocation.Remote, CancellationToken ct = default)
         {
-            IEnumerable<Model> models;
+            IEnumerable<OllamaModel> models;
 
             if (location == ModelLocation.Local)
             {
-                models = await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false);
+                models = (await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false)).Select(s => new OllamaModel() { Name = s.Name, ModifiedAt = s.ModifiedAt, Size = s.Size });
             }
             else
             {
-                models = await _httpClient.ListRemoteModelsAsync(ct).ConfigureAwait(false);
+                var cache = CacheStorage.Get<IEnumerable<OllamaModel>>(RemoteModelsCacheKey, RemoteModelsCacheTime);
+
+                if (cache != null && cache.Any())
+                {
+                    models = cache;
+                }
+                else
+                {
+                    models = (await _httpClient.ListRemoteModelsAsync(ct).ConfigureAwait(false)).Select(s => new OllamaModel() { Name = s.Name, ModifiedAt = s.ModifiedAt, Size = s.Size });
+
+                    CacheStorage.Save(RemoteModelsCacheKey, models);
+                }
             }
 
             if (!string.IsNullOrEmpty(pattern))

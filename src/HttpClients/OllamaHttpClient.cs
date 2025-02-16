@@ -32,8 +32,6 @@ namespace OllamaClientLibrary.HttpClients
     internal class OllamaHttpClient : IDisposable
     {
         private readonly JSchemaGenerator JsonSchemaGenerator = new JSchemaGenerator();
-        private readonly string RemoteModelsCacheKey = "remote-models";
-        private readonly TimeSpan RemoteModelsCacheTime = TimeSpan.FromHours(1);
         private readonly HttpClient _httpClient;
         private readonly OllamaOptions _options;
 
@@ -152,22 +150,7 @@ namespace OllamaClientLibrary.HttpClients
         }
 
         public async Task<IEnumerable<Model>> ListRemoteModelsAsync(CancellationToken ct = default)
-        {
-            var cache = CacheStorage.Get<IEnumerable<Model>>(RemoteModelsCacheKey, RemoteModelsCacheTime);
-
-            if (cache != null && cache.Any())
-            {
-                return cache;
-            }
-            else
-            {
-                var models = await GetRemoteModelsAsync(ct).ConfigureAwait(false);
-
-                CacheStorage.Save(RemoteModelsCacheKey, models);
-
-                return models;
-            }
-        }
+            => await GetRemoteModelsAsync(ct).ConfigureAwait(false);
 
         public async Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress, CancellationToken ct)
         {

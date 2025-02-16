@@ -1,7 +1,6 @@
 ﻿using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 using OllamaClientLibrary.Dto.Models;
-using OllamaClientLibrary.Models;
 
 using System;
 using System.Collections.Generic;
@@ -64,7 +63,7 @@ namespace OllamaClientLibrary.Abstractions
         /// <param name="location">The location to filter models by.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>A list of models.</returns>
-        Task<IEnumerable<Model>> ListModelsAsync(string? pattern = null, ModelSize? size = null, ModelLocation location = ModelLocation.Remote, CancellationToken ct = default);
+        Task<IEnumerable<OllamaModel>> ListModelsAsync(string? pattern = null, ModelSize? size = null, ModelLocation location = ModelLocation.Remote, CancellationToken ct = default);
 
         /// <summary>
         /// Pulls a model asynchronously.

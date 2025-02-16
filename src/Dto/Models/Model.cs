@@ -4,7 +4,7 @@ using System;
 
 namespace OllamaClientLibrary.Dto.Models
 {
-    public class Model
+    internal class Model
     {
         [JsonProperty("model")]
         public string? Name { get; set; }

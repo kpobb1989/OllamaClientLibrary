@@ -1,9 +1,8 @@
-﻿using OllamaClientLibrary.Cache;
+﻿using OllamaClientLibrary.Abstractions;
+using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
-using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.IntegrationTests.Tools;
-using OllamaClientLibrary.Models;
 using OllamaClientLibrary.Tools;
 
 namespace OllamaClientLibrary.IntegrationTests
@@ -245,7 +244,7 @@ namespace OllamaClientLibrary.IntegrationTests
 
             // Act
             await _client.ListModelsAsync(location: ModelLocation.Remote);
-            var cache = CacheStorage.Get<IEnumerable<Model>>("remote-models");
+            var cache = CacheStorage.Get<IEnumerable<OllamaModel>>("remote-models");
 
             // Assert
             Assert.That(cache?.Count(), Is.GreaterThanOrEqualTo(1));
@@ -259,7 +258,7 @@ namespace OllamaClientLibrary.IntegrationTests
 
             // Act
             var models = await _client.ListModelsAsync(location: ModelLocation.Remote);
-            var cache = CacheStorage.Get<IEnumerable<Model>>("remote-models");
+            var cache = CacheStorage.Get<IEnumerable<OllamaModel>>("remote-models");
 
             // Assert
             Assert.Multiple(() =>

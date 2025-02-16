@@ -1,13 +1,13 @@
 ﻿using OllamaClientLibrary;
+using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
-using OllamaClientLibrary.Dto.Models;
 
 using var client = new OllamaClient();
 
 Console.Write("Loading...");
 
-IEnumerable<Model>? localModels = null;
+IEnumerable<OllamaModel>? localModels = null;
 
 try
 {
