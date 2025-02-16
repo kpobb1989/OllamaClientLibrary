@@ -95,6 +95,12 @@ class DotNetCore
 - [List Local Models](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/ListLocalModels/Program.cs)
 - [List Remote Models](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/ListRemoteModels/Program.cs)
 
+## Changelog
+- **v1.2.0**: Initial release with basic functionality for text and chat completions.
+- **v1.1.0**: Changed the default model to `qwen2.5:1.5b`, fixed parsing ModifiedAt for the Models list endpoint, added support for Tools, added Chat History, integration tests and configured CI.
+- **v1.0.1**: Allowed setting the `ApiKey` in `OllamaOptions`.
+- **v1.0.0**: Initial release with basic functionality for text and chat completions.
+
 ## License
 This project is licensed under the MIT License.
 
