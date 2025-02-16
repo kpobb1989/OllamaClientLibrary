@@ -2,14 +2,15 @@
 OllamaClientLibrary is a .NET Standard 2.1 library for interacting with the Ollama API. It provides functionality to generate text completions and chat completions using various models.
 
 ## Features
-- Predefined configuration for the local Ollama setup, such as host, model, and temperature, timeout, etc.
-- Auto-install models if they are not available on your local machine.
+- Predefined configuration for the local Ollama setup, such as host, model, temperature, timeout, etc.
+- Auto-install a model if it is not available on your local machine.
 - Get JSON completions with an automatically recognized JSON schema of the response DTO, so you no longer need to specify it in the prompt.
 - Get chat completions with streaming. The library provides access to the conversation history, allowing you to store it in the database if needed.
 - Get text completions. Provide a prompt and get a simple text response.
 - Get text completion with tools. Based on the Ollama response, the library can dynamically call local methods and provide the necessary parameters.
 - Get embeddings completions for a given text. The library provides functionality to convert text into numerical vectors (embeddings) that can be used for various machine learning tasks such as similarity search, clustering, and classification. This is useful for applications like semantic search, recommendation systems, and natural language understanding.
 - List available local and remote models with filtering options. Now you have access to see all models installed on your local machine, as well as all models available on [Ollama's library](https://ollama.com/library)
+- Pull a model from [Ollama's library](https://ollama.com/library) to your local machine.
 
 ## Prerequisites: 
 ### Setting Up Ollama Server
@@ -94,10 +95,11 @@ class DotNetCore
 - [Get Text Completions with Tools](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetTextCompletionWithTools/Program.cs)
 - [List Local Models](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/ListLocalModels/Program.cs)
 - [List Remote Models](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/ListRemoteModels/Program.cs)
+- [Pull Model](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/PullModel/Program.cs)
 
 ## Changelog
-- **v1.2.0**: Initial release with basic functionality for text and chat completions.
-- **v1.1.0**: Changed the default model to `qwen2.5:1.5b`, fixed parsing ModifiedAt for the Models list endpoint, added support for Tools, added Chat History, integration tests and configured CI.
+- **v1.2.0**: Renamed methods to be more descriptive, added `AutoInstallModel` and `Timeout` properties to `OllamaOptions`, started using the chat completion API instead of the generate API, and added the pull model API.
+- **v1.1.0**: Changed the default model to `qwen2.5:1.5b`, fixed parsing of `ModifiedAt` for the Models list endpoint, added support for Tools, added Chat History, added integration tests, and configured CI.
 - **v1.0.1**: Allowed setting the `ApiKey` in `OllamaOptions`.
 - **v1.0.0**: Initial release with basic functionality for text and chat completions.
 
