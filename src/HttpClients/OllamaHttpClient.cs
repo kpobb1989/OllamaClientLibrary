@@ -68,7 +68,8 @@ namespace OllamaClientLibrary.HttpClients
                 Model = _options.Model,
                 Options = new ModelOptions()
                 {
-                    Temperature = _options.Temperature
+                    Temperature = _options.Temperature,
+                    MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
                 Messages = new[]
                 {
@@ -93,7 +94,8 @@ namespace OllamaClientLibrary.HttpClients
                 Model = _options.Model,
                 Options = new ModelOptions()
                 {
-                    Temperature = _options.Temperature
+                    Temperature = _options.Temperature,
+                    MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
                 Messages = messages,
                 Stream = true,
@@ -132,7 +134,8 @@ namespace OllamaClientLibrary.HttpClients
                 Input = input,
                 Options = new ModelOptions()
                 {
-                    Temperature = _options.Temperature
+                    Temperature = _options.Temperature,
+                    MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
             };
 

@@ -63,6 +63,11 @@ namespace OllamaClientLibrary.Abstractions
         public bool AutoInstallModel { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets the maximum number of tokens for the prompt. Defaults to 4096.
+        /// </summary>
+        public long MaxPromptTokenSize { get; set; } = 4096;
+
+        /// <summary>
         /// Gets or sets the timeout for HTTP requests. Defaults to 60 seconds.
         /// </summary>
         public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(60);

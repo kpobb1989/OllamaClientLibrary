@@ -3,7 +3,7 @@ OllamaClientLibrary is a .NET Standard 2.1 library designed to interact seamless
 
 
 ## Features
-- Predefined configuration for the local Ollama setup, such as host, model, temperature, timeout, etc.
+- Predefined configuration for the local Ollama setup, such as host, model, temperature, timeout, prompt size, etc.
 - Auto-install a model if it is not available on your local machine.
 - Get JSON completions with an automatically recognized JSON schema of the response DTO, so you no longer need to specify it in the prompt.
 - Get chat completions with streaming. The library provides access to the conversation history, allowing you to store it in the database if needed.
@@ -53,6 +53,7 @@ using IOllamaClient client = new OllamaClient(new OllamaOptions() // If no optio
     KeepChatHistory = false, // Default is true. The library will keep the chat history in memory.
     AutoInstallModel = true, // Default is false. The library will automatically install the model if it is not available on your local machine
     Timeout = TimeSpan.FromSeconds(30), // Default is 60 seconds.
+    MaxPromptTokenSize = 4096, // Default is 4096 tokens. Increase this value if you want to send larger prompts
     ApiKey = "your-api-key", // Optional. It is not required by default for the local setup
 });
 
@@ -101,7 +102,7 @@ class DotNetCore
 - [Delete Model](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/DeleteModel/Program.cs)
 
 ## Changelog
-- **v1.2.0**: Renamed methods to be more descriptive, added `AutoInstallModel` and `Timeout` properties to `OllamaOptions`, started using the chat completion API instead of the generate API, and added the pull model API, added IOllamaClient interface.
+- **v1.2.0**: Renamed methods to be more descriptive, added `AutoInstallModel` and `Timeout` properties to `OllamaOptions`, started using the chat completion API instead of the generate API added the pull model API and added IOllamaClient interface.
 - **v1.1.0**: Changed the default model to `qwen2.5:1.5b`, fixed parsing of `ModifiedAt` for the Models list endpoint, added support for Tools, added Chat History, added integration tests, and configured CI.
 - **v1.0.1**: Allowed setting the `ApiKey` in `OllamaOptions`.
 - **v1.0.0**: Initial release with basic functionality for text and chat completions.

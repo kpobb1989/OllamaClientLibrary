@@ -13,6 +13,7 @@ using IOllamaClient client = new OllamaClient(new OllamaOptions() // If no optio
     KeepChatHistory = false, // Default is true. The library will keep the chat history in memory.
     AutoInstallModel = true, // Default is false. The library will automatically install the model if it is not available on your local machine
     Timeout = TimeSpan.FromSeconds(30), // Default is 60 seconds.
+    MaxPromptTokenSize = 4096, // Default is 4096 tokens. Increase this value if you want to send larger prompts
     ApiKey = "your-api-key", // Optional. It is not required by default for the local setup
 });
 
