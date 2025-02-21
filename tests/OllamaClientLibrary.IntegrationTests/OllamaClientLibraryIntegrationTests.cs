@@ -17,10 +17,13 @@ namespace OllamaClientLibrary.IntegrationTests
         [SetUp]
         public void Setup()
         {
-            _client = new(new OllamaOptions()
+            _client = new()
             {
-                Model = Model
-            });
+                Options = new OllamaOptions()
+                {
+                    Model = Model
+                }
+            };
         }
 
         [TearDown]
@@ -72,43 +75,39 @@ namespace OllamaClientLibrary.IntegrationTests
         [Test]
         public async Task GetChatCompletionAsync_KeepChatHistory_ShouldStoreChatHistory()
         {
-            // Arrange
-            var history = new List<OllamaChatMessage>()
-            {
-                "hello".AsUserMessage()
-            };
-
             // Act
-            await foreach (var chunk in _client.GetChatCompletionAsync(history))
+            await foreach (var chunk in _client.GetChatCompletionAsync("hello"))
             {
                 Assert.That(chunk, Is.Not.Null);
             }
 
             // Assert
-            Assert.That(history, Is.Not.Empty);
+            Assert.That(_client.Options.ChatHistory, Is.Not.Empty);
         }
 
         [Test]
         public async Task GetChatCompletionAsync_MultiplePrompts_ShouldStoreThemInChatHistory()
         {
             // Arrange
-            _client = new OllamaClient(new OllamaOptions()
+            _client = new OllamaClient()
             {
-                AssistantBehavior = null
-            });
-            var history = new List<OllamaChatMessage>()
-            {
-                "hello".AsUserMessage(),
-                "how are you doing?".AsUserMessage()
+                Options = new OllamaOptions()
+                {
+                    AssistantBehavior = null
+                }
             };
+            var conversation = new[] { "hello", "how are you doing?" };
 
             // Act
-            await foreach (var _ in _client.GetChatCompletionAsync(history))
+            foreach (var prompt in conversation)
             {
+                await foreach (var _ in _client.GetChatCompletionAsync(prompt))
+                {
+                }
             }
 
             // Assert
-            Assert.That(history.Where(s => s.Role == MessageRole.User).Count(), Is.EqualTo(2));
+            Assert.That(_client.Options.ChatHistory.Where(s => s.Role == MessageRole.User).Count(), Is.EqualTo(conversation.Length));
         }
 
         [Test]
@@ -130,7 +129,7 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.ChatHistory.Where(s => s.Role == MessageRole.Assistant).Count(), Is.EqualTo(prompts.Length));
+            Assert.That(_client.Options.ChatHistory.Where(s => s.Role == MessageRole.Assistant).Count(), Is.EqualTo(prompts.Length));
         }
 
         [Test]
@@ -153,18 +152,21 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.ChatHistory.Where(s => s.Role != MessageRole.System).ToList(), Has.Count.EqualTo(prompts.Length * 2));
+            Assert.That(_client.Options.ChatHistory.Where(s => s.Role != MessageRole.System).ToList(), Has.Count.EqualTo(prompts.Length * 2));
         }
 
         [Test]
         public async Task GetChatCompletionAsync_WithCancelledToken_ShouldTerminateConversation()
         {
             // Arrange
-            _client = new(new OllamaOptions()
+            _client = new()
             {
-                Model = Model,
-                AssistantBehavior = null
-            });
+                Options = new OllamaOptions()
+                {
+                    Model = Model,
+                    AssistantBehavior = null
+                }
+            };
             var cts = new CancellationTokenSource();
 
             // Act
@@ -174,18 +176,21 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.ChatHistory.Where(s => s.Role != MessageRole.System).ToList(), Has.Count.EqualTo(2));
+            Assert.That(_client.Options.ChatHistory.Where(s => s.Role != MessageRole.System).ToList(), Has.Count.EqualTo(2));
         }
 
         [Test]
         public async Task GetTextCompletionAsync_WithTools_ShouldReturnTemperature()
         {
             // Arrange
-            _client = new(new OllamaOptions()
+            _client = new()
             {
-                Model = Model,
-                Tools = ToolFactory.CreateList<Weather>(nameof(Weather.GetTemperatureAsync))
-            });
+                Options = new OllamaOptions()
+                {
+                    Model = Model,
+                    Tools = ToolFactory.CreateArray<Weather>(nameof(Weather.GetTemperatureAsync))
+                }
+            };
 
             // Act
             var response = await _client.GetTextCompletionAsync("What is the weather today in Paris?");

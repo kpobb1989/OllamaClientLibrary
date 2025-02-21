@@ -5,9 +5,9 @@ namespace OllamaClientLibrary.Extensions
 {
     public static class StringExtensions
     {
-        public static OllamaChatMessage AsUserMessage(this string prompt) => new OllamaChatMessage(MessageRole.User, prompt);
-        public static OllamaChatMessage AsAssistantMessage(this string prompt) => new OllamaChatMessage(MessageRole.Assistant, prompt);
-        public static OllamaChatMessage AsSystemMessage(this string prompt) => new OllamaChatMessage(MessageRole.System, prompt);
-        public static OllamaChatMessage AsToolMessage(this string prompt) => new OllamaChatMessage(MessageRole.Tool, prompt);
+        public static OllamaChatMessage AsUserChatMessage(this string prompt) => new OllamaChatMessage(MessageRole.User, prompt);
+        public static OllamaChatMessage AsAssistantChatMessage(this string prompt) => new OllamaChatMessage(MessageRole.Assistant, prompt);
+        public static OllamaChatMessage AsSystemChatMessage(this string prompt) => new OllamaChatMessage(MessageRole.System, prompt);
+        public static OllamaChatMessage AsToolChatMessage(this string prompt) => new OllamaChatMessage(MessageRole.Tool, prompt);
     }
 }

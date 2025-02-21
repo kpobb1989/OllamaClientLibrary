@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 
 namespace OllamaClientLibrary.Abstractions
 {
@@ -78,6 +77,11 @@ namespace OllamaClientLibrary.Abstractions
         /// <summary>
         /// Gets or sets the list of tools available for the assistant. Tools are not applicable for all models. Make sure the model supports tools before using them. Also tools are not applicable to the JSON responses.
         /// </summary>
-        public List<Tool> Tools { get; set; } = new List<Tool>();
+        public Tool[]? Tools { get; set; }
+
+        /// <summary>
+        /// Gets the chat history.
+        /// </summary>
+        public List<OllamaChatMessage> ChatHistory { get; set; } = new List<OllamaChatMessage>();
     }
 }

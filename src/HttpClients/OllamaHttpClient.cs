@@ -61,7 +61,7 @@ namespace OllamaClientLibrary.HttpClients
             }
         }
 
-        public async Task<ChatCompletionResponse<T>?> GetCompletionAsync<T>(IEnumerable<ChatMessageRequest> messages, List<Tool>? tools = null, CancellationToken ct = default) where T : class
+        public async Task<ChatCompletionResponse<T>?> GetCompletionAsync<T>(ChatMessageRequest[] messages, Tool[]? tools = null, CancellationToken ct = default) where T : class
         {
             var request = new ChatCompletionRequest
             {
@@ -80,7 +80,7 @@ namespace OllamaClientLibrary.HttpClients
             return await _httpClient.ExecuteAndGetJsonAsync<ChatCompletionResponse<T>>(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
         }
 
-        public async IAsyncEnumerable<ChatCompletionResponse<string>> GetChatCompletionAsync(IEnumerable<ChatMessageRequest> messages, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
+        public async IAsyncEnumerable<ChatCompletionResponse<string>> GetChatCompletionAsync(ChatMessageRequest[] messages, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
         {
             var request = new ChatCompletionRequest
             {

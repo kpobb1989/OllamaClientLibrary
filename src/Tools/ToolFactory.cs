@@ -59,7 +59,7 @@ namespace OllamaClientLibrary.Tools
             return CreateInternal(methodInfo);
         }
 
-        public static List<Tool> CreateList<TClass>(params string[] methodNames)
+        public static Tool[] CreateArray<TClass>(params string[] methodNames)
         {
             var tools = new List<Tool>();
 
@@ -72,7 +72,7 @@ namespace OllamaClientLibrary.Tools
                 tools.Add(tool);
             }
 
-            return tools;
+            return tools.ToArray();
         }
 
         private static async Task<object?> GetTaskResultAsync(Task task)

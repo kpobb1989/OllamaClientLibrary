@@ -6,11 +6,14 @@ using OllamaClientLibrary.Tools;
 
 using System.ComponentModel;
 
-using var client = new OllamaClient(new OllamaOptions()
+using var client = new OllamaClient()
 {
-    // When Tools are used, the model must support it, otherwise there will be an exception
-    Tools = ToolFactory.CreateList<Weather>(nameof(Weather.GetTemperatureAsync), nameof(Weather.GetTimeZoneAsync))
-});
+    Options = new OllamaOptions()
+    {
+        // When Tools are used, the model must support it, otherwise there will be an exception
+        Tools = ToolFactory.CreateArray<Weather>(nameof(Weather.GetTemperatureAsync), nameof(Weather.GetTimeZoneAsync))
+    }
+};
 
 var temperature = await client.GetTextCompletionAsync("What is the weather today in Paris?");
 

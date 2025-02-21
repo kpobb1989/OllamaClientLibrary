@@ -2,10 +2,13 @@
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Abstractions;
 
-using var client = new OllamaClient(new OllamaOptions()
+using var client = new OllamaClient()
 {
-    Temperature = Temperature.CodingOrMath
-});
+    Options = new OllamaOptions()
+    {
+        Temperature = Temperature.CodingOrMath,
+    }
+};
 
 Console.Write("Loading...");
 
