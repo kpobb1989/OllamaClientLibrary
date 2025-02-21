@@ -26,18 +26,18 @@ namespace OllamaClientLibrary
 
         public OllamaOptions Options { get; set; }
 
-        public List<OllamaChatMessage> ChatHistory { get; set; }
+        public List<OllamaChatMessage> ConversationHistory { get; set; }
 
         public OllamaClient()
         {
             Options = Options ?? new OllamaOptions();
-            ChatHistory = ChatHistory ?? new List<OllamaChatMessage>();
+            ConversationHistory = ConversationHistory ?? new List<OllamaChatMessage>();
 
             _httpClient = new OllamaHttpClient(Options);
 
             if (!string.IsNullOrEmpty(Options.AssistantBehavior))
             {
-                ChatHistory.Insert(0, new OllamaChatMessage(MessageRole.System, Options.AssistantBehavior));
+                ConversationHistory.Insert(0, new OllamaChatMessage(MessageRole.System, Options.AssistantBehavior));
             }
 
         }
@@ -170,10 +170,10 @@ namespace OllamaClientLibrary
 
             if (!string.IsNullOrEmpty(prompt))
             {
-                ChatHistory.Add(prompt.AsUserChatMessage());
+                ConversationHistory.Add(prompt.AsUserChatMessage());
             }
 
-            var request = ChatHistory.Select(s => s.AsChatMessageRequest()).ToArray();
+            var request = ConversationHistory.Select(s => s.AsChatMessageRequest()).ToArray();
 
             var response = await _httpClient.GetCompletionAsync<T>(request, tools, ct).ConfigureAwait(false);
 
@@ -188,16 +188,16 @@ namespace OllamaClientLibrary
                     Content = (await ToolFactory.InvokeAsync(tool, args).ConfigureAwait(false))?.ToString()
                 }!;
 
-                ChatHistory.Add(toolMessage.AsOllamaChatMessage());
+                ConversationHistory.Add(toolMessage.AsOllamaChatMessage());
 
-                request = ChatHistory.Select(s => s.AsChatMessageRequest()).ToArray();
+                request = ConversationHistory.Select(s => s.AsChatMessageRequest()).ToArray();
 
                 response = await _httpClient.GetCompletionAsync<T>(request, ct: ct).ConfigureAwait(false);
             }
 
             var finalChatMessage = new ChatMessageRequest { Role = MessageRole.Assistant, Content = response?.Message?.Content };
 
-            ChatHistory.Add(finalChatMessage.AsOllamaChatMessage());
+            ConversationHistory.Add(finalChatMessage.AsOllamaChatMessage());
 
             yield return new OllamaChatMessage
             {
