@@ -61,7 +61,7 @@ namespace OllamaClientLibrary.HttpClients
             }
         }
 
-        public async Task<ChatCompletionResponse<T>?> GetCompletionAsync<T>(IEnumerable<ChatMessageRequest> messages, Tool? tool = null, CancellationToken ct = default) where T : class
+        public async Task<ChatCompletionResponse<T>?> GetCompletionAsync<T>(IEnumerable<ChatMessageRequest> messages, List<Tool>? tools = null, CancellationToken ct = default) where T : class
         {
             var request = new ChatCompletionRequest
             {
@@ -73,7 +73,7 @@ namespace OllamaClientLibrary.HttpClients
                 },
                 Messages = messages,
                 Format = typeof(T) != typeof(string) ? JsonSchemaGenerator.Generate(typeof(T)) : null,
-                Tools = tool != null ? new List<Tool>() { tool } : null,
+                Tools = tools,
                 Stream = false
             };
 

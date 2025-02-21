@@ -1,37 +1,51 @@
 ﻿using Newtonsoft.Json.Linq;
 
 using OllamaClientLibrary;
+using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Tools;
 
 using System.ComponentModel;
 
-using var client = new OllamaClient();
+using var client = new OllamaClient(new OllamaOptions()
+{
+    // When Tools are used, the model must support it, otherwise there will be an exception
+    Tools = [ToolFactory.Create<Weather>(nameof(Weather.GetTemperatureAsync)), ToolFactory.Create<Weather>(nameof(Weather.GetTimeZoneAsync))]
+});
 
-// When Tools are used, the model must support it, otherwise there will be an exception
-var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperatureAsync));
 
-var response = await client.GetTextCompletionAsync("What is the weather today in Paris?", tool);
+var response = await client.GetTextCompletionAsync("What is the weather today in Paris?");
 
 Console.WriteLine($"Temperature: {response}");
 
 Console.ReadKey();
 
-public class Weather
+public class Weather : IDisposable
 {
+    private HttpClient httpClient = new HttpClient()
+    {
+        BaseAddress = new Uri("https://api.open-meteo.com")
+    };
+
+    [Description("Get a time zone based on the latitude and longitude")]
+    public async Task<string?> GetTimeZoneAsync(
+            [Description("The latitude of the location, e.g. 15")] float latitude,
+            [Description("The longitude of the location, e.g. 12")] float longitude)
+    {
+        var response = await ExecuteAndGetJsonAsync($"/v1/forecast?latitude={latitude}&longitude={longitude}&timezone=auto");
+
+        var timezone = response?["timezone"]?.ToString();
+
+        return timezone;
+    }
+
     [Description("Get the current weather for a location")]
     public async Task<float?> GetTemperatureAsync(
-        [Description("The latitude of the location, e.g. 15")] int latitude,
-        [Description("The longitude of the location, e.g. 12")] int longitude)
+    [Description("The latitude of the location, e.g. 15")] float latitude,
+    [Description("The longitude of the location, e.g. 12")] float longitude)
     {
-        using var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri("https://api.open-meteo.com");
+        var response = await ExecuteAndGetJsonAsync($"/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m");
 
-        var response = await httpClient.GetAsync($"/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m");
-        response.EnsureSuccessStatusCode();
-
-        var json = await response.Content.ReadAsStringAsync();
-
-        var value = JObject.Parse(json)?["current"]?["temperature_2m"]?.ToString();
+        var value = response?["current"]?["temperature_2m"]?.ToString();
 
         if (float.TryParse(value, out var temperature))
         {
@@ -39,5 +53,20 @@ public class Weather
         }
 
         return null;
+    }
+
+    private async Task<JObject> ExecuteAndGetJsonAsync(string url, CancellationToken ct = default)
+    {
+        var response = await httpClient.GetAsync(url, ct);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync(ct);
+
+        return JObject.Parse(json);
+    }
+
+    public void Dispose()
+    {
+        httpClient.Dispose();
     }
 }

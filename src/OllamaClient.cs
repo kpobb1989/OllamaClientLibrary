@@ -34,9 +34,9 @@ namespace OllamaClientLibrary
             _httpClient = new OllamaHttpClient(_options);
         }
 
-        public async Task<string?> GetTextCompletionAsync(string? prompt, Tool? tool = null, CancellationToken ct = default)
+        public async Task<string?> GetTextCompletionAsync(string? prompt, CancellationToken ct = default)
         {
-            await foreach (var message in GetCompletionAsync<string>(prompt, null, tool, ct))
+            await foreach (var message in GetCompletionAsync<string>(prompt, null, _options.Tools, ct))
             {
                 return message?.Content?.ToString();
             }
@@ -52,17 +52,17 @@ namespace OllamaClientLibrary
             return null;
         }
 
-        public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string prompt, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
+        public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string prompt, [EnumeratorCancellation] CancellationToken ct = default)
         {
-            await foreach (var message in GetCompletionAsync<string>(prompt, null, tool, ct))
+            await foreach (var message in GetCompletionAsync<string>(prompt, null, _options.Tools, ct))
             {
                 yield return message;
             }
         }
 
-        public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(IList<OllamaChatMessage> messages, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
+        public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(IList<OllamaChatMessage> messages, [EnumeratorCancellation] CancellationToken ct = default)
         {
-            await foreach (var message in GetCompletionAsync<string>(null, messages, tool, ct))
+            await foreach (var message in GetCompletionAsync<string>(null, messages, _options.Tools, ct))
             {
                 yield return message;
             }
@@ -164,7 +164,7 @@ namespace OllamaClientLibrary
             }
         }
 
-        private async IAsyncEnumerable<OllamaChatMessage?> GetCompletionAsync<T>(string? prompt, IList<OllamaChatMessage>? messages, Tool? tool, [EnumeratorCancellation] CancellationToken ct) where T : class
+        private async IAsyncEnumerable<OllamaChatMessage?> GetCompletionAsync<T>(string? prompt, IList<OllamaChatMessage>? messages, List<Tool>? tools, [EnumeratorCancellation] CancellationToken ct) where T : class
         {
             await AutoInstallModelAsync(ct).ConfigureAwait(false);
 
@@ -182,14 +182,17 @@ namespace OllamaClientLibrary
 
             _chatHistory.AddRange(messages.Select(s => new ChatMessageRequest { Content = s.Content, Role = s.Role }));
 
-            var response = await _httpClient.GetCompletionAsync<T>(_chatHistory, tool, ct).ConfigureAwait(false);
+            var response = await _httpClient.GetCompletionAsync<T>(_chatHistory, tools, ct).ConfigureAwait(false);
 
-            if (tool != null && response?.Message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
+            if (tools != null &&
+                response?.Message?.ToolCalls?.FirstOrDefault()?.Function is { Name: var name, Arguments: var args } &&
+                tools.FirstOrDefault(t => t.Function.Name == name) is var tool &&
+                tool != null)
             {
                 var toolMessage = new ChatMessageRequest
                 {
                     Role = MessageRole.Tool,
-                    Content = (await ToolFactory.InvokeAsync(tool, arguments).ConfigureAwait(false))?.ToString()
+                    Content = (await ToolFactory.InvokeAsync(tool, args).ConfigureAwait(false))?.ToString()
                 };
 
                 messages.Add(new OllamaChatMessage(toolMessage.Role, toolMessage.Content));

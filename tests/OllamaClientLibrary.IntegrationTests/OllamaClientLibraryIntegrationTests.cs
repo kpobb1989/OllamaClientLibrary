@@ -181,10 +181,14 @@ namespace OllamaClientLibrary.IntegrationTests
         public async Task GetTextCompletionAsync_WithTools_ShouldReturnTemperature()
         {
             // Arrange
-            var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperatureAsync));
+            _client = new(new OllamaOptions()
+            {
+                Model = Model,
+                Tools = [ToolFactory.Create<Weather>(nameof(Weather.GetTemperatureAsync))]
+            });
 
             // Act
-            var response = await _client.GetTextCompletionAsync("What is the weather today in Paris?", tool);
+            var response = await _client.GetTextCompletionAsync("What is the weather today in Paris?");
 
             // Assert
             Assert.That(response, Is.Not.Null);

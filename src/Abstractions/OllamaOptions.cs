@@ -1,4 +1,7 @@
-﻿using System;
+﻿using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
+
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
 
 namespace OllamaClientLibrary.Abstractions
@@ -71,5 +74,10 @@ namespace OllamaClientLibrary.Abstractions
         /// Get or sets the behavior of the assistant. Defaults to "You are a world class AI Assistant".
         /// </summary>
         public string? AssistantBehavior { get; set; } = "You are a world class AI Assistant";
+
+        /// <summary>
+        /// Gets or sets the list of tools available for the assistant.
+        /// </summary>
+        public List<Tool> Tools { get; set; } = new List<Tool>();
     }
 }
