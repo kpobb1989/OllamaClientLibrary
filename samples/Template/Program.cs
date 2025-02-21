@@ -15,7 +15,7 @@ using IOllamaClient client = new OllamaClient(new OllamaOptions() // If no optio
     MaxPromptTokenSize = 4096, // Default is 4096 tokens. Increase this value if you want to send larger prompts
     AssistantBehavior = "You are a professional .NET developer.", // Optional. Default is "You are a world class AI Assistant"
     ApiKey = "your-api-key", // Optional. It is not required by default for the local setup
-    Tools = null // Optional. Default is null. You can use the ToolFactory to create tools.
+    Tools = null // Optional. You can use the ToolFactory to create tools, e.g. ToolFactory.Create<WeatherService>() where WeatherService is your class
 });
 
 // Call Ollama API
