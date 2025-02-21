@@ -170,7 +170,7 @@ namespace OllamaClientLibrary
 
             messages ??= new List<OllamaChatMessage>();
 
-            if (!string.IsNullOrEmpty(_options.AssistantBehavior) && messages.FirstOrDefault()?.Role != MessageRole.System)
+            if (!string.IsNullOrEmpty(_options.AssistantBehavior) && !messages.Any(s => s.Role == MessageRole.System) && !_chatHistory.Any(s => s.Role == MessageRole.System))
             {
                 messages.Insert(0, new OllamaChatMessage(MessageRole.System, _options.AssistantBehavior));
             }

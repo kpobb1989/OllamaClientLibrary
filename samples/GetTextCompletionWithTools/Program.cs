@@ -13,9 +13,13 @@ using var client = new OllamaClient(new OllamaOptions()
 });
 
 
-var response = await client.GetTextCompletionAsync("What is the weather today in Paris?");
+var temperature = await client.GetTextCompletionAsync("What is the weather today in Paris?");
 
-Console.WriteLine($"Temperature: {response}");
+Console.WriteLine($"Temperature: {temperature}");
+
+var timezone = await client.GetTextCompletionAsync("What's the time zone by latitude=48.8, longitude=2.3?");
+
+Console.WriteLine($"Time zone: {timezone}");
 
 Console.ReadKey();
 
