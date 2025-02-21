@@ -55,7 +55,7 @@ using IOllamaClient client = new OllamaClient(new OllamaOptions() // If no optio
     MaxPromptTokenSize = 4096, // Default is 4096 tokens. Increase this value if you want to send larger prompts
     AssistantBehavior = "You are a professional .NET developer.", // Optional. Default is "You are a world class AI Assistant"
     ApiKey = "your-api-key", // Optional. It is not required by default for the local setup
-    Tools = null // Optional. Default is null. You can use the ToolFactory to create tools.
+    Tools = null // Optional. You can use the ToolFactory to create tools, e.g. ToolFactory.Create<WeatherService>() where WeatherService is your class
 });
 
 // Call Ollama API
@@ -104,6 +104,7 @@ class DotNetCore
 - [Delete Model](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/DeleteModel/Program.cs)
 
 ## Changelog
+- **v1.3.0**: Introduced `MaxPromptTokenSize` and `AssistantBehavior` properties to `OllamaOptions`, and added the `DeleteModelAsync` method. Removed `KeepChatHistory`. Fixed handling of multiple `ToolCalls`. Updated to call AI after receiving a response from the tools. Modified `ToolFactory` to retrieve all public methods automatically instead of specifying them manually. Added support for async methods in `ToolCalls`.
 - **v1.2.0**: Renamed methods to be more descriptive, added `AutoInstallModel` and `Timeout` properties to `OllamaOptions`, started using the chat completion API instead of the generate API added the pull model API and added IOllamaClient interface.
 - **v1.1.0**: Changed the default model to `qwen2.5:1.5b`, fixed parsing of `ModifiedAt` for the Models list endpoint, added support for Tools, added Chat History, added integration tests, and configured CI.
 - **v1.0.1**: Allowed setting the `ApiKey` in `OllamaOptions`.
