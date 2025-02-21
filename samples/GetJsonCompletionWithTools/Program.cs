@@ -11,7 +11,7 @@ using var client = new OllamaClient(new OllamaOptions()
 {
     Temperature = Temperature.CodingOrMath,
     AssistantBehavior = "You are a professional meteorologist.",
-    Tools = ToolFactory.Create<WeatherService>(nameof(WeatherService.GetTimeZoneAsync))
+    Tools = ToolFactory.Create<WeatherService>()
 });
 
 Console.Write("Loading...");

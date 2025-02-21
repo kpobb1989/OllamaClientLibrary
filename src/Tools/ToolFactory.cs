@@ -12,6 +12,12 @@ namespace OllamaClientLibrary.Tools
 {
     public static class ToolFactory
     {
+        /// <summary>
+        /// Invokes the specified tool's method asynchronously with the provided arguments.
+        /// </summary>
+        /// <param name="tool">The tool containing the method to invoke.</param>
+        /// <param name="arguments">The arguments to pass to the method.</param>
+        /// <returns>The result of the method invocation, or null if the method does not return a value.</returns>
         public static async Task<object?> InvokeAsync(OllamaTool tool, Dictionary<string, object?>? arguments)
         {
             if (tool.MethodInfo == null)
@@ -46,32 +52,38 @@ namespace OllamaClientLibrary.Tools
             return result;
         }
 
-        public static OllamaTool[] Create(object instance, params string[] methodNames)
+        /// <summary>
+        /// Creates an array of <see cref="OllamaTool"/> for all public methods of the specified instance.
+        /// </summary>
+        /// <param name="instance">The instance whose public methods will be used to create tools.</param>
+        /// <returns>An array of <see cref="OllamaTool"/> representing the public methods of the instance.</returns>
+        public static OllamaTool[] Create(object instance)
         {
             var tools = new List<OllamaTool>();
+            var methodInfos = instance.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
-            foreach (var methodName in methodNames)
+            foreach (var methodInfo in methodInfos)
             {
-                var methodInfo = instance.GetType().GetMethod(methodName, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-                var tool = CreateInternal(methodInfo, instance);
-
+                var tool = CreateTool(methodInfo, instance);
                 tools.Add(tool);
             }
 
             return tools.ToArray();
         }
 
-        public static OllamaTool[] Create<TClass>(params string[] methodNames)
+        /// <summary>
+        /// Creates an array of <see cref="OllamaTool"/> for all public methods of the specified class type.
+        /// </summary>
+        /// <typeparam name="TClass">The class type whose public methods will be used to create tools.</typeparam>
+        /// <returns>An array of <see cref="OllamaTool"/> representing the public methods of the class type.</returns>
+        public static OllamaTool[] Create<TClass>()
         {
             var tools = new List<OllamaTool>();
+            var methodInfos = typeof(TClass).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
-            foreach (var methodName in methodNames)
+            foreach (var methodInfo in methodInfos)
             {
-                var methodInfo = typeof(TClass).GetMethod(methodName, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-                var tool = CreateInternal(methodInfo);
-
+                var tool = CreateTool(methodInfo);
                 tools.Add(tool);
             }
 
@@ -88,7 +100,7 @@ namespace OllamaClientLibrary.Tools
             return null;
         }
 
-        private static OllamaTool CreateInternal(MethodInfo methodInfo, object? instance = null)
+        private static OllamaTool CreateTool(MethodInfo methodInfo, object? instance = null)
         {
             if (!methodInfo.IsStatic && instance == null)
             {
