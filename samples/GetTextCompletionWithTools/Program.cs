@@ -7,6 +7,7 @@ using System.ComponentModel;
 
 using var client = new OllamaClient();
 
+// When Tools are used, the model must support it, otherwise there will be an exception
 var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperatureAsync));
 
 var response = await client.GetTextCompletionAsync("What is the weather today in Paris?", tool);

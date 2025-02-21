@@ -170,9 +170,9 @@ namespace OllamaClientLibrary
 
             messages ??= new List<OllamaChatMessage>();
 
-            if (!string.IsNullOrEmpty(_options.AssistantBehavior))
+            if (!string.IsNullOrEmpty(_options.AssistantBehavior) && messages.FirstOrDefault()?.Role != MessageRole.System)
             {
-                messages.Add(new OllamaChatMessage(MessageRole.System, _options.AssistantBehavior));
+                messages.Insert(0, new OllamaChatMessage(MessageRole.System, _options.AssistantBehavior));
             }
 
             if (!string.IsNullOrEmpty(prompt))
