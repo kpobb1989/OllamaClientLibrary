@@ -14,6 +14,11 @@ namespace OllamaClientLibrary.Abstractions
     public interface IOllamaClient : IDisposable
     {
         /// <summary>
+        /// Gets the options for the Ollama client.
+        /// </summary>
+        public OllamaOptions Options { get; }
+
+        /// <summary>
         /// Gets or sets the conversation history.
         /// </summary>
         public List<OllamaChatMessage> ConversationHistory { get; set; }

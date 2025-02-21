@@ -4,14 +4,11 @@ using OllamaClientLibrary.Constants;
 
 using System.ComponentModel;
 
-using var client = new OllamaClient()
+using var client = new OllamaClient(new OllamaOptions()
 {
-    Options = new OllamaOptions()
-    {
-        Temperature = Temperature.DataCleaningOrAnalysis,
-        AssistantBehavior = "You are a professional .NET developer."
-    }
-};
+    Temperature = Temperature.DataCleaningOrAnalysis,
+    AssistantBehavior = "You are a professional .NET developer."
+});
 
 Console.Write("Loading...");
 

@@ -3,13 +3,10 @@ using OllamaClientLibrary;
 using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Constants;
 
-using var client = new OllamaClient()
+using var client = new OllamaClient(new OllamaOptions()
 {
-    Options = new OllamaOptions()
-    {
-        Temperature = Temperature.CreativityWritingOrPoetry
-    }
-};
+    Temperature = Temperature.CreativityWritingOrPoetry
+});
 
 var cts = new CancellationTokenSource();
 

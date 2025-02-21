@@ -4,7 +4,7 @@ using DescriptionAttribute = System.ComponentModel.DescriptionAttribute;
 
 namespace OllamaClientLibrary.IntegrationTests.Tools
 {
-    public class Weather : IDisposable
+    public class WeatherService : IDisposable
     {
         private HttpClient httpClient = new HttpClient()
         {

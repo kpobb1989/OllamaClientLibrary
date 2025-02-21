@@ -24,13 +24,10 @@ Download and install Ollama from https://ollama.com/download
 
 ### Installing a Model (Alternative)
 ```
-using IOllamaClient client = new OllamaClient()
+using var client = new OllamaClient(new OllamaOptions()
 {
-    Options = new OllamaOptions()
-    {
-        AutoInstallModel = true, // Default is false
-    }
-};
+    AutoInstallModel = true, // Default is false
+});
 ```
 
 ## Installation
@@ -48,20 +45,17 @@ using OllamaClientLibrary.Constants;
 using System.ComponentModel;
 
 // Setup OllamaClient
-using IOllamaClient client = new OllamaClient()
+using IOllamaClient client = new OllamaClient(new OllamaOptions() // If no options are provided, OllamaOptions will be used with the default settings
 {
-    Options = new OllamaOptions() // If no options are provided, OllamaOptions will be used with the default settings
-    {
-        Host = "http://localhost:11434", // Default host is http://localhost:11434
-        Model = "qwen2.5:1.5b", // Default model is "qwen2.5:1.5b"
-        Temperature = Temperature.DataCleaningOrAnalysis, // Default temperature is Temperature.GeneralConversationOrTranslation
-        AutoInstallModel = true, // Default is false. The library will automatically install the model if it is not available on your local machine
-        Timeout = TimeSpan.FromSeconds(30), // Default is 60 seconds.
-        MaxPromptTokenSize = 4096, // Default is 4096 tokens. Increase this value if you want to send larger prompts
-        AssistantBehavior = "You are a professional .NET developer.", // Optional. Default is "You are a world class AI Assistant"
-        ApiKey = "your-api-key", // Optional. It is not required by default for the local setup
-    }
-};
+    Host = "http://localhost:11434", // Default host is http://localhost:11434
+    Model = "qwen2.5:1.5b", // Default model is "qwen2.5:1.5b"
+    Temperature = Temperature.DataCleaningOrAnalysis, // Default temperature is Temperature.GeneralConversationOrTranslation
+    AutoInstallModel = true, // Default is false. The library will automatically install the model if it is not available on your local machine
+    Timeout = TimeSpan.FromSeconds(30), // Default is 60 seconds.
+    MaxPromptTokenSize = 4096, // Default is 4096 tokens. Increase this value if you want to send larger prompts
+    AssistantBehavior = "You are a professional .NET developer.", // Optional. Default is "You are a world class AI Assistant"
+    ApiKey = "your-api-key", // Optional. It is not required by default for the local setup
+});
 
 // Call Ollama API
 var response = await client.GetJsonCompletionAsync<Response>(
@@ -98,10 +92,11 @@ class DotNetCore
 
 ## More samples
 - [Get Chat Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetChatCompletion/Program.cs)
-- [Get Embedding Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetEmbeddingCompletion/Program.cs)
 - [Get JSON Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetJsonCompletion/Program.cs)
+- [Get JSON Completions with Tools](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetJsonCompletionWithTools/Program.cs)
 - [Get Text Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetTextCompletion/Program.cs)
 - [Get Text Completions with Tools](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetTextCompletionWithTools/Program.cs)
+- [Get Embedding Completions](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetEmbeddingCompletion/Program.cs) 
 - [List Local Models](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/ListLocalModels/Program.cs)
 - [List Remote Models](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/ListRemoteModels/Program.cs)
 - [Pull Model](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/PullModel/Program.cs)

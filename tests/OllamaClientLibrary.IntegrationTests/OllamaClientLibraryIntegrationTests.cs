@@ -16,13 +16,10 @@ namespace OllamaClientLibrary.IntegrationTests
         [SetUp]
         public void Setup()
         {
-            _client = new()
+            _client = new(new OllamaOptions()
             {
-                Options = new OllamaOptions()
-                {
-                    Model = Model
-                }
-            };
+                Model = Model
+            });
         }
 
         [TearDown]
@@ -88,13 +85,10 @@ namespace OllamaClientLibrary.IntegrationTests
         public async Task GetChatCompletionAsync_MultiplePrompts_ShouldStoreThemInConversationHistory()
         {
             // Arrange
-            _client = new OllamaClient()
+            _client = new OllamaClient(new OllamaOptions()
             {
-                Options = new OllamaOptions()
-                {
-                    AssistantBehavior = null
-                }
-            };
+                AssistantBehavior = null
+            });
             var conversation = new[] { "hello", "how are you doing?" };
 
             // Act
@@ -158,14 +152,12 @@ namespace OllamaClientLibrary.IntegrationTests
         public async Task GetChatCompletionAsync_WithCancelledToken_ShouldTerminateConversation()
         {
             // Arrange
-            _client = new()
+            _client = new(new OllamaOptions()
             {
-                Options = new OllamaOptions()
-                {
-                    Model = Model,
-                    AssistantBehavior = null
-                }
-            };
+                Model = Model,
+                AssistantBehavior = null
+            });
+
             var cts = new CancellationTokenSource();
 
             // Act
@@ -182,14 +174,11 @@ namespace OllamaClientLibrary.IntegrationTests
         public async Task GetTextCompletionAsync_WithTools_ShouldReturnTemperature()
         {
             // Arrange
-            _client = new()
+            _client = new(new OllamaOptions()
             {
-                Options = new OllamaOptions()
-                {
-                    Model = Model,
-                    Tools = OllamaToolFactory.Create<Weather>(nameof(Weather.GetTemperatureAsync))
-                }
-            };
+                Model = Model,
+                Tools = ToolFactory.Create<WeatherService>(nameof(WeatherService.GetTemperatureAsync))
+            });
 
             // Act
             var response = await _client.GetTextCompletionAsync("What is the weather today in Paris?");

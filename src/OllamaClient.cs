@@ -25,13 +25,13 @@ namespace OllamaClientLibrary
         private readonly TimeSpan RemoteModelsCacheTime = TimeSpan.FromHours(1);
         private readonly OllamaHttpClient _httpClient;
 
-        public OllamaOptions Options { get; set; }
+        public OllamaOptions Options { get; }
 
         public List<OllamaChatMessage> ConversationHistory { get; set; }
 
-        public OllamaClient()
+        public OllamaClient(OllamaOptions? options = null)
         {
-            Options = Options ?? new OllamaOptions();
+            Options = options ?? new OllamaOptions();
             ConversationHistory = ConversationHistory ?? new List<OllamaChatMessage>();
 
             _httpClient = new OllamaHttpClient(Options);
@@ -58,21 +58,13 @@ namespace OllamaClientLibrary
 
             var response = await _httpClient.GetCompletionAsync<T>(request, Options.Tools?.Select(s => s.AsTool()).ToArray(), ct).ConfigureAwait(false);
 
-            if (Options.Tools != null &&
-                response?.Message?.ToolCalls?.FirstOrDefault()?.Function is { Name: var name, Arguments: var args } &&
-                Options.Tools.FirstOrDefault(t => t.Function.Name == name) is var tool &&
-                tool != null)
-            {
-                var toolMessage = new ChatMessageRequest
-                {
-                    Role = MessageRole.Tool,
-                    Content = (await OllamaToolFactory.InvokeAsync(tool, args).ConfigureAwait(false))?.ToString()
-                }!;
+            var toolMessages = await HandleToolCallsAsync(response, ct).ConfigureAwait(false);
 
-                ConversationHistory.Add(toolMessage.AsOllamaChatMessage());
+            if (toolMessages.Any())
+            {
+                ConversationHistory.AddRange(toolMessages.Select(m => m.AsOllamaChatMessage()));
 
                 request = ConversationHistory.Select(s => s.AsChatMessageRequest()).ToArray();
-
                 response = await _httpClient.GetCompletionAsync<T>(request, ct: ct).ConfigureAwait(false);
             }
 
@@ -92,27 +84,22 @@ namespace OllamaClientLibrary
 
             var messageChunks = new StringBuilder();
 
-            await foreach (var chunk in _httpClient.GetChatCompletionAsync(request, Options.Tools?.Select(s => s.AsTool()).ToArray(), ct:ct))
+            await foreach (var chunk in _httpClient.GetChatCompletionAsync(request, Options.Tools?.Select(s => s.AsTool()).ToArray(), ct: ct))
             {
                 var content = chunk?.Message?.Content;
 
-                if (Options.Tools != null &&
-                    chunk?.Message?.ToolCalls?.FirstOrDefault()?.Function is { Name: var name, Arguments: var args } &&
-                    Options.Tools.FirstOrDefault(t => t.Function.Name == name) is var tool && tool != null)
+                if (Options.Tools != null && chunk?.Message?.ToolCalls != null)
                 {
-                    var toolMessage = new ChatMessageRequest
+                    var toolMessages = await HandleToolCallsAsync(chunk, ct).ConfigureAwait(false);
+
+                    if (toolMessages.Any())
                     {
-                        Role = MessageRole.Tool,
-                        Content = (await OllamaToolFactory.InvokeAsync(tool, args).ConfigureAwait(false))?.ToString()
-                    }!;
+                        ConversationHistory.AddRange(toolMessages.Select(m => m.AsOllamaChatMessage()));
 
-                    ConversationHistory.Add(toolMessage.AsOllamaChatMessage());
-
-                    request = ConversationHistory.Select(s => s.AsChatMessageRequest()).ToArray();
-
-                    var response = await _httpClient.GetCompletionAsync<string>(request, ct: ct).ConfigureAwait(false);
-
-                    content = response?.Message?.Content;
+                        request = ConversationHistory.Select(s => s.AsChatMessageRequest()).ToArray();
+                        var response = await _httpClient.GetCompletionAsync<string>(request, ct: ct).ConfigureAwait(false);
+                        content = response?.Message?.Content;
+                    }
                 }
 
                 messageChunks.Append(content);
@@ -225,6 +212,38 @@ namespace OllamaClientLibrary
 
                 await PullModelAsync(model, null, ct: ct).ConfigureAwait(false);
             }
+        }
+
+        private async Task<List<ChatMessageRequest>> HandleToolCallsAsync<T>(ChatCompletionResponse<T>? response, CancellationToken ct) where T : class
+        {
+            var toolMessages = new List<ChatMessageRequest>();
+
+            if (Options.Tools != null && response?.Message?.ToolCalls != null)
+            {
+                var tasks = response.Message.ToolCalls.Select(async toolCall =>
+                {
+                    if (toolCall.Function is { Name: var name, Arguments: var args } &&
+                        Options.Tools.FirstOrDefault(t => t.Function.Name == name) is var tool &&
+                        tool != null)
+                    {
+                        var message = new ChatMessageRequest
+                        {
+                            Role = MessageRole.Tool,
+                            Content = (await ToolFactory.InvokeAsync(tool, args).ConfigureAwait(false))?.ToString()
+                        }!;
+
+                        return message;
+                    }
+
+                    return null;
+                });
+
+                var messages = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+                toolMessages.AddRange(messages.Where(m => m != null)!);
+            }
+
+            return toolMessages;
         }
 
     }

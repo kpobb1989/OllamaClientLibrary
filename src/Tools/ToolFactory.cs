@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace OllamaClientLibrary.Tools
 {
-    public static class OllamaToolFactory
+    public static class ToolFactory
     {
         public static async Task<object?> InvokeAsync(OllamaTool tool, Dictionary<string, object?>? arguments)
         {

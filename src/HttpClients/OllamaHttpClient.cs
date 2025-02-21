@@ -71,8 +71,8 @@ namespace OllamaClientLibrary.HttpClients
                     Temperature = _options.Temperature,
                     MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
-                Messages = messages,
                 Format = typeof(T) != typeof(string) && tools == null ? JsonSchemaGenerator.Generate(typeof(T)) : null,
+                Messages = messages,
                 Tools = tools,
                 Stream = false
             };

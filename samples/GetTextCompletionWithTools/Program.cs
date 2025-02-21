@@ -6,14 +6,11 @@ using OllamaClientLibrary.Tools;
 
 using System.ComponentModel;
 
-using var client = new OllamaClient()
+using var client = new OllamaClient(new OllamaOptions()
 {
-    Options = new OllamaOptions()
-    {
-        // When Tools are used, the model must support it, otherwise there will be an exception
-        Tools = OllamaToolFactory.Create<Weather>(nameof(Weather.GetTemperatureAsync), nameof(Weather.GetTimeZoneAsync))
-    }
-};
+    // When Tools are used, the model must support it, otherwise there will be an exception
+    Tools = ToolFactory.Create<WeatherService>(nameof(WeatherService.GetTemperatureAsync), nameof(WeatherService.GetTimeZoneAsync))
+});
 
 var temperature = await client.GetTextCompletionAsync("What is the weather today in Paris?");
 
@@ -25,7 +22,7 @@ Console.WriteLine($"Time zone: {timezone}");
 
 Console.ReadKey();
 
-public class Weather : IDisposable
+public class WeatherService : IDisposable
 {
     private HttpClient httpClient = new HttpClient()
     {
