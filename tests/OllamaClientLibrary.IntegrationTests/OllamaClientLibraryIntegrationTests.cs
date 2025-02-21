@@ -81,7 +81,7 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.Options.ChatHistory, Is.Not.Empty);
+            Assert.That(_client.ChatHistory, Is.Not.Empty);
         }
 
         [Test]
@@ -106,7 +106,7 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.Options.ChatHistory.Where(s => s.Role == MessageRole.User).Count(), Is.EqualTo(conversation.Length));
+            Assert.That(_client.ChatHistory.Where(s => s.Role == MessageRole.User).Count(), Is.EqualTo(conversation.Length));
         }
 
         [Test]
@@ -128,7 +128,7 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.Options.ChatHistory.Where(s => s.Role == MessageRole.Assistant).Count(), Is.EqualTo(prompts.Length));
+            Assert.That(_client.ChatHistory.Where(s => s.Role == MessageRole.Assistant).Count(), Is.EqualTo(prompts.Length));
         }
 
         [Test]
@@ -151,7 +151,7 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.Options.ChatHistory.Where(s => s.Role != MessageRole.System).ToList(), Has.Count.EqualTo(prompts.Length * 2));
+            Assert.That(_client.ChatHistory.Where(s => s.Role != MessageRole.System).ToList(), Has.Count.EqualTo(prompts.Length * 2));
         }
 
         [Test]
@@ -175,7 +175,7 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.Options.ChatHistory.Where(s => s.Role != MessageRole.System).ToList(), Has.Count.EqualTo(2));
+            Assert.That(_client.ChatHistory.Where(s => s.Role != MessageRole.System).ToList(), Has.Count.EqualTo(2));
         }
 
         [Test]

@@ -26,15 +26,18 @@ namespace OllamaClientLibrary
 
         public OllamaOptions Options { get; set; }
 
+        public List<OllamaChatMessage> ChatHistory { get; set; }
+
         public OllamaClient()
         {
             Options = Options ?? new OllamaOptions();
+            ChatHistory = ChatHistory ?? new List<OllamaChatMessage>();
 
             _httpClient = new OllamaHttpClient(Options);
 
             if (!string.IsNullOrEmpty(Options.AssistantBehavior))
             {
-                Options.ChatHistory.Insert(0, new OllamaChatMessage(MessageRole.System, Options.AssistantBehavior));
+                ChatHistory.Insert(0, new OllamaChatMessage(MessageRole.System, Options.AssistantBehavior));
             }
 
         }
@@ -167,10 +170,10 @@ namespace OllamaClientLibrary
 
             if (!string.IsNullOrEmpty(prompt))
             {
-                Options.ChatHistory.Add(prompt.AsUserChatMessage());
+                ChatHistory.Add(prompt.AsUserChatMessage());
             }
 
-            var request = Options.ChatHistory.Select(s => s.AsChatMessageRequest()).ToArray();
+            var request = ChatHistory.Select(s => s.AsChatMessageRequest()).ToArray();
 
             var response = await _httpClient.GetCompletionAsync<T>(request, tools, ct).ConfigureAwait(false);
 
@@ -185,16 +188,16 @@ namespace OllamaClientLibrary
                     Content = (await ToolFactory.InvokeAsync(tool, args).ConfigureAwait(false))?.ToString()
                 }!;
 
-                Options.ChatHistory.Add(toolMessage.AsOllamaChatMessage());
+                ChatHistory.Add(toolMessage.AsOllamaChatMessage());
 
-                request = Options.ChatHistory.Select(s => s.AsChatMessageRequest()).ToArray();
+                request = ChatHistory.Select(s => s.AsChatMessageRequest()).ToArray();
 
                 response = await _httpClient.GetCompletionAsync<T>(request, ct: ct).ConfigureAwait(false);
             }
 
             var finalChatMessage = new ChatMessageRequest { Role = MessageRole.Assistant, Content = response?.Message?.Content };
 
-            Options.ChatHistory.Add(finalChatMessage.AsOllamaChatMessage());
+            ChatHistory.Add(finalChatMessage.AsOllamaChatMessage());
 
             yield return new OllamaChatMessage
             {
