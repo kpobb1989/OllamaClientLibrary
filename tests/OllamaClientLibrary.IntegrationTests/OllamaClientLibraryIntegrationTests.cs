@@ -4,7 +4,6 @@ using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.IntegrationTests.Tools;
 using OllamaClientLibrary.Tools;
-using OllamaClientLibrary.Extensions;
 
 namespace OllamaClientLibrary.IntegrationTests
 {

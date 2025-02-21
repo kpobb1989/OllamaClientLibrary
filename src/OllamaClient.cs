@@ -39,7 +39,7 @@ namespace OllamaClientLibrary
 
         }
 
-        public async Task<string?> GetTextCompletionAsync(string? prompt, CancellationToken ct = default)
+        public async Task<string?> GetTextCompletionAsync(string? prompt = null, CancellationToken ct = default)
         {
             await foreach (var message in GetCompletionAsync<string>(prompt, Options.Tools, ct))
             {
@@ -48,7 +48,7 @@ namespace OllamaClientLibrary
             return null;
         }
 
-        public async Task<T?> GetJsonCompletionAsync<T>(string? prompt, CancellationToken ct = default) where T : class
+        public async Task<T?> GetJsonCompletionAsync<T>(string? prompt = null, CancellationToken ct = default) where T : class
         {
             await foreach (var message in GetCompletionAsync<T>(prompt, null, ct))
             {
@@ -57,7 +57,7 @@ namespace OllamaClientLibrary
             return null;
         }
 
-        public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string prompt, [EnumeratorCancellation] CancellationToken ct = default)
+        public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string? prompt = null, [EnumeratorCancellation] CancellationToken ct = default)
         {
             await foreach (var message in GetCompletionAsync<string>(prompt, Options.Tools, ct))
             {
@@ -161,7 +161,7 @@ namespace OllamaClientLibrary
             }
         }
 
-        private async IAsyncEnumerable<OllamaChatMessage?> GetCompletionAsync<T>(string? prompt, Tool[]? tools = null, [EnumeratorCancellation] CancellationToken ct = default) where T : class
+        private async IAsyncEnumerable<OllamaChatMessage?> GetCompletionAsync<T>(string? prompt = null, Tool[]? tools = null, [EnumeratorCancellation] CancellationToken ct = default) where T : class
         {
             await AutoInstallModelAsync(ct).ConfigureAwait(false);
 
