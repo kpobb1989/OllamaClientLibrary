@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace OllamaClientLibrary.Tools
 {
     public static class ToolFactory
     {
-        public static object? Invoke(Tool tool, Dictionary<string, object?>? arguments)
+        public static async Task<object?> InvokeAsync(Tool tool, Dictionary<string, object?>? arguments)
         {
             if (tool.MethodInfo == null)
             {
@@ -34,7 +35,14 @@ namespace OllamaClientLibrary.Tools
                 }
             }
 
-            return tool.MethodInfo.Invoke(tool.Instance, parameters.ToArray());
+            var result = tool.MethodInfo.Invoke(tool.Instance, parameters.ToArray());
+
+            if (result is Task task && task.GetType().IsGenericType)
+            {
+                return await GetTaskResultAsync(task).ConfigureAwait(false);
+            }
+
+            return result;
         }
 
         public static Tool Create(object instance, string methodName)
@@ -49,6 +57,16 @@ namespace OllamaClientLibrary.Tools
             var methodInfo = typeof(TClass).GetMethod(methodName, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             return CreateInternal(methodInfo);
+        }
+
+        private static async Task<object?> GetTaskResultAsync(Task task)
+        {
+            var resultProperty = task.GetType().GetProperty("Result");
+            if (resultProperty != null)
+            {
+                return await Task.FromResult(resultProperty.GetValue(task)).ConfigureAwait(false);
+            }
+            return null;
         }
 
         private static Tool CreateInternal(MethodInfo methodInfo, object? instance = null)

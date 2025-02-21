@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,8 +21,11 @@ namespace OllamaClientLibrary
     {
         private readonly string RemoteModelsCacheKey = "remote-models";
         private readonly TimeSpan RemoteModelsCacheTime = TimeSpan.FromHours(1);
+        private readonly List<ChatMessageRequest> _chatHistory = new List<ChatMessageRequest>();
         private readonly OllamaHttpClient _httpClient;
         private readonly OllamaOptions _options;
+
+        public IEnumerable<OllamaChatMessage> ChatHistory => _chatHistory.Select(s => new OllamaChatMessage(s.Role, s.Content));
 
         public OllamaClient(OllamaOptions? options = null)
         {
@@ -32,77 +34,37 @@ namespace OllamaClientLibrary
             _httpClient = new OllamaHttpClient(_options);
         }
 
-        public List<OllamaChatMessage> ChatHistory { get; set; } = new List<OllamaChatMessage>();
-
         public async Task<string?> GetTextCompletionAsync(string? prompt, Tool? tool = null, CancellationToken ct = default)
         {
-            await AutoInstallModelAsync(ct).ConfigureAwait(false);
-
-            var response = await _httpClient.GetCompletionAsync<string>(prompt, tool, ct).ConfigureAwait(false);
-
-            if (tool != null && response?.Message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
+            await foreach (var message in GetCompletionAsync<string>(prompt, null, tool, ct))
             {
-                response.Message.Content = ToolFactory.Invoke(tool, arguments)?.ToString();
+                return message?.Content?.ToString();
             }
-
-            return response?.Message?.Content;
+            return null;
         }
 
         public async Task<T?> GetJsonCompletionAsync<T>(string? prompt, CancellationToken ct = default) where T : class
         {
-            await AutoInstallModelAsync(ct).ConfigureAwait(false);
-
-            var response = await _httpClient.GetCompletionAsync<T>(prompt, ct: ct).ConfigureAwait(false);
-
-            return response?.Message?.Content;
+            await foreach (var message in GetCompletionAsync<T>(prompt, null, null, ct))
+            {
+                return message?.Content as T;
+            }
+            return null;
         }
 
         public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string prompt, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
         {
-            await AutoInstallModelAsync(ct).ConfigureAwait(false);
-
-            if (_options.KeepChatHistory)
+            await foreach (var message in GetCompletionAsync<string>(prompt, null, tool, ct))
             {
-                ChatHistory?.Add(new OllamaChatMessage()
-                {
-                    Role = MessageRole.User,
-                    Content = prompt,
-                });
+                yield return message;
             }
+        }
 
-            var messages = ChatHistory.Select(s => new ChatMessageRequest { Content = s.Content, Role = s.Role });
-
-            var completeChatMessage = new OllamaChatMessage()
+        public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(IList<OllamaChatMessage> messages, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await foreach (var message in GetCompletionAsync<string>(null, messages, tool, ct))
             {
-                Role = MessageRole.Assistant
-            };
-
-            var streamContent = new StringBuilder();
-
-            await foreach (var response in _httpClient.GetChatCompletionAsync(messages, tool, ct).ConfigureAwait(false))
-            {
-                if (tool != null && response?.Message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
-                {
-                    response.Message.Content = ToolFactory.Invoke(tool, arguments)?.ToString();
-                }
-
-                if (response?.Message != null && !string.IsNullOrEmpty(response.Message.Content))
-                {
-                    streamContent.Append(response.Message.Content);
-                }
-
-                yield return new OllamaChatMessage()
-                {
-                    Content = response?.Message?.Content,
-                    Role = response?.Message?.Role ?? MessageRole.Assistant
-                };
-            }
-
-            if (_options.KeepChatHistory && streamContent.Length > 0)
-            {
-                completeChatMessage.Content = streamContent.ToString();
-
-                ChatHistory?.Add(completeChatMessage);
+                yield return message;
             }
         }
 
@@ -129,7 +91,6 @@ namespace OllamaClientLibrary
                     Percentage = 100
                 });
             }
-
         }
 
         public async Task DeleteModelAsync(string model, CancellationToken ct = default)
@@ -195,12 +156,58 @@ namespace OllamaClientLibrary
 
         private async Task AutoInstallModelAsync(CancellationToken ct = default)
         {
-            if (_options != null && _options.AutoInstallModel)
+            if (_options.AutoInstallModel)
             {
-                var model = _options?.Model ?? "qwen2.5:1.5b";
+                var model = _options.Model ?? "qwen2.5:1.5b";
 
                 await PullModelAsync(model, null, ct: ct).ConfigureAwait(false);
             }
         }
+
+        private async IAsyncEnumerable<OllamaChatMessage?> GetCompletionAsync<T>(string? prompt, IList<OllamaChatMessage>? messages, Tool? tool, [EnumeratorCancellation] CancellationToken ct) where T : class
+        {
+            await AutoInstallModelAsync(ct).ConfigureAwait(false);
+
+            messages ??= new List<OllamaChatMessage>();
+
+            if (!string.IsNullOrEmpty(_options.AssistantBehavior))
+            {
+                messages.Add(new OllamaChatMessage(MessageRole.System, _options.AssistantBehavior));
+            }
+
+            if (!string.IsNullOrEmpty(prompt))
+            {
+                messages.Add(new OllamaChatMessage(MessageRole.User, prompt));
+            }
+
+            _chatHistory.AddRange(messages.Select(s => new ChatMessageRequest { Content = s.Content, Role = s.Role }));
+
+            var response = await _httpClient.GetCompletionAsync<T>(_chatHistory, tool, ct).ConfigureAwait(false);
+
+            if (tool != null && response?.Message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
+            {
+                var toolMessage = new ChatMessageRequest
+                {
+                    Role = MessageRole.Tool,
+                    Content = (await ToolFactory.InvokeAsync(tool, arguments).ConfigureAwait(false))?.ToString()
+                };
+
+                messages.Add(new OllamaChatMessage(toolMessage.Role, toolMessage.Content));
+                _chatHistory.Add(toolMessage);
+
+                response = await _httpClient.GetCompletionAsync<T>(_chatHistory, ct: ct).ConfigureAwait(false);
+            }
+
+            var finalChatMessage = new ChatMessageRequest { Role = MessageRole.Assistant, Content = response?.Message?.Content };
+            _chatHistory.Add(finalChatMessage);
+            messages.Add(new OllamaChatMessage(finalChatMessage.Role, finalChatMessage.Content));
+
+            yield return new OllamaChatMessage
+            {
+                Content = finalChatMessage.Content,
+                Role = finalChatMessage.Role
+            };
+        }
+
     }
 }

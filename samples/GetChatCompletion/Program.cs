@@ -2,6 +2,7 @@
 using OllamaClientLibrary;
 using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Extensions;
 
 using var client = new OllamaClient(new OllamaOptions()
 {
@@ -25,6 +26,10 @@ Task.Run(() =>
 });
 #pragma warning restore CS4014
 
+// Load history from the DB if needed
+var conversationHistory = new List<OllamaChatMessage>();
+
+
 while (true)
 {
     if (cts.Token.IsCancellationRequested)
@@ -36,9 +41,11 @@ while (true)
 
     var prompt = Console.ReadLine()!;
 
+    conversationHistory.Add(prompt.AsUserMessage());
+
     try
     {
-        await foreach (var chunk in client.GetChatCompletionAsync(prompt, ct: cts.Token).Select((message, index) => (Message: message, Index: index)))
+        await foreach (var chunk in client.GetChatCompletionAsync(conversationHistory, ct: cts.Token).Select((message, index) => (Message: message, Index: index)))
         {
             if (chunk.Index == 0)
             {

@@ -53,11 +53,6 @@ namespace OllamaClientLibrary.Abstractions
         /// </summary>
         public string DeleteModelApi { get; set; } = $"api/delete";
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to keep the chat history. Defaults to true.
-        /// </summary>
-        public bool KeepChatHistory { get; set; } = true;
-
         /// Gets or sets a value indicating whether to automatically install the model if it is not already installed. Defaults to false.
         /// </summary>
         public bool AutoInstallModel { get; set; } = false;
@@ -71,5 +66,10 @@ namespace OllamaClientLibrary.Abstractions
         /// Gets or sets the timeout for HTTP requests. Defaults to 60 seconds.
         /// </summary>
         public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(60);
+
+        /// <summary>
+        /// Get or sets the behavior of the assistant. Defaults to "You are a world class AI Assistant".
+        /// </summary>
+        public string? AssistantBehavior { get; set; } = "You are a world class AI Assistant";
     }
 }

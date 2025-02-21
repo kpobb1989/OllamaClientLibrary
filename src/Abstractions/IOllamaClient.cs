@@ -1,10 +1,8 @@
 ﻿using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
-using OllamaClientLibrary.Dto.Models;
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,11 +14,6 @@ namespace OllamaClientLibrary.Abstractions
     public interface IOllamaClient : IDisposable
     {
         /// <summary>
-        /// Gets or sets the chat history.
-        /// </summary>
-        List<OllamaChatMessage> ChatHistory { get; set; }
-
-        /// <summary>
         /// Gets chat completion asynchronously.
         /// </summary>
         /// <param name="prompt">The prompt to get chat completion for.</param>
@@ -28,6 +21,19 @@ namespace OllamaClientLibrary.Abstractions
         /// <param name="ct">The cancellation token.</param>
         /// <returns>An asynchronous enumerable of chat messages.</returns>
         IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string prompt, Tool? tool = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Gets chat completion asynchronously based on the provided list of chat messages.
+        /// </summary>
+        /// <param name="messages">The list of chat messages to use as the chat history for generating the completion.</param>
+        /// <param name="tool">The tool to use for the completion.</param>
+        /// <param name="ct">The cancellation token to cancel the operation.</param>
+        /// <returns>An asynchronous enumerable of chat messages representing the chat completion.</returns>
+        /// <remarks>
+        /// The messages parameter allows you to provide a chat history that the completion will be based on.
+        /// The method returns an asynchronous stream of chat messages, which can be used to process the chat completion incrementally.
+        /// </remarks>
+        IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(IList<OllamaChatMessage> messages, Tool? tool = null, CancellationToken ct = default);
 
         /// <summary>
         /// Gets embeddings for the specified input asynchronously.

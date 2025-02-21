@@ -1,11 +1,13 @@
-﻿using OllamaClientLibrary;
+﻿using Newtonsoft.Json.Linq;
+
+using OllamaClientLibrary;
 using OllamaClientLibrary.Tools;
 
 using System.ComponentModel;
 
 using var client = new OllamaClient();
 
-var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperature));
+var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperatureAsync));
 
 var response = await client.GetTextCompletionAsync("What is the weather today in Paris?", tool);
 
@@ -16,15 +18,25 @@ Console.ReadKey();
 public class Weather
 {
     [Description("Get the current weather for a location")]
-    public int GetTemperature(
-    [Description("The location to get the weather for, e.g. San Francisco, CA")] string location,
-    [Description("The format to return the weather in, e.g. 'celsius' or 'fahrenheit'")] Format format)
+    public async Task<float?> GetTemperatureAsync(
+        [Description("The latitude of the location, e.g. 15")] int latitude,
+        [Description("The longitude of the location, e.g. 12")] int longitude)
     {
-        return 23;
-    }
-    public enum Format
-    {
-        Celsius,
-        Fahrenheit
+        using var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri("https://api.open-meteo.com");
+
+        var response = await httpClient.GetAsync($"/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m");
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync();
+
+        var value = JObject.Parse(json)?["current"]?["temperature_2m"]?.ToString();
+
+        if (float.TryParse(value, out var temperature))
+        {
+            return temperature;
+        }
+
+        return null;
     }
 }

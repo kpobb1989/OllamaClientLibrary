@@ -61,7 +61,7 @@ namespace OllamaClientLibrary.HttpClients
             }
         }
 
-        public async Task<ChatCompletionResponse<T>?> GetCompletionAsync<T>(string? prompt, Tool? tool = null, CancellationToken ct = default) where T : class
+        public async Task<ChatCompletionResponse<T>?> GetCompletionAsync<T>(IEnumerable<ChatMessageRequest> messages, Tool? tool = null, CancellationToken ct = default) where T : class
         {
             var request = new ChatCompletionRequest
             {
@@ -71,14 +71,7 @@ namespace OllamaClientLibrary.HttpClients
                     Temperature = _options.Temperature,
                     MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
-                Messages = new[]
-                {
-                    new ChatMessageRequest()
-                    {
-                        Role = MessageRole.User,
-                        Content = prompt
-                    },
-                },
+                Messages = messages,
                 Format = typeof(T) != typeof(string) ? JsonSchemaGenerator.Generate(typeof(T)) : null,
                 Tools = tool != null ? new List<Tool>() { tool } : null,
                 Stream = false
