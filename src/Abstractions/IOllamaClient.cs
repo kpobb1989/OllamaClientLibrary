@@ -14,6 +14,11 @@ namespace OllamaClientLibrary.Abstractions
     public interface IOllamaClient : IDisposable
     {
         /// <summary>
+        /// Gets the chat history.
+        /// </summary>
+        IEnumerable<OllamaChatMessage> ChatHistory { get; }
+
+        /// <summary>
         /// Gets chat completion asynchronously.
         /// </summary>
         /// <param name="prompt">The prompt to get chat completion for.</param>
