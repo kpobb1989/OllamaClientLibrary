@@ -80,7 +80,7 @@ namespace OllamaClientLibrary.HttpClients
             return await _httpClient.ExecuteAndGetJsonAsync<ChatCompletionResponse<T>>(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
         }
 
-        public async IAsyncEnumerable<ChatCompletionResponse<string>> GetChatCompletionAsync(ChatMessageRequest[] messages, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
+        public async IAsyncEnumerable<ChatCompletionResponse<string>> GetChatCompletionAsync(ChatMessageRequest[] messages, Tool[]? tools = null, [EnumeratorCancellation] CancellationToken ct = default)
         {
             var request = new ChatCompletionRequest
             {
@@ -91,8 +91,8 @@ namespace OllamaClientLibrary.HttpClients
                     MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
                 Messages = messages,
-                Stream = true,
-                Tools = tool != null ? new List<Tool>() { tool } : null
+                Stream = tools == null,
+                Tools = tools
             };
 
             await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
