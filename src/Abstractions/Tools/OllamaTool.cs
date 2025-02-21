@@ -2,12 +2,12 @@
 
 using System.Reflection;
 
-namespace OllamaClientLibrary.Dto.ChatCompletion.Tools.Request
+namespace OllamaClientLibrary.Abstractions.Tools
 {
-    internal class Tool
+    public class OllamaTool
     {
-        public string? Type { get; set; }
-        public Function Function { get; set; } = new Function();
+        public string Type => "function";
+        public OllamaFunction Function { get; set; } = new OllamaFunction();
 
         [JsonIgnore]
         public MethodInfo? MethodInfo { get; set; } = null!;

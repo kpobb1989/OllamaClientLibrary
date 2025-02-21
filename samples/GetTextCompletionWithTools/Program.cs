@@ -11,7 +11,7 @@ using var client = new OllamaClient()
     Options = new OllamaOptions()
     {
         // When Tools are used, the model must support it, otherwise there will be an exception
-        Tools = ToolFactory.CreateArray<Weather>(nameof(Weather.GetTemperatureAsync), nameof(Weather.GetTimeZoneAsync))
+        Tools = OllamaToolFactory.Create<Weather>(nameof(Weather.GetTemperatureAsync), nameof(Weather.GetTimeZoneAsync))
     }
 };
 

@@ -1,4 +1,5 @@
-﻿using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
+﻿using OllamaClientLibrary.Abstractions.Tools;
+using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 
 using System;
 using System.Collections.Generic;
@@ -77,6 +78,6 @@ namespace OllamaClientLibrary.Abstractions
         /// <summary>
         /// Gets or sets the list of tools available for the assistant. Tools are not applicable for all models. Make sure the model supports tools before using them. Also tools are not applicable to the JSON responses.
         /// </summary>
-        public Tool[]? Tools { get; set; }
+        public OllamaTool[]? Tools { get; set; }
     }
 }

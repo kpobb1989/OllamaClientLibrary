@@ -1,6 +1,6 @@
 ﻿namespace OllamaClientLibrary.Dto.ChatCompletion.Tools.Request
 {
-    public class Function
+    internal class Function
     {
         public string? Name { get; set; }
         public string? Description { get; set; }

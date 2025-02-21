@@ -44,7 +44,7 @@ namespace OllamaClientLibrary
 
         public async Task<string?> GetTextCompletionAsync(string? prompt = null, CancellationToken ct = default)
         {
-            await foreach (var message in GetCompletionAsync<string>(prompt, Options.Tools, ct))
+            await foreach (var message in GetCompletionAsync<string>(prompt, Options.Tools?.Select(s => s.AsTool()).ToArray(), ct))
             {
                 return message?.Content?.ToString();
             }
@@ -62,7 +62,7 @@ namespace OllamaClientLibrary
 
         public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string? prompt = null, [EnumeratorCancellation] CancellationToken ct = default)
         {
-            await foreach (var message in GetCompletionAsync<string>(prompt, Options.Tools, ct))
+            await foreach (var message in GetCompletionAsync<string>(prompt, Options.Tools?.Select(s => s.AsTool()).ToArray(), ct))
             {
                 yield return message;
             }
@@ -185,7 +185,7 @@ namespace OllamaClientLibrary
                 var toolMessage = new ChatMessageRequest
                 {
                     Role = MessageRole.Tool,
-                    Content = (await ToolFactory.InvokeAsync(tool, args).ConfigureAwait(false))?.ToString()
+                    Content = (await OllamaToolFactory.InvokeAsync(tool.AsOllamaTool(), args).ConfigureAwait(false))?.ToString()
                 }!;
 
                 ConversationHistory.Add(toolMessage.AsOllamaChatMessage());

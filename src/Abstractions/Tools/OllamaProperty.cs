@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace OllamaClientLibrary.Dto.ChatCompletion.Tools.Request
+namespace OllamaClientLibrary.Abstractions.Tools
 {
-    internal class Property
+    public class OllamaProperty
     {
         public string? Type { get; set; }
         public string? Description { get; set; }

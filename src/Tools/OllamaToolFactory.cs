@@ -1,4 +1,5 @@
-﻿using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
+﻿using OllamaClientLibrary.Abstractions.Tools;
+using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 
 using System;
 using System.Collections.Generic;
@@ -9,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace OllamaClientLibrary.Tools
 {
-    public static class ToolFactory
+    public static class OllamaToolFactory
     {
-        public static async Task<object?> InvokeAsync(Tool tool, Dictionary<string, object?>? arguments)
+        public static async Task<object?> InvokeAsync(OllamaTool tool, Dictionary<string, object?>? arguments)
         {
             if (tool.MethodInfo == null)
             {
@@ -45,23 +46,25 @@ namespace OllamaClientLibrary.Tools
             return result;
         }
 
-        public static Tool Create(object instance, string methodName)
+        public static OllamaTool[] Create(object instance, params string[] methodNames)
         {
-            var methodInfo = instance.GetType().GetMethod(methodName, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var tools = new List<OllamaTool>();
 
-            return CreateInternal(methodInfo, instance);
+            foreach (var methodName in methodNames)
+            {
+                var methodInfo = instance.GetType().GetMethod(methodName, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+                var tool = CreateInternal(methodInfo, instance);
+
+                tools.Add(tool);
+            }
+
+            return tools.ToArray();
         }
 
-        public static Tool Create<TClass>(string methodName)
+        public static OllamaTool[] Create<TClass>(params string[] methodNames)
         {
-            var methodInfo = typeof(TClass).GetMethod(methodName, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-            return CreateInternal(methodInfo);
-        }
-
-        public static Tool[] CreateArray<TClass>(params string[] methodNames)
-        {
-            var tools = new List<Tool>();
+            var tools = new List<OllamaTool>();
 
             foreach (var methodName in methodNames)
             {
@@ -85,7 +88,7 @@ namespace OllamaClientLibrary.Tools
             return null;
         }
 
-        private static Tool CreateInternal(MethodInfo methodInfo, object? instance = null)
+        private static OllamaTool CreateInternal(MethodInfo methodInfo, object? instance = null)
         {
             if (!methodInfo.IsStatic && instance == null)
             {
@@ -99,15 +102,15 @@ namespace OllamaClientLibrary.Tools
                 instance = Activator.CreateInstance(methodInfo.DeclaringType);
             }
 
-            var tool = new Tool
+            var tool = new OllamaTool
             {
                 MethodInfo = methodInfo,
                 Instance = instance,
-                Function = new Function
+                Function = new OllamaFunction
                 {
                     Name = methodInfo?.Name,
                     Description = GetMethodDescription(methodInfo),
-                    Parameters = new Parameter()
+                    Parameters = new OllamaParameter()
                 }
             };
 
@@ -119,7 +122,7 @@ namespace OllamaClientLibrary.Tools
                     var parameterName = parameter.Name ?? string.Empty;
                     var parameterDescription = GetParameterDescription(parameter);
 
-                    var property = new Property
+                    var property = new OllamaProperty
                     {
                         Type = GetTypeString(parameterType),
                         Description = parameterDescription
