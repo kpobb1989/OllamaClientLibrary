@@ -3,7 +3,6 @@ using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.ChatCompletion;
-using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 using OllamaClientLibrary.HttpClients;
 using OllamaClientLibrary.Tools;
 using OllamaClientLibrary.Extensions;
@@ -27,12 +26,11 @@ namespace OllamaClientLibrary
 
         public OllamaOptions Options { get; }
 
-        public List<OllamaChatMessage> ConversationHistory { get; set; }
+        public List<OllamaChatMessage> ConversationHistory { get; set; } = new List<OllamaChatMessage>();
 
         public OllamaClient(OllamaOptions? options = null)
         {
             Options = options ?? new OllamaOptions();
-            ConversationHistory = ConversationHistory ?? new List<OllamaChatMessage>();
 
             _httpClient = new OllamaHttpClient(Options);
 
