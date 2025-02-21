@@ -184,7 +184,7 @@ namespace OllamaClientLibrary.IntegrationTests
             _client = new(new OllamaOptions()
             {
                 Model = Model,
-                Tools = [ToolFactory.Create<Weather>(nameof(Weather.GetTemperatureAsync))]
+                Tools = ToolFactory.CreateList<Weather>(nameof(Weather.GetTemperatureAsync))
             });
 
             // Act

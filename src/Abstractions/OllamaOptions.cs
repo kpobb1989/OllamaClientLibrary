@@ -76,7 +76,7 @@ namespace OllamaClientLibrary.Abstractions
         public string? AssistantBehavior { get; set; } = "You are a world class AI Assistant";
 
         /// <summary>
-        /// Gets or sets the list of tools available for the assistant.
+        /// Gets or sets the list of tools available for the assistant. Tools are not applicable for all models. Make sure the model supports tools before using them. Also tools are not applicable to the JSON responses.
         /// </summary>
         public List<Tool> Tools { get; set; } = new List<Tool>();
     }

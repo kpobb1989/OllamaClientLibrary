@@ -59,6 +59,22 @@ namespace OllamaClientLibrary.Tools
             return CreateInternal(methodInfo);
         }
 
+        public static List<Tool> CreateList<TClass>(params string[] methodNames)
+        {
+            var tools = new List<Tool>();
+
+            foreach (var methodName in methodNames)
+            {
+                var methodInfo = typeof(TClass).GetMethod(methodName, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+                var tool = CreateInternal(methodInfo);
+
+                tools.Add(tool);
+            }
+
+            return tools;
+        }
+
         private static async Task<object?> GetTaskResultAsync(Task task)
         {
             var resultProperty = task.GetType().GetProperty("Result");
