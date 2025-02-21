@@ -72,7 +72,7 @@ namespace OllamaClientLibrary.HttpClients
                     MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
                 Messages = messages,
-                Format = typeof(T) != typeof(string) ? JsonSchemaGenerator.Generate(typeof(T)) : null,
+                Format = typeof(T) != typeof(string) && tools == null ? JsonSchemaGenerator.Generate(typeof(T)) : null,
                 Tools = tools,
                 Stream = false
             };
