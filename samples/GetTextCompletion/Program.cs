@@ -4,7 +4,7 @@ using OllamaClientLibrary.Abstractions;
 
 using var client = new OllamaClient(new OllamaOptions()
 {
-    Temperature = Temperature.CodingOrMath
+    Temperature = Temperature.CodingOrMath,
 });
 
 Console.Write("Loading...");

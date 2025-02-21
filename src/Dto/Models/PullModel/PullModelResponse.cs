@@ -2,7 +2,7 @@
 
 using System;
 
-namespace OllamaClientLibrary.Dto.PullModel
+namespace OllamaClientLibrary.Dto.Models.PullModel
 {
     internal class PullModelResponse
     {
@@ -17,7 +17,7 @@ namespace OllamaClientLibrary.Dto.PullModel
             get
             {
                 if (Total <= 0) return 0.0;  // Ensure we don't default to 100%
-                double percentage = (Completed * 100.0) / Total;
+                double percentage = Completed * 100.0 / Total;
                 return Math.Clamp(percentage, 0.0, 100.0);  // Prevent out-of-range values
             }
         }

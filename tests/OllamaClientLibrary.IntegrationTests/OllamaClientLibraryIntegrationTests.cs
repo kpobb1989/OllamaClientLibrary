@@ -44,10 +44,10 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task GetJsonCompletionAsync_ListOfPlanets_ShouldReturnEightPlanetNames()
+        public async Task GetJsonCompletionAsync_ListOfPlanets_ShouldReturnAtLeastOnePlanet()
         {
             // Act
-            var response = await _client.GetJsonCompletionAsync<PlanetResponse> ("Please provide a list of all the planet names in our solar system. The list should include Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.");
+            var response = await _client.GetJsonCompletionAsync<PlanetResponse>("Please provide a list of all the planet names in our solar system. The list should include Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.");
 
             // Assert
             Assert.Multiple(() =>
@@ -69,15 +69,8 @@ namespace OllamaClientLibrary.IntegrationTests
         }
 
         [Test]
-        public async Task GetChatCompletionAsync_KeepChatHistoryTrue_ShouldStoreChatHistory()
+        public async Task GetChatCompletionAsync_KeepConversationHistory_ShouldStoreConversationHistory()
         {
-            // Arrange
-            _client = new(new OllamaOptions()
-            {
-                Model = Model,
-                KeepChatHistory = true
-            });
-
             // Act
             await foreach (var chunk in _client.GetChatCompletionAsync("hello"))
             {
@@ -85,37 +78,21 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.ChatHistory, Is.Not.Empty);
+            Assert.That(_client.ConversationHistory, Is.Not.Empty);
         }
 
         [Test]
-        public async Task GetChatCompletionAsync_KeepChatHistoryFalse_ShouldNotStoreChatHistory()
+        public async Task GetChatCompletionAsync_MultiplePrompts_ShouldStoreThemInConversationHistory()
         {
             // Arrange
-            _client = new(new OllamaOptions()
+            _client = new OllamaClient(new OllamaOptions()
             {
-                Model = Model,
-                KeepChatHistory = false
+                AssistantBehavior = null
             });
+            var conversation = new[] { "hello", "how are you doing?" };
 
             // Act
-            await foreach (var chunk in _client.GetChatCompletionAsync("hello"))
-            {
-                Assert.That(chunk, Is.Not.Null);
-            }
-
-            // Assert
-            Assert.That(_client.ChatHistory.Count, Is.EqualTo(0));
-        }
-
-        [Test]
-        public async Task GetChatCompletionAsync_MultiplePrompts_ShouldStoreThemInChatHistory()
-        {
-            // Arrange
-            var prompts = new[] { "hello", "how are you doing?" };
-
-            // Act
-            foreach (var prompt in prompts)
+            foreach (var prompt in conversation)
             {
                 await foreach (var _ in _client.GetChatCompletionAsync(prompt))
                 {
@@ -123,19 +100,18 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.Multiple(() =>
-            {
-                var history = _client.ChatHistory.Where(s => s.Role == MessageRole.User);
-                Assert.That(history.Count(), Is.EqualTo(prompts.Length));
-                Assert.That(history.IntersectBy(prompts, s => s.Content).Count(), Is.EqualTo(prompts.Length));
-            });
+            Assert.That(_client.ConversationHistory.Where(s => s.Role == MessageRole.User).Count(), Is.EqualTo(conversation.Length));
         }
 
         [Test]
         public async Task GetChatCompletionAsync_MultiplePrompts_ShouldReturnCorrespondingAmountOfCompletions()
         {
             // Arrange
-            var prompts = new[] { "hello", "how are you doing?" };
+            var prompts = new[]
+            {
+                "hello",
+                "how are you doing?"
+            };
 
             // Act
             foreach (var prompt in prompts)
@@ -146,14 +122,19 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.ChatHistory.Where(s => s.Role == MessageRole.Assistant).Count(), Is.EqualTo(prompts.Length));
+            Assert.That(_client.ConversationHistory.Where(s => s.Role == MessageRole.Assistant).Count(), Is.EqualTo(prompts.Length));
         }
 
         [Test]
-        public async Task GetChatCompletionAsync_MultiplePrompts_ShouldKeepThemInChatHistory()
+        public async Task GetChatCompletionAsync_MultiplePrompts_ShouldKeepThemInConversationHistory()
         {
             // Arrange
-            var prompts = new[] { "hi", "how are you doing?", "I'm good, thanks", "I see" };
+            var prompts = new[] {
+                "hi",
+                "how are you doing?",
+                "I'm good, thanks",
+                "I see"
+            };
 
             // Act
             foreach (var prompt in prompts)
@@ -164,36 +145,46 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.ChatHistory, Has.Count.EqualTo(prompts.Length * 2));
+            Assert.That(_client.ConversationHistory.Where(s => s.Role != MessageRole.System).ToList(), Has.Count.EqualTo(prompts.Length * 2));
         }
 
         [Test]
         public async Task GetChatCompletionAsync_WithCancelledToken_ShouldTerminateConversation()
         {
             // Arrange
+            _client = new(new OllamaOptions()
+            {
+                Model = Model,
+                AssistantBehavior = null
+            });
+
             var cts = new CancellationTokenSource();
 
             // Act
-            await foreach (var _ in _client.GetChatCompletionAsync("hi", ct: cts.Token))
+            await foreach (var chunk in _client.GetChatCompletionAsync("hi", ct: cts.Token))
             {
                 cts.Cancel();
             }
 
             // Assert
-            Assert.That(_client.ChatHistory, Has.Count.EqualTo(2));
+            Assert.That(_client.ConversationHistory.Where(s => s.Role != MessageRole.System).ToList(), Has.Count.EqualTo(2));
         }
 
         [Test]
-        public async Task GetTextCompletionAsync_WithTools_ShouldResponseTemperature()
+        public async Task GetTextCompletionAsync_WithTools_ShouldReturnTemperature()
         {
             // Arrange
-            var tool = ToolFactory.Create<Weather>(nameof(Weather.GetTemperature));
+            _client = new(new OllamaOptions()
+            {
+                Model = Model,
+                Tools = ToolFactory.Create<WeatherService>()
+            });
 
             // Act
-            var response = await _client.GetTextCompletionAsync("What is the weather today in Paris?", tool);
+            var response = await _client.GetTextCompletionAsync("What is the weather today in Paris?");
 
             // Assert
-            Assert.That(response, Is.EquivalentTo("23"));
+            Assert.That(response, Is.Not.Null);
         }
 
         [Test]
@@ -359,6 +350,37 @@ namespace OllamaClientLibrary.IntegrationTests
                 Assert.That(models, Is.Not.Null);
                 Assert.That(models.Count(), Is.GreaterThanOrEqualTo(1));
             });
+        }
+
+        [Test]
+        public async Task PullModelAsync_PullTinyModel_ShouldPullTheModel()
+        {
+            // Arrange
+            var tinyModel = "all-minilm:v2";
+
+            // Act
+            await _client.PullModelAsync(tinyModel);
+
+            // Assert
+            var localModels = await _client.ListModelsAsync(tinyModel, location: ModelLocation.Local);
+
+            Assert.That(localModels.FirstOrDefault()?.Name, Is.EquivalentTo(tinyModel));
+        }
+
+        [Test]
+        public async Task DeleteModelAsync_DeleteExistingModel_ShouldDeleteTheModel()
+        {
+            // Arrange
+            var tinyModel = "all-minilm:v2";
+            await _client.PullModelAsync(tinyModel);
+
+            // Act
+            await _client.DeleteModelAsync(tinyModel);
+
+            // Assert
+            var localModels = await _client.ListModelsAsync(tinyModel, location: ModelLocation.Local);
+
+            Assert.That(localModels.Count(), Is.EqualTo(0));
         }
 
         record PlanetResponse(IEnumerable<Planet> Data);

@@ -19,12 +19,15 @@ namespace OllamaClientLibrary.Extensions
         }
 
         public static async Task<Stream> ExecuteAndGetStreamAsync(this HttpClient httpClient, string requestUri, HttpMethod method, JsonSerializer? jsonSerializer = null, object? request = null, CancellationToken ct = default)
+            => (await ExecuteAsync(httpClient, requestUri, method, jsonSerializer, request, returnStream: true, ct).ConfigureAwait(false))!;
+
+        public static async Task<Stream?> ExecuteAsync(this HttpClient httpClient, string requestUri, HttpMethod method, JsonSerializer? jsonSerializer = null, object? request = null, bool returnStream = false, CancellationToken ct = default)
         {
             HttpRequestMessage httpRequestMessage;
 
-            if (method == HttpMethod.Post)
+            if (method == HttpMethod.Post || method == HttpMethod.Delete)
             {
-                httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri);
+                httpRequestMessage = new HttpRequestMessage(method, requestUri);
 
                 if (request != null && jsonSerializer != null)
                 {
@@ -39,7 +42,12 @@ namespace OllamaClientLibrary.Extensions
             var response = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            if (returnStream)
+            {
+                return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            }
+
+            return null;
         }
     }
 }

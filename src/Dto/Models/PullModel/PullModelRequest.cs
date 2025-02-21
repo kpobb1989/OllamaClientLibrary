@@ -1,4 +1,4 @@
-﻿namespace OllamaClientLibrary.Dto.PullModel
+﻿namespace OllamaClientLibrary.Dto.Models.PullModel
 {
     internal class PullModelRequest
     {

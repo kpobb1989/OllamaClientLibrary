@@ -2,12 +2,12 @@
 using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Constants;
 
-
 using System.ComponentModel;
 
 using var client = new OllamaClient(new OllamaOptions()
 {
     Temperature = Temperature.DataCleaningOrAnalysis,
+    AssistantBehavior = "You are a professional .NET developer."
 });
 
 Console.Write("Loading...");
@@ -16,7 +16,7 @@ Response? response = null;
 
 try
 {
-    response = await client.GetJsonCompletionAsync<Response>("You are a professional .NET developer. List all available .NET Core versions from the past five years.");
+    response = await client.GetJsonCompletionAsync<Response>("Return a list of all available .NET Core versions from the past five years.");
 
     Console.Clear();
 }

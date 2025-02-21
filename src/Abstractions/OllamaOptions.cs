@@ -1,5 +1,8 @@
-﻿using System;
-using System.Net.Http;
+﻿using OllamaClientLibrary.Abstractions.Tools;
+using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
+
+using System;
+using System.Collections.Generic;
 
 namespace OllamaClientLibrary.Abstractions
 {
@@ -34,7 +37,7 @@ namespace OllamaClientLibrary.Abstractions
         public string ChatApi { get; set; } = $"api/chat";
 
         /// <summary>
-        /// Gets or sets the API endpoint for retrieving tags. Defaults to "api/tags".
+        /// Gets or sets the API endpoint for retrieving local models. Defaults to "api/tags".
         /// </summary>
         public string TagsApi { get; set; } = $"api/tags";
 
@@ -46,21 +49,35 @@ namespace OllamaClientLibrary.Abstractions
         /// <summary>
         /// Gets or sets the API endpoint for pulling models. Defaults to "api/pull".
         /// </summary>
-        public string PullApi { get; set; } = $"api/pull";
+        public string PullModelApi { get; set; } = $"api/pull";
 
         /// <summary>
-        /// Gets or sets a value indicating whether to keep the chat history. Defaults to true.
+        /// Gets or sets the API endpoint for deleting models. Defaults to "api/delete".
         /// </summary>
-        public bool KeepChatHistory { get; set; } = true;
-
+        public string DeleteModelApi { get; set; } = $"api/delete";
 
         /// Gets or sets a value indicating whether to automatically install the model if it is not already installed. Defaults to false.
         /// </summary>
         public bool AutoInstallModel { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets the maximum number of tokens for the prompt. Defaults to 4096.
+        /// </summary>
+        public long MaxPromptTokenSize { get; set; } = 4096;
+
+        /// <summary>
         /// Gets or sets the timeout for HTTP requests. Defaults to 60 seconds.
         /// </summary>
         public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(60);
+
+        /// <summary>
+        /// Get or sets the behavior of the assistant. Defaults to "You are a world class AI Assistant".
+        /// </summary>
+        public string? AssistantBehavior { get; set; } = "You are a world class AI Assistant";
+
+        /// <summary>
+        /// Gets or sets the list of tools available for the assistant. Tools are not applicable for all models. Make sure the model supports tools before using them. Also tools are not applicable to the JSON responses.
+        /// </summary>
+        public OllamaTool[]? Tools { get; set; }
     }
 }

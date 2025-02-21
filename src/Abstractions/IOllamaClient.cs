@@ -1,10 +1,8 @@
-﻿using OllamaClientLibrary.Constants;
-using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
-using OllamaClientLibrary.Dto.Models;
+﻿
+using OllamaClientLibrary.Constants;
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,18 +14,22 @@ namespace OllamaClientLibrary.Abstractions
     public interface IOllamaClient : IDisposable
     {
         /// <summary>
-        /// Gets or sets the chat history.
+        /// Gets the options for the Ollama client.
         /// </summary>
-        List<OllamaChatMessage> ChatHistory { get; set; }
+        public OllamaOptions Options { get; }
+
+        /// <summary>
+        /// Gets or sets the conversation history.
+        /// </summary>
+        public List<OllamaChatMessage> ConversationHistory { get; set; }
 
         /// <summary>
         /// Gets chat completion asynchronously.
         /// </summary>
         /// <param name="prompt">The prompt to get chat completion for.</param>
-        /// <param name="tool">The tool to use for the completion.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>An asynchronous enumerable of chat messages.</returns>
-        IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string prompt, Tool? tool = null, CancellationToken ct = default);
+        IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string? prompt = null, CancellationToken ct = default);
 
         /// <summary>
         /// Gets embeddings for the specified input asynchronously.
@@ -44,16 +46,15 @@ namespace OllamaClientLibrary.Abstractions
         /// <param name="prompt">The prompt to generate completion for.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated completion deserialized to the specified type.</returns>
-        Task<T?> GetJsonCompletionAsync<T>(string? prompt, CancellationToken ct = default) where T : class;
+        Task<T?> GetJsonCompletionAsync<T>(string? prompt = null, CancellationToken ct = default) where T : class;
 
         /// <summary>
         /// Gets text completion asynchronously.
         /// </summary>
         /// <param name="prompt">The prompt to generate completion for.</param>
-        /// <param name="tool">The tool to use for the completion.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated text completion.</returns>
-        Task<string?> GetTextCompletionAsync(string? prompt, Tool? tool = null, CancellationToken ct = default);
+        Task<string?> GetTextCompletionAsync(string? prompt = null, CancellationToken ct = default);
 
         /// <summary>
         /// Lists models asynchronously.
@@ -68,10 +69,18 @@ namespace OllamaClientLibrary.Abstractions
         /// <summary>
         /// Pulls a model asynchronously.
         /// </summary>
-        /// <param name="modelName">The name of the model to pull.</param>
+        /// <param name="model">The name of the model to pull.</param>
         /// <param name="progress">An optional progress reporter to report the status of the model pull.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default);
+        Task PullModelAsync(string model, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Deletes a model asynchronously.
+        /// </summary>
+        /// <param name="model">The name of the model to delete.</param>
+        /// <param name="ct">The cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        Task DeleteModelAsync(string model, CancellationToken ct = default);
     }
 }

@@ -1,16 +1,24 @@
-﻿using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
+﻿using OllamaClientLibrary.Abstractions.Tools;
+using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace OllamaClientLibrary.Tools
 {
     public static class ToolFactory
     {
-        public static object? Invoke(Tool tool, Dictionary<string, object?>? arguments)
+        /// <summary>
+        /// Invokes the specified tool's method asynchronously with the provided arguments.
+        /// </summary>
+        /// <param name="tool">The tool containing the method to invoke.</param>
+        /// <param name="arguments">The arguments to pass to the method.</param>
+        /// <returns>The result of the method invocation, or null if the method does not return a value.</returns>
+        public static async Task<object?> InvokeAsync(OllamaTool tool, Dictionary<string, object?>? arguments)
         {
             if (tool.MethodInfo == null)
             {
@@ -34,24 +42,65 @@ namespace OllamaClientLibrary.Tools
                 }
             }
 
-            return tool.MethodInfo.Invoke(tool.Instance, parameters.ToArray());
+            var result = tool.MethodInfo.Invoke(tool.Instance, parameters.ToArray());
+
+            if (result is Task task && task.GetType().IsGenericType)
+            {
+                return await GetTaskResultAsync(task).ConfigureAwait(false);
+            }
+
+            return result;
         }
 
-        public static Tool Create(object instance, string methodName)
+        /// <summary>
+        /// Creates an array of <see cref="OllamaTool"/> for all public methods of the specified instance.
+        /// </summary>
+        /// <param name="instance">The instance whose public methods will be used to create tools.</param>
+        /// <returns>An array of <see cref="OllamaTool"/> representing the public methods of the instance.</returns>
+        public static OllamaTool[] Create(object instance)
         {
-            var methodInfo = instance.GetType().GetMethod(methodName, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var tools = new List<OllamaTool>();
+            var methodInfos = instance.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
-            return CreateInternal(methodInfo, instance);
+            foreach (var methodInfo in methodInfos)
+            {
+                var tool = CreateTool(methodInfo, instance);
+                tools.Add(tool);
+            }
+
+            return tools.ToArray();
         }
 
-        public static Tool Create<TClass>(string methodName)
+        /// <summary>
+        /// Creates an array of <see cref="OllamaTool"/> for all public methods of the specified class type.
+        /// </summary>
+        /// <typeparam name="TClass">The class type whose public methods will be used to create tools.</typeparam>
+        /// <returns>An array of <see cref="OllamaTool"/> representing the public methods of the class type.</returns>
+        public static OllamaTool[] Create<TClass>()
         {
-            var methodInfo = typeof(TClass).GetMethod(methodName, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var tools = new List<OllamaTool>();
+            var methodInfos = typeof(TClass).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
-            return CreateInternal(methodInfo);
+            foreach (var methodInfo in methodInfos)
+            {
+                var tool = CreateTool(methodInfo);
+                tools.Add(tool);
+            }
+
+            return tools.ToArray();
         }
 
-        private static Tool CreateInternal(MethodInfo methodInfo, object? instance = null)
+        private static async Task<object?> GetTaskResultAsync(Task task)
+        {
+            var resultProperty = task.GetType().GetProperty("Result");
+            if (resultProperty != null)
+            {
+                return await Task.FromResult(resultProperty.GetValue(task)).ConfigureAwait(false);
+            }
+            return null;
+        }
+
+        private static OllamaTool CreateTool(MethodInfo methodInfo, object? instance = null)
         {
             if (!methodInfo.IsStatic && instance == null)
             {
@@ -65,15 +114,15 @@ namespace OllamaClientLibrary.Tools
                 instance = Activator.CreateInstance(methodInfo.DeclaringType);
             }
 
-            var tool = new Tool
+            var tool = new OllamaTool
             {
                 MethodInfo = methodInfo,
                 Instance = instance,
-                Function = new Function
+                Function = new OllamaFunction
                 {
                     Name = methodInfo?.Name,
                     Description = GetMethodDescription(methodInfo),
-                    Parameters = new Parameter()
+                    Parameters = new OllamaParameter()
                 }
             };
 
@@ -85,7 +134,7 @@ namespace OllamaClientLibrary.Tools
                     var parameterName = parameter.Name ?? string.Empty;
                     var parameterDescription = GetParameterDescription(parameter);
 
-                    var property = new Property
+                    var property = new OllamaProperty
                     {
                         Type = GetTypeString(parameterType),
                         Description = parameterDescription

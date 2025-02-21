@@ -3,19 +3,18 @@ using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.ChatCompletion;
-using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
-using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.HttpClients;
 using OllamaClientLibrary.Tools;
+using OllamaClientLibrary.Extensions;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace OllamaClientLibrary
 {
@@ -24,87 +23,97 @@ namespace OllamaClientLibrary
         private readonly string RemoteModelsCacheKey = "remote-models";
         private readonly TimeSpan RemoteModelsCacheTime = TimeSpan.FromHours(1);
         private readonly OllamaHttpClient _httpClient;
-        private readonly OllamaOptions _options;
+
+        public OllamaOptions Options { get; }
+
+        public List<OllamaChatMessage> ConversationHistory { get; set; } = new List<OllamaChatMessage>();
 
         public OllamaClient(OllamaOptions? options = null)
         {
-            _options = options ?? new OllamaOptions();
+            Options = options ?? new OllamaOptions();
 
-            _httpClient = new OllamaHttpClient(_options);
+            _httpClient = new OllamaHttpClient(Options);
+
+            if (!string.IsNullOrEmpty(Options.AssistantBehavior))
+            {
+                ConversationHistory.Insert(0, new OllamaChatMessage(MessageRole.System, Options.AssistantBehavior));
+            }
         }
 
-        public List<OllamaChatMessage> ChatHistory { get; set; } = new List<OllamaChatMessage>();
+        public async Task<string?> GetTextCompletionAsync(string? prompt = null, CancellationToken ct = default)
+            => await GetJsonCompletionAsync<string>(prompt, ct).ConfigureAwait(false);
 
-        public async Task<string?> GetTextCompletionAsync(string? prompt, Tool? tool = null, CancellationToken ct = default)
+        public async Task<T?> GetJsonCompletionAsync<T>(string? prompt = null, CancellationToken ct = default) where T : class
         {
             await AutoInstallModelAsync(ct).ConfigureAwait(false);
 
-            var response = await _httpClient.GetCompletionAsync<string>(prompt, tool, ct).ConfigureAwait(false);
-
-            if (tool != null && response?.Message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
+            if (!string.IsNullOrEmpty(prompt))
             {
-                response.Message.Content = ToolFactory.Invoke(tool, arguments)?.ToString();
+                ConversationHistory.Add(prompt.AsUserChatMessage());
+            }
+
+            var request = ConversationHistory.Select(s => s.AsChatMessageRequest()).ToArray();
+
+            var response = await _httpClient.GetCompletionAsync<T>(request, Options.Tools?.Select(s => s.AsTool()).ToArray(), ct).ConfigureAwait(false);
+
+            var toolMessages = await HandleToolCallsAsync(response, ct).ConfigureAwait(false);
+
+            if (toolMessages.Any())
+            {
+                ConversationHistory.AddRange(toolMessages.Select(m => m.AsOllamaChatMessage()));
+
+                request = ConversationHistory.Select(s => s.AsChatMessageRequest()).ToArray();
+                response = await _httpClient.GetCompletionAsync<T>(request, ct: ct).ConfigureAwait(false);
             }
 
             return response?.Message?.Content;
         }
 
-        public async Task<T?> GetJsonCompletionAsync<T>(string? prompt, CancellationToken ct = default) where T : class
+        public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string? prompt = null, [EnumeratorCancellation] CancellationToken ct = default)
         {
             await AutoInstallModelAsync(ct).ConfigureAwait(false);
 
-            var response = await _httpClient.GetCompletionAsync<T>(prompt, ct: ct).ConfigureAwait(false);
-
-            return response?.Message?.Content;
-        }
-
-        public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string prompt, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
-        {
-            await AutoInstallModelAsync(ct).ConfigureAwait(false);
-
-            if (_options.KeepChatHistory)
+            if (!string.IsNullOrEmpty(prompt))
             {
-                ChatHistory?.Add(new OllamaChatMessage()
+                ConversationHistory.Add(prompt.AsUserChatMessage());
+            }
+
+            var request = ConversationHistory.Select(s => s.AsChatMessageRequest()).ToArray();
+
+            var messageChunks = new StringBuilder();
+
+            await foreach (var chunk in _httpClient.GetChatCompletionAsync(request, Options.Tools?.Select(s => s.AsTool()).ToArray(), ct: ct))
+            {
+                var content = chunk?.Message?.Content;
+
+                if (Options.Tools != null && chunk?.Message?.ToolCalls != null)
                 {
-                    Role = MessageRole.User,
-                    Content = prompt,
-                });
+                    var toolMessages = await HandleToolCallsAsync(chunk, ct).ConfigureAwait(false);
+
+                    if (toolMessages.Any())
+                    {
+                        ConversationHistory.AddRange(toolMessages.Select(m => m.AsOllamaChatMessage()));
+
+                        request = ConversationHistory.Select(s => s.AsChatMessageRequest()).ToArray();
+                        var response = await _httpClient.GetCompletionAsync<string>(request, ct: ct).ConfigureAwait(false);
+                        content = response?.Message?.Content;
+                    }
+                }
+
+                messageChunks.Append(content);
+
+                yield return new OllamaChatMessage(MessageRole.Assistant, content);
             }
 
-            var messages = ChatHistory.Select(s => new ChatMessageRequest { Content = s.Content, Role = s.Role });
+            var completeMessage = new ChatMessageRequest { Role = MessageRole.Assistant, Content = messageChunks.ToString() };
 
-            var completeChatMessage = new OllamaChatMessage()
+            ConversationHistory.Add(completeMessage.AsOllamaChatMessage());
+
+            yield return new OllamaChatMessage
             {
-                Role = MessageRole.Assistant
+                Content = completeMessage.Content,
+                Role = completeMessage.Role
             };
-
-            var streamContent = new StringBuilder();
-
-            await foreach (var response in _httpClient.GetChatCompletionAsync(messages, tool, ct).ConfigureAwait(false))
-            {
-                if (tool != null && response?.Message?.ToolCalls?.FirstOrDefault()?.Function?.Arguments is { } arguments)
-                {
-                    response.Message.Content = ToolFactory.Invoke(tool, arguments)?.ToString();
-                }
-
-                if (response?.Message != null && !string.IsNullOrEmpty(response.Message.Content))
-                {
-                    streamContent.Append(response.Message.Content);
-                }
-
-                yield return new OllamaChatMessage()
-                {
-                    Content = response?.Message?.Content,
-                    Role = response?.Message?.Role ?? MessageRole.Assistant
-                };
-            }
-
-            if (_options.KeepChatHistory && streamContent.Length > 0)
-            {
-                completeChatMessage.Content = streamContent.ToString();
-
-                ChatHistory?.Add(completeChatMessage);
-            }
         }
 
         public async Task<double[][]> GetEmbeddingCompletionAsync(string[] input, CancellationToken ct = default)
@@ -114,23 +123,32 @@ namespace OllamaClientLibrary
             return await _httpClient.GetEmbeddingCompletionAsync(input, ct).ConfigureAwait(false);
         }
 
-        public async Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default)
+        public async Task PullModelAsync(string model, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default)
         {
             var models = await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false);
 
-            if (models == null || !models.Any(model => string.Equals(model.Name, modelName, StringComparison.OrdinalIgnoreCase)))
+            if (models == null || !models.Any(s => string.Equals(s.Name, model, StringComparison.OrdinalIgnoreCase)))
             {
-                await _httpClient.PullModelAsync(modelName, progress, ct).ConfigureAwait(false);
+                await _httpClient.PullModelAsync(model, progress, ct).ConfigureAwait(false);
             }
             else
             {
                 progress?.Report(new OllamaPullModelProgress()
                 {
-                    Status = $"The model {modelName} is already installed",
+                    Status = $"The model {model} is already installed",
                     Percentage = 100
                 });
             }
+        }
 
+        public async Task DeleteModelAsync(string model, CancellationToken ct = default)
+        {
+            var models = await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false);
+
+            if (models.Any(s => string.Equals(s.Name, model, StringComparison.OrdinalIgnoreCase)))
+            {
+                await _httpClient.DeleteModelAsync(model, ct).ConfigureAwait(false);
+            }
         }
 
         public async Task<IEnumerable<OllamaModel>> ListModelsAsync(string? pattern = null, ModelSize? size = null, ModelLocation location = ModelLocation.Remote, CancellationToken ct = default)
@@ -186,12 +204,45 @@ namespace OllamaClientLibrary
 
         private async Task AutoInstallModelAsync(CancellationToken ct = default)
         {
-            if (_options != null && _options.AutoInstallModel)
+            if (Options.AutoInstallModel)
             {
-                var model = _options?.Model ?? "qwen2.5:1.5b";
+                var model = Options.Model ?? "qwen2.5:1.5b";
 
                 await PullModelAsync(model, null, ct: ct).ConfigureAwait(false);
             }
         }
+
+        private async Task<List<ChatMessageRequest>> HandleToolCallsAsync<T>(ChatCompletionResponse<T>? response, CancellationToken ct) where T : class
+        {
+            var toolMessages = new List<ChatMessageRequest>();
+
+            if (Options.Tools != null && response?.Message?.ToolCalls != null)
+            {
+                var tasks = response.Message.ToolCalls.Select(async toolCall =>
+                {
+                    if (toolCall.Function is { Name: var name, Arguments: var args } &&
+                        Options.Tools.FirstOrDefault(t => t.Function.Name == name) is var tool &&
+                        tool != null)
+                    {
+                        var message = new ChatMessageRequest
+                        {
+                            Role = MessageRole.Tool,
+                            Content = (await ToolFactory.InvokeAsync(tool, args).ConfigureAwait(false))?.ToString()
+                        }!;
+
+                        return message;
+                    }
+
+                    return null;
+                });
+
+                var messages = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+                toolMessages.AddRange(messages.Where(m => m != null)!);
+            }
+
+            return toolMessages;
+        }
+
     }
 }

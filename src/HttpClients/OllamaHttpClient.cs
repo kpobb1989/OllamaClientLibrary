@@ -6,14 +6,13 @@ using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Serialization;
 
 using OllamaClientLibrary.Abstractions;
-using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Dto;
 using OllamaClientLibrary.Dto.ChatCompletion;
 using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 using OllamaClientLibrary.Dto.EmbeddingCompletion;
 using OllamaClientLibrary.Dto.Models;
-using OllamaClientLibrary.Dto.PullModel;
+using OllamaClientLibrary.Dto.Models.PullModel;
 using OllamaClientLibrary.Extensions;
 
 using System;
@@ -62,43 +61,38 @@ namespace OllamaClientLibrary.HttpClients
             }
         }
 
-        public async Task<ChatCompletionResponse<T>?> GetCompletionAsync<T>(string? prompt, Tool? tool = null, CancellationToken ct = default) where T : class
+        public async Task<ChatCompletionResponse<T>?> GetCompletionAsync<T>(ChatMessageRequest[] messages, Tool[]? tools = null, CancellationToken ct = default) where T : class
         {
             var request = new ChatCompletionRequest
             {
                 Model = _options.Model,
                 Options = new ModelOptions()
                 {
-                    Temperature = _options.Temperature
+                    Temperature = _options.Temperature,
+                    MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
-                Messages = new[]
-                {
-                    new ChatMessageRequest()
-                    {
-                        Role = MessageRole.User,
-                        Content = prompt
-                    },
-                },
-                Format = typeof(T) != typeof(string) ? JsonSchemaGenerator.Generate(typeof(T)) : null,
-                Tools = tool != null ? new List<Tool>() { tool } : null,
-                Stream = tool != null,
+                Format = typeof(T) != typeof(string) && tools == null ? JsonSchemaGenerator.Generate(typeof(T)) : null,
+                Messages = messages,
+                Tools = tools,
+                Stream = false
             };
 
-            return await _httpClient.ExecuteAndGetJsonAsync<ChatCompletionResponse<T>>(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false); ;
+            return await _httpClient.ExecuteAndGetJsonAsync<ChatCompletionResponse<T>>(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
         }
 
-        public async IAsyncEnumerable<ChatCompletionResponse<string>> GetChatCompletionAsync(IEnumerable<ChatMessageRequest> messages, Tool? tool = null, [EnumeratorCancellation] CancellationToken ct = default)
+        public async IAsyncEnumerable<ChatCompletionResponse<string>> GetChatCompletionAsync(ChatMessageRequest[] messages, Tool[]? tools = null, [EnumeratorCancellation] CancellationToken ct = default)
         {
             var request = new ChatCompletionRequest
             {
                 Model = _options.Model,
                 Options = new ModelOptions()
                 {
-                    Temperature = _options.Temperature
+                    Temperature = _options.Temperature,
+                    MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
                 Messages = messages,
-                Stream = true,
-                Tools = tool != null ? new List<Tool>() { tool } : null
+                Stream = tools == null,
+                Tools = tools
             };
 
             await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.ChatApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
@@ -133,7 +127,8 @@ namespace OllamaClientLibrary.HttpClients
                 Input = input,
                 Options = new ModelOptions()
                 {
-                    Temperature = _options.Temperature
+                    Temperature = _options.Temperature,
+                    MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
             };
 
@@ -150,7 +145,44 @@ namespace OllamaClientLibrary.HttpClients
         }
 
         public async Task<IEnumerable<Model>> ListRemoteModelsAsync(CancellationToken ct = default)
-            => await GetRemoteModelsAsync(ct).ConfigureAwait(false);
+        {
+            using var stream = await _httpClient.ExecuteAndGetStreamAsync("https://ollama.com/library?sort=newest", HttpMethod.Get, _jsonSerializer, ct: ct).ConfigureAwait(false);
+
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.Load(stream);
+
+            var hrefs = htmlDoc.DocumentNode
+                      .SelectNodes("//a[starts-with(@href, '/library/')]")
+                      .Select(node => node.GetAttributeValue("href", string.Empty))
+                      .ToList();
+
+            var remoteModels = new ConcurrentBag<Model>();
+
+            var semaphore = new SemaphoreSlim(20);
+
+            var tasks = hrefs.Select(async href =>
+            {
+                await semaphore.WaitAsync(ct).ConfigureAwait(false);
+
+                try
+                {
+                    var models = await GetRemoteModelsAsync(href, ct).ConfigureAwait(false);
+
+                    foreach (var model in models)
+                    {
+                        remoteModels.Add(model);
+                    }
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }).ToList();
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            return remoteModels;
+        }
 
         public async Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress, CancellationToken ct)
         {
@@ -160,7 +192,7 @@ namespace OllamaClientLibrary.HttpClients
                 Stream = true
             };
 
-            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.PullApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
+            await using var stream = await _httpClient.ExecuteAndGetStreamAsync(_options.PullModelApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
 
             using var reader = new StreamReader(stream);
 
@@ -200,49 +232,19 @@ namespace OllamaClientLibrary.HttpClients
             }
         }
 
+        public async Task DeleteModelAsync(string model, CancellationToken ct = default)
+        {
+            var request = new PullModelRequest()
+            {
+                Model = model
+            };
+
+            await _httpClient.ExecuteAsync(_options.DeleteModelApi, HttpMethod.Delete, _jsonSerializer, request, returnStream: false, ct).ConfigureAwait(false);
+        }
+
         public void Dispose()
         {
             _httpClient.Dispose();
-        }
-
-        private async Task<IEnumerable<Model>> GetRemoteModelsAsync(CancellationToken ct)
-        {
-            using var stream = await _httpClient.ExecuteAndGetStreamAsync("https://ollama.com/library?sort=newest", HttpMethod.Get, _jsonSerializer, ct: ct).ConfigureAwait(false);
-
-            var htmlDoc = new HtmlDocument();
-            htmlDoc.Load(stream);
-
-            var hrefs = htmlDoc.DocumentNode
-                      .SelectNodes("//a[starts-with(@href, '/library/')]")
-                      .Select(node => node.GetAttributeValue("href", string.Empty))
-                      .ToList();
-
-            var remoteModels = new ConcurrentBag<Model>();
-
-            var semaphore = new SemaphoreSlim(20);
-
-            var tasks = hrefs.Select(async href =>
-            {
-                await semaphore.WaitAsync(ct).ConfigureAwait(false);
-
-                try
-                {
-                    var models = await GetRemoteModelsAsync(href, ct).ConfigureAwait(false);
-
-                    foreach (var model in models)
-                    {
-                        remoteModels.Add(model);
-                    }
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            }).ToList();
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            return remoteModels;
         }
 
         private async Task<IEnumerable<Model>> GetRemoteModelsAsync(string href, CancellationToken ct)
