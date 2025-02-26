@@ -15,7 +15,6 @@ using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.Dto.Models.PullModel;
 using OllamaClientLibrary.Extensions;
 using OllamaClientLibrary.Models;
-using OllamaClientLibrary.Services;
 
 using System;
 using System.Collections.Concurrent;
@@ -36,22 +35,13 @@ namespace OllamaClientLibrary.HttpClients
         private readonly HttpClient _httpClient;
         private readonly OllamaOptions _options;
         private readonly IOllamaWebParserService _ollamaWebParserService;
+        private readonly JsonSerializer _jsonSerializer;
 
-        private readonly JsonSerializer _jsonSerializer = JsonSerializer.Create(new JsonSerializerSettings()
-        {
-            ContractResolver = new CamelCasePropertyNamesContractResolver(),
-            DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-            NullValueHandling = NullValueHandling.Ignore,
-            Converters = new List<JsonConverter>()
-            {
-                new StringEnumConverter(new CamelCaseNamingStrategy())
-            }
-        });
-
-        public OllamaHttpClient(IOllamaWebParserService ollamaWebParserService, OllamaOptions options)
+        public OllamaHttpClient(IOllamaWebParserService ollamaWebParserService, OllamaOptions options, JsonSerializer jsonSerializer)
         {
             _ollamaWebParserService = ollamaWebParserService;
             _options = options;
+            _jsonSerializer = jsonSerializer;
 
             _httpClient = new HttpClient()
             {

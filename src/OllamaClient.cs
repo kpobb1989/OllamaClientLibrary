@@ -22,8 +22,7 @@ namespace OllamaClientLibrary
 {
     public sealed class OllamaClient : IOllamaClient
     {
-        private readonly string RemoteModelsCacheKey = "remote-models";
-        private readonly TimeSpan RemoteModelsCacheTime = TimeSpan.FromHours(1);
+        private const string RemoteModelsCacheKey = "remote-models";
         private readonly IOllamaHttpClient _httpClient;
         private readonly ICacheService _cacheService;
 
@@ -181,7 +180,7 @@ namespace OllamaClientLibrary
             }
             else
             {
-                var cache = _cacheService.Get<IEnumerable<OllamaModel>>(RemoteModelsCacheKey, RemoteModelsCacheTime);
+                var cache = _cacheService.Get<IEnumerable<OllamaModel>>(RemoteModelsCacheKey);
 
                 if (cache != null && cache.Any())
                 {

@@ -17,7 +17,6 @@ namespace OllamaClientLibrary.IntegrationTests
 
         private OllamaClient _client;
 
-
         [SetUp]
         public void Setup()
         {
