@@ -1,5 +1,5 @@
-﻿using OllamaClientLibrary.Abstractions;
-using OllamaClientLibrary.Constants;
+﻿using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Models;
 
 namespace OllamaClientLibrary.Extensions
 {

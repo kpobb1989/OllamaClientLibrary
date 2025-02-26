@@ -1,5 +1,5 @@
-﻿using OllamaClientLibrary.Abstractions;
-using OllamaClientLibrary.Dto.ChatCompletion;
+﻿using OllamaClientLibrary.Dto.ChatCompletion;
+using OllamaClientLibrary.Models;
 
 namespace OllamaClientLibrary.Extensions
 {

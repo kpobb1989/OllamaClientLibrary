@@ -1,4 +1,4 @@
-﻿namespace OllamaClientLibrary.Abstractions
+﻿namespace OllamaClientLibrary.Models
 {
     public sealed class OllamaPullModelProgress
     {

@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 
 using OllamaClientLibrary;
-using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Models;
 using OllamaClientLibrary.Tools;
 
 using System.ComponentModel;

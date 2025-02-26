@@ -1,6 +1,6 @@
 ﻿using OllamaClientLibrary.Constants;
 
-namespace OllamaClientLibrary.Abstractions
+namespace OllamaClientLibrary.Models
 {
     public sealed class OllamaChatMessage
     {

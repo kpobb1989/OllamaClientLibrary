@@ -1,5 +1,6 @@
 ﻿
 using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Models;
 
 using System;
 using System.Collections.Generic;

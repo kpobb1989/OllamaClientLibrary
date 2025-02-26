@@ -1,9 +1,7 @@
 ﻿using OllamaClientLibrary.Abstractions;
-using OllamaClientLibrary.Cache;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.ChatCompletion;
-using OllamaClientLibrary.HttpClients;
 using OllamaClientLibrary.Tools;
 using OllamaClientLibrary.Extensions;
 
@@ -15,6 +13,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
+using OllamaClientLibrary.Models;
+using Microsoft.Extensions.DependencyInjection;
+using OllamaClientLibrary.Abstractions.HttpClients;
+using OllamaClientLibrary.Abstractions.Services;
 
 namespace OllamaClientLibrary
 {
@@ -22,22 +24,40 @@ namespace OllamaClientLibrary
     {
         private readonly string RemoteModelsCacheKey = "remote-models";
         private readonly TimeSpan RemoteModelsCacheTime = TimeSpan.FromHours(1);
-        private readonly OllamaHttpClient _httpClient;
+        private readonly IOllamaHttpClient _httpClient;
+        private readonly ICacheService _cacheService;
 
         public OllamaOptions Options { get; }
 
         public List<OllamaChatMessage> ConversationHistory { get; set; } = new List<OllamaChatMessage>();
 
-        public OllamaClient(OllamaOptions? options = null)
+
+        public OllamaClient() : this(null)
         {
-            Options = options ?? new OllamaOptions();
+        }
 
-            _httpClient = new OllamaHttpClient(Options);
+        public OllamaClient(OllamaOptions? options = null): this(options, null)
+        {
+        }
 
-            if (!string.IsNullOrEmpty(Options.AssistantBehavior))
+        public OllamaClient(OllamaOptions? options = null, IServiceCollection? services = null)
+        {
+            options ??= new OllamaOptions();
+
+            if (!string.IsNullOrEmpty(options.AssistantBehavior))
             {
-                ConversationHistory.Insert(0, new OllamaChatMessage(MessageRole.System, Options.AssistantBehavior));
+                ConversationHistory.Insert(0, new OllamaChatMessage(MessageRole.System, options.AssistantBehavior));
             }
+
+            // DI
+            services ??= new ServiceCollection();
+            services.AddOllamaClient(options);
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            Options = serviceProvider.GetRequiredService<OllamaOptions>();
+            _httpClient = serviceProvider.GetRequiredService<IOllamaHttpClient>();
+            _cacheService = serviceProvider.GetRequiredService<ICacheService>();
         }
 
         public async Task<string?> GetTextCompletionAsync(string? prompt = null, CancellationToken ct = default)
@@ -161,7 +181,7 @@ namespace OllamaClientLibrary
             }
             else
             {
-                var cache = CacheStorage.Get<IEnumerable<OllamaModel>>(RemoteModelsCacheKey, RemoteModelsCacheTime);
+                var cache = _cacheService.Get<IEnumerable<OllamaModel>>(RemoteModelsCacheKey, RemoteModelsCacheTime);
 
                 if (cache != null && cache.Any())
                 {
@@ -171,7 +191,7 @@ namespace OllamaClientLibrary
                 {
                     models = (await _httpClient.ListRemoteModelsAsync(ct).ConfigureAwait(false)).Select(s => new OllamaModel() { Name = s.Name, ModifiedAt = s.ModifiedAt, Size = s.Size });
 
-                    CacheStorage.Save(RemoteModelsCacheKey, models);
+                    _cacheService.Set(RemoteModelsCacheKey, models);
                 }
             }
 

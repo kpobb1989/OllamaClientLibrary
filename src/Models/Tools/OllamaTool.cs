@@ -2,7 +2,7 @@
 
 using System.Reflection;
 
-namespace OllamaClientLibrary.Abstractions.Tools
+namespace OllamaClientLibrary.Models.Tools
 {
     public class OllamaTool
     {

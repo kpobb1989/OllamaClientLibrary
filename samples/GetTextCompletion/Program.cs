@@ -1,6 +1,6 @@
 ﻿using OllamaClientLibrary;
 using OllamaClientLibrary.Constants;
-using OllamaClientLibrary.Abstractions;
+using OllamaClientLibrary.Models;
 
 using var client = new OllamaClient(new OllamaOptions()
 {

@@ -1,5 +1,4 @@
-﻿using OllamaClientLibrary.Abstractions.Tools;
-using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
+﻿using OllamaClientLibrary.Models.Tools;
 
 using System;
 using System.Collections.Generic;

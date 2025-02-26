@@ -1,8 +1,12 @@
-﻿using OllamaClientLibrary.Abstractions;
-using OllamaClientLibrary.Cache;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+using OllamaClientLibrary.Abstractions;
+using OllamaClientLibrary.Abstractions.Services;
 using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.Converters;
+using OllamaClientLibrary.Extensions;
 using OllamaClientLibrary.IntegrationTests.Tools;
+using OllamaClientLibrary.Models;
 using OllamaClientLibrary.Tools;
 
 namespace OllamaClientLibrary.IntegrationTests
@@ -12,6 +16,7 @@ namespace OllamaClientLibrary.IntegrationTests
         private const string Model = "qwen2.5:1.5b";
 
         private OllamaClient _client;
+
 
         [SetUp]
         public void Setup()
@@ -231,11 +236,19 @@ namespace OllamaClientLibrary.IntegrationTests
         public async Task ListModelsAsync_RemoteModels_ShouldStoreModelsInCache()
         {
             // Arrange
-            CacheStorage.Clear();
+            var serviceCollections = new ServiceCollection();
+            serviceCollections.AddOllamaClient(new OllamaOptions()
+            {
+                Model = Model
+            });
+            var serviceProvider = serviceCollections.BuildServiceProvider();
+            var client = serviceProvider.GetRequiredService<IOllamaClient>();
+            var cacheService = serviceProvider.GetRequiredService<ICacheService>();
+            cacheService.Clear();
 
             // Act
-            await _client.ListModelsAsync(location: ModelLocation.Remote);
-            var cache = CacheStorage.Get<IEnumerable<OllamaModel>>("remote-models");
+            await client.ListModelsAsync(location: ModelLocation.Remote);
+            var cache = cacheService.Get<IEnumerable<OllamaModel>>("remote-models");
 
             // Assert
             Assert.That(cache?.Count(), Is.GreaterThanOrEqualTo(1));
@@ -245,11 +258,19 @@ namespace OllamaClientLibrary.IntegrationTests
         public async Task ListModelsAsync_RemoteModels_ShouldReturnCachedModels()
         {
             // Arrange
-            CacheStorage.Clear();
+            var serviceCollections = new ServiceCollection();
+            serviceCollections.AddOllamaClient(new OllamaOptions()
+            {
+                Model = Model
+            });
+            var serviceProvider = serviceCollections.BuildServiceProvider();
+            var client = serviceProvider.GetRequiredService<IOllamaClient>();
+            var cacheService = serviceProvider.GetRequiredService<ICacheService>();
+            cacheService.Clear();
 
             // Act
             var models = await _client.ListModelsAsync(location: ModelLocation.Remote);
-            var cache = CacheStorage.Get<IEnumerable<OllamaModel>>("remote-models");
+            var cache = cacheService.Get<IEnumerable<OllamaModel>>("remote-models");
 
             // Assert
             Assert.Multiple(() =>

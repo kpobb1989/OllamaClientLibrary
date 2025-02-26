@@ -5,8 +5,8 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Serialization;
 
-using OllamaClientLibrary.Abstractions;
-using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Abstractions.HttpClients;
+using OllamaClientLibrary.Abstractions.Services;
 using OllamaClientLibrary.Dto;
 using OllamaClientLibrary.Dto.ChatCompletion;
 using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
@@ -14,6 +14,8 @@ using OllamaClientLibrary.Dto.EmbeddingCompletion;
 using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.Dto.Models.PullModel;
 using OllamaClientLibrary.Extensions;
+using OllamaClientLibrary.Models;
+using OllamaClientLibrary.Services;
 
 using System;
 using System.Collections.Concurrent;
@@ -28,11 +30,12 @@ using System.Threading.Tasks;
 
 namespace OllamaClientLibrary.HttpClients
 {
-    internal class OllamaHttpClient : IDisposable
+    internal class OllamaHttpClient : IOllamaHttpClient
     {
         private readonly JSchemaGenerator JsonSchemaGenerator = new JSchemaGenerator();
         private readonly HttpClient _httpClient;
         private readonly OllamaOptions _options;
+        private readonly IOllamaWebParserService _ollamaWebParserService;
 
         private readonly JsonSerializer _jsonSerializer = JsonSerializer.Create(new JsonSerializerSettings()
         {
@@ -45,8 +48,9 @@ namespace OllamaClientLibrary.HttpClients
             }
         });
 
-        public OllamaHttpClient(OllamaOptions options)
+        public OllamaHttpClient(IOllamaWebParserService ollamaWebParserService, OllamaOptions options)
         {
+            _ollamaWebParserService = ollamaWebParserService;
             _options = options;
 
             _httpClient = new HttpClient()
@@ -251,83 +255,7 @@ namespace OllamaClientLibrary.HttpClients
         {
             using var stream = await _httpClient.ExecuteAndGetStreamAsync($"https://ollama.com/{href}/tags", HttpMethod.Get, _jsonSerializer, ct: ct).ConfigureAwait(false);
 
-            var htmlDoc = new HtmlDocument();
-            htmlDoc.Load(stream);
-
-            var modelNodes = htmlDoc.DocumentNode.SelectNodes("//div[@class='flex px-4 py-3']");
-
-            var remoteModels = new List<Model>();
-
-            var semaphore = new SemaphoreSlim(5);
-
-            var tasks = modelNodes.Select(async modelNode =>
-            {
-                await semaphore.WaitAsync(ct).ConfigureAwait(false);
-
-                try
-                {
-
-                    var remoteModel = new Model
-                    {
-                        Name = modelNode.SelectSingleNode(".//a[@class='group']").GetAttributeValue("href", null)?.Split("/").Last()
-                    };
-
-                    // Extract size and modified date
-                    var infoNode = modelNode.SelectSingleNode(".//div[@class='flex items-baseline space-x-1 text-[13px] text-neutral-500']/span");
-
-                    if (infoNode != null)
-                    {
-                        var infoText = infoNode.InnerText.Trim();
-                        var parts = infoText.Split('•');
-
-                        if (parts.Length >= 2)
-                        {
-                            // Extract size
-                            var sizeText = parts[1].Trim();
-                            if (sizeText.EndsWith("GB"))
-                            {
-                                if (float.TryParse(sizeText.Replace("GB", string.Empty).Trim(), out float size))
-                                {
-                                    remoteModel.Size = (long)Math.Round(size * 1024 * 1024 * 1024); // Convert GB to bytes
-                                }
-                            }
-                            else if (sizeText.EndsWith("MB"))
-                            {
-                                if (float.TryParse(sizeText.Replace("MB", string.Empty).Trim(), out float size))
-                                {
-                                    remoteModel.Size = (long)Math.Round(size * 1024 * 1024); // Convert MB to bytes
-                                }
-                            }
-                            else if (sizeText.EndsWith("TB"))
-                            {
-                                if (float.TryParse(sizeText.Replace("TB", string.Empty).Trim(), out float size))
-                                {
-                                    remoteModel.Size = (long)Math.Round(size * 1024 * 1024 * 1024 * 1024); // Convert TB to bytes
-                                }
-                            }
-
-                            // Extract modified date
-                            var dateText = parts[2].Trim();
-                            if (DateTime.TryParse(dateText, out DateTime modifiedAt))
-                            {
-                                remoteModel.ModifiedAt = modifiedAt.Date;
-                            }
-                            else
-                            {
-                                remoteModel.ModifiedAt = dateText.AsDateTime()?.Date;
-                            }
-                        }
-                    }
-
-                    remoteModels.Add(remoteModel);
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            }).ToList();
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            var remoteModels = await _ollamaWebParserService.GetRemoteModelsAsync(stream, ct).ConfigureAwait(false);
 
             return remoteModels;
         }

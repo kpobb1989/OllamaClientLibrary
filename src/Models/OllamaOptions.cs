@@ -1,10 +1,8 @@
-﻿using OllamaClientLibrary.Abstractions.Tools;
-using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
+﻿using OllamaClientLibrary.Models.Tools;
 
 using System;
-using System.Collections.Generic;
 
-namespace OllamaClientLibrary.Abstractions
+namespace OllamaClientLibrary.Models
 {
     /// <summary>
     /// Represents the options for configuring the Ollama client.
