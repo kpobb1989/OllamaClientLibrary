@@ -1,10 +1,7 @@
 ﻿using HtmlAgilityPack;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Schema.Generation;
-using Newtonsoft.Json.Serialization;
-
 using OllamaClientLibrary.Abstractions.HttpClients;
 using OllamaClientLibrary.Abstractions.Services;
 using OllamaClientLibrary.Dto;
@@ -25,13 +22,14 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using OllamaClientLibrary.Dto.Models.DeleteModel;
 
 
 namespace OllamaClientLibrary.HttpClients
 {
     internal class OllamaHttpClient : IOllamaHttpClient
     {
-        private readonly JSchemaGenerator JsonSchemaGenerator = new JSchemaGenerator();
+        private readonly JSchemaGenerator _jsonSchemaGenerator = new JSchemaGenerator();
         private readonly HttpClient _httpClient;
         private readonly OllamaOptions _options;
         private readonly IOllamaWebParserService _ollamaWebParserService;
@@ -65,7 +63,7 @@ namespace OllamaClientLibrary.HttpClients
                     Temperature = _options.Temperature,
                     MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
-                Format = typeof(T) != typeof(string) && tools == null ? JsonSchemaGenerator.Generate(typeof(T)) : null,
+                Format = typeof(T) != typeof(string) && tools == null ? _jsonSchemaGenerator.Generate(typeof(T)) : null,
                 Messages = messages,
                 Tools = tools,
                 Stream = false
@@ -228,7 +226,7 @@ namespace OllamaClientLibrary.HttpClients
 
         public async Task DeleteModelAsync(string model, CancellationToken ct = default)
         {
-            var request = new PullModelRequest()
+            var request = new DeleteModelRequest()
             {
                 Model = model
             };

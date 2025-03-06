@@ -21,7 +21,7 @@ namespace OllamaClientLibrary.Tools
         {
             if (tool.MethodInfo == null)
             {
-                return default;
+                return null;
             }
 
             var parameters = new List<object>();
@@ -30,14 +30,9 @@ namespace OllamaClientLibrary.Tools
             {
                 if (arguments != null && arguments.TryGetValue(param.Name, out var value) && value != null)
                 {
-                    if (param.ParameterType.IsEnum)
-                    {
-                        parameters.Add(Enum.Parse(param.ParameterType, value.ToString(), true));
-                    }
-                    else
-                    {
-                        parameters.Add(Convert.ChangeType(value, param.ParameterType));
-                    }
+                    parameters.Add(param.ParameterType.IsEnum
+                        ? Enum.Parse(param.ParameterType, value.ToString(), true)
+                        : Convert.ChangeType(value, param.ParameterType));
                 }
             }
 
@@ -103,14 +98,15 @@ namespace OllamaClientLibrary.Tools
         {
             if (!methodInfo.IsStatic && instance == null)
             {
-                var constructor = methodInfo.DeclaringType.GetConstructor(Type.EmptyTypes);
+                var constructor = methodInfo.DeclaringType?.GetConstructor(Type.EmptyTypes);
 
                 if (constructor == null)
                 {
                     throw new InvalidOperationException("The class must have a parameterless constructor.");
                 }
 
-                instance = Activator.CreateInstance(methodInfo.DeclaringType);
+                if (methodInfo.DeclaringType != null) 
+                    instance = Activator.CreateInstance(methodInfo.DeclaringType);
             }
 
             var tool = new OllamaTool
@@ -119,34 +115,31 @@ namespace OllamaClientLibrary.Tools
                 Instance = instance,
                 Function = new OllamaFunction
                 {
-                    Name = methodInfo?.Name,
+                    Name = methodInfo.Name,
                     Description = GetMethodDescription(methodInfo),
                     Parameters = new OllamaParameter()
                 }
             };
 
-            if (methodInfo != null)
+            foreach (var parameter in methodInfo.GetParameters())
             {
-                foreach (var parameter in methodInfo.GetParameters())
+                var parameterType = parameter.ParameterType;
+                var parameterName = parameter.Name ?? string.Empty;
+                var parameterDescription = GetParameterDescription(parameter);
+
+                var property = new OllamaProperty
                 {
-                    var parameterType = parameter.ParameterType;
-                    var parameterName = parameter.Name ?? string.Empty;
-                    var parameterDescription = GetParameterDescription(parameter);
+                    Type = GetTypeString(parameterType),
+                    Description = parameterDescription
+                };
 
-                    var property = new OllamaProperty
-                    {
-                        Type = GetTypeString(parameterType),
-                        Description = parameterDescription
-                    };
-
-                    if (parameterType.IsEnum)
-                    {
-                        property.Enum = Enum.GetNames(parameterType).ToList();
-                    }
-
-                    tool.Function.Parameters.Properties[parameterName] = property;
-                    tool.Function.Parameters.Required.Add(parameterName);
+                if (parameterType.IsEnum)
+                {
+                    property.Enum = Enum.GetNames(parameterType).ToList();
                 }
+
+                tool.Function.Parameters.Properties[parameterName] = property;
+                tool.Function.Parameters.Required.Add(parameterName);
             }
 
             return tool;
@@ -173,6 +166,6 @@ namespace OllamaClientLibrary.Tools
             => methodInfo?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? $"Description for {methodInfo?.Name}";
 
         private static string GetParameterDescription(ParameterInfo parameterInfo)
-            => parameterInfo?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? $"Description for {parameterInfo?.Name}";
+            => parameterInfo.GetCustomAttribute<DescriptionAttribute>()?.Description ?? $"Description for {parameterInfo.Name}";
     }
 }

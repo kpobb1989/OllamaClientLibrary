@@ -77,14 +77,7 @@ namespace OllamaClientLibrary.Services
 
                             // Extract modified date
                             var dateText = parts[2].Trim();
-                            if (DateTime.TryParse(dateText, out DateTime modifiedAt))
-                            {
-                                remoteModel.ModifiedAt = modifiedAt.Date;
-                            }
-                            else
-                            {
-                                remoteModel.ModifiedAt = dateText.AsDateTime()?.Date;
-                            }
+                            remoteModel.ModifiedAt = DateTime.TryParse(dateText, out var modifiedAt) ? modifiedAt.Date : dateText.AsDateTime()?.Date;
                         }
                     }
 

@@ -1,6 +1,5 @@
 ﻿using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Constants;
-using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.ChatCompletion;
 using OllamaClientLibrary.Tools;
 using OllamaClientLibrary.Extensions;
@@ -17,6 +16,10 @@ using OllamaClientLibrary.Models;
 using Microsoft.Extensions.DependencyInjection;
 using OllamaClientLibrary.Abstractions.HttpClients;
 using OllamaClientLibrary.Abstractions.Services;
+using System.IO;
+using System.Drawing.Imaging;
+using System.Drawing;
+using SizeConverter = OllamaClientLibrary.Converters.SizeConverter;
 
 namespace OllamaClientLibrary
 {
@@ -25,17 +28,18 @@ namespace OllamaClientLibrary
         private const string RemoteModelsCacheKey = "remote-models";
         private readonly IOllamaHttpClient _httpClient;
         private readonly ICacheService _cacheService;
+        private readonly IFileService _fileService;
 
         public OllamaOptions Options { get; }
 
         public List<OllamaChatMessage> ConversationHistory { get; set; } = new List<OllamaChatMessage>();
 
 
-        public OllamaClient() : this(null)
+        public OllamaClient() : this(new OllamaOptions())
         {
         }
 
-        public OllamaClient(OllamaOptions? options = null): this(options, null)
+        public OllamaClient(OllamaOptions? options = null) : this(options, new ServiceCollection())
         {
         }
 
@@ -57,25 +61,71 @@ namespace OllamaClientLibrary
             Options = serviceProvider.GetRequiredService<OllamaOptions>();
             _httpClient = serviceProvider.GetRequiredService<IOllamaHttpClient>();
             _cacheService = serviceProvider.GetRequiredService<ICacheService>();
+            _fileService = serviceProvider.GetRequiredService<IFileService>();
         }
 
-        public async Task<string?> GetTextCompletionAsync(string? prompt = null, CancellationToken ct = default)
-            => await GetJsonCompletionAsync<string>(prompt, ct).ConfigureAwait(false);
+        public async Task<string?> GetTextCompletionAsync(string? prompt, OllamaFile? attachment = null, CancellationToken ct = default)
+            => await GetJsonCompletionAsync<string>(prompt, attachment, ct).ConfigureAwait(false);
 
-        public async Task<T?> GetJsonCompletionAsync<T>(string? prompt = null, CancellationToken ct = default) where T : class
+        public async Task<T?> GetJsonCompletionAsync<T>(string? prompt, OllamaFile? attachment = null, CancellationToken ct = default) where T : class
         {
             await AutoInstallModelAsync(ct).ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(prompt))
+            var message = prompt?.AsUserChatMessage();
+
+            if (message != null)
             {
-                ConversationHistory.Add(prompt.AsUserChatMessage());
+                if (attachment != null)
+                {
+                    if (attachment.UseOcrToExtractText)
+                    {
+                        var text = await _fileService.GetTextAsync(attachment.FileName, attachment.FileStream);
+
+                        if (!string.IsNullOrWhiteSpace(text))
+                        {
+                            message.Content += $" File: {text}";
+                        }
+                        else if (attachment.IsPdf())
+                        {
+                            var images = await _fileService.PdfToImagesAsync(attachment.FileName, attachment.FileStream);
+
+                            foreach (var image in images)
+                            {
+                                message.Images.Add(image);
+                            }
+                        }
+                        else
+                        {
+                            throw new ArgumentException($"File type {attachment.FileName} is not supported.");
+                        }
+                    }
+                    else if (attachment.IsImage())
+                    {
+                        // Reset to beginning of stream
+                        attachment.FileStream.Position = 0;
+                        // Load the image from stream
+                        using var image = Image.FromStream(attachment.FileStream);
+                        image.AdjustOrientation();
+                        using var resizedImage = image.Resize(600, 800);
+                        using var ms = new MemoryStream();
+                        resizedImage.Save(ms, ImageFormat.Jpeg);
+
+                        message.Images.Add(ms.ToArray());
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"File type {attachment.FileName} is not supported.");
+                    }
+                }
+
+                ConversationHistory.Add(message);
             }
 
             var request = ConversationHistory.Select(s => s.AsChatMessageRequest()).ToArray();
 
             var response = await _httpClient.GetCompletionAsync<T>(request, Options.Tools?.Select(s => s.AsTool()).ToArray(), ct).ConfigureAwait(false);
 
-            var toolMessages = await HandleToolCallsAsync(response, ct).ConfigureAwait(false);
+            var toolMessages = await HandleToolCallsAsync(response).ConfigureAwait(false);
 
             if (toolMessages.Any())
             {
@@ -88,7 +138,7 @@ namespace OllamaClientLibrary
             return response?.Message?.Content;
         }
 
-        public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string? prompt = null, [EnumeratorCancellation] CancellationToken ct = default)
+        public async IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string? prompt, [EnumeratorCancellation] CancellationToken ct = default)
         {
             await AutoInstallModelAsync(ct).ConfigureAwait(false);
 
@@ -107,7 +157,7 @@ namespace OllamaClientLibrary
 
                 if (Options.Tools != null && chunk?.Message?.ToolCalls != null)
                 {
-                    var toolMessages = await HandleToolCallsAsync(chunk, ct).ConfigureAwait(false);
+                    var toolMessages = await HandleToolCallsAsync(chunk).ConfigureAwait(false);
 
                     if (toolMessages.Any())
                     {
@@ -172,15 +222,15 @@ namespace OllamaClientLibrary
 
         public async Task<IEnumerable<OllamaModel>> ListModelsAsync(string? pattern = null, ModelSize? size = null, ModelLocation location = ModelLocation.Remote, CancellationToken ct = default)
         {
-            IEnumerable<OllamaModel> models;
+            List<OllamaModel> models;
 
             if (location == ModelLocation.Local)
             {
-                models = (await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false)).Select(s => new OllamaModel() { Name = s.Name, ModifiedAt = s.ModifiedAt, Size = s.Size });
+                models = (await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false)).Select(s => new OllamaModel() { Name = s.Name, ModifiedAt = s.ModifiedAt, Size = s.Size }).ToList();
             }
             else
             {
-                var cache = _cacheService.Get<IEnumerable<OllamaModel>>(RemoteModelsCacheKey);
+                var cache = _cacheService.Get<List<OllamaModel>>(RemoteModelsCacheKey);
 
                 if (cache != null && cache.Any())
                 {
@@ -188,7 +238,7 @@ namespace OllamaClientLibrary
                 }
                 else
                 {
-                    models = (await _httpClient.ListRemoteModelsAsync(ct).ConfigureAwait(false)).Select(s => new OllamaModel() { Name = s.Name, ModifiedAt = s.ModifiedAt, Size = s.Size });
+                    models = (await _httpClient.ListRemoteModelsAsync(ct).ConfigureAwait(false)).Select(s => new OllamaModel() { Name = s.Name, ModifiedAt = s.ModifiedAt, Size = s.Size }).ToList();
 
                     _cacheService.Set(RemoteModelsCacheKey, models);
                 }
@@ -196,42 +246,40 @@ namespace OllamaClientLibrary
 
             if (!string.IsNullOrEmpty(pattern))
             {
-                models = models.Where(s => s.Name != null && Regex.IsMatch(s.Name, pattern, RegexOptions.IgnoreCase));
+                models = models.Where(s => s.Name != null && Regex.IsMatch(s.Name, pattern, RegexOptions.IgnoreCase)).ToList();
             }
 
             if (size.HasValue)
             {
                 models = size switch
                 {
-                    ModelSize.Tiny => models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) <= 0.5),
-                    ModelSize.Small => models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) > 0.5 && SizeConverter.BytesToGigabytes(model.Size.Value) <= 2),
-                    ModelSize.Medium => models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) > 2 && SizeConverter.BytesToGigabytes(model.Size.Value) <= 5),
-                    ModelSize.Large => models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) > 5),
+                    ModelSize.Tiny => models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) <= 0.5).ToList(),
+                    ModelSize.Small => models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) > 0.5 && SizeConverter.BytesToGigabytes(model.Size.Value) <= 2).ToList(),
+                    ModelSize.Medium => models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) > 2 && SizeConverter.BytesToGigabytes(model.Size.Value) <= 5).ToList(),
+                    ModelSize.Large => models.Where(model => model.Size.HasValue && SizeConverter.BytesToGigabytes(model.Size.Value) > 5).ToList(),
                     _ => models
                 };
             }
 
-            return models.OrderBy(s => s.Size ?? 0).ToList();
+            return models.OrderBy(s => s.Size ?? 0);
         }
 
         public void Dispose()
         {
             _httpClient.Dispose();
-
-            GC.SuppressFinalize(this);
         }
 
         private async Task AutoInstallModelAsync(CancellationToken ct = default)
         {
             if (Options.AutoInstallModel)
             {
-                var model = Options.Model ?? "qwen2.5:1.5b";
+                var model = Options.Model;
 
-                await PullModelAsync(model, null, ct: ct).ConfigureAwait(false);
+                await PullModelAsync(model, ct: ct).ConfigureAwait(false);
             }
         }
 
-        private async Task<List<ChatMessageRequest>> HandleToolCallsAsync<T>(ChatCompletionResponse<T>? response, CancellationToken ct) where T : class
+        private async Task<List<ChatMessageRequest>> HandleToolCallsAsync<T>(ChatCompletionResponse<T>? response) where T : class
         {
             var toolMessages = new List<ChatMessageRequest>();
 
@@ -247,7 +295,7 @@ namespace OllamaClientLibrary
                         {
                             Role = MessageRole.Tool,
                             Content = (await ToolFactory.InvokeAsync(tool, args).ConfigureAwait(false))?.ToString()
-                        }!;
+                        };
 
                         return message;
                     }

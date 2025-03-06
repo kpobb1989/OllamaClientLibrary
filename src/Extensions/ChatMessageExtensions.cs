@@ -10,16 +10,18 @@ namespace OllamaClientLibrary.Extensions
             return new OllamaChatMessage
             {
                 Role = request.Role,
-                Content = request.Content
+                Content = request.Content,
+                Images = request.Images
             };
         }
 
-        public static ChatMessageRequest AsChatMessageRequest(this OllamaChatMessage message)
+        public static ChatMessageRequest AsChatMessageRequest(this OllamaChatMessage request)
         {
             return new ChatMessageRequest
             {
-                Role = message.Role,
-                Content = message.Content
+                Role = request.Role,
+                Content = request.Content,
+                Images = request.Images
             };
         }
     }

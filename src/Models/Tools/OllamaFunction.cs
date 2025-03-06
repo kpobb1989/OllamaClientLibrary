@@ -1,6 +1,4 @@
-﻿using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
-
-namespace OllamaClientLibrary.Models.Tools
+﻿namespace OllamaClientLibrary.Models.Tools
 {
     public class OllamaFunction
     {
