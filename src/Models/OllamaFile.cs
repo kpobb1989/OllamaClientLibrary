@@ -20,7 +20,7 @@ namespace OllamaClientLibrary.Models
         public Stream FileStream { get; set; }
 
         /// <summary>
-        /// Indicates whether to use OCR to extract text from the image or document.
+        /// Indicates whether to use OCR to extract text from the image
         /// </summary>
         public bool UseOcrToExtractText { get; set; }
         

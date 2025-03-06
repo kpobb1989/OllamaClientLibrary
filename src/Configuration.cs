@@ -20,7 +20,7 @@ namespace OllamaClientLibrary
             services.AddTransient<ICacheService, CacheService>();
             services.AddTransient<IOllamaWebParserService, OllamaWebParserService>();
             services.AddTransient<IOllamaClient, OllamaClient>();
-            services.AddTransient<IFileService, FileService>();
+            services.AddTransient<IDocumentService, DocumentService>();
             services.AddTransient<IOcrService, OcrService>();
             services.AddSingleton(options ?? new OllamaOptions());
             services.AddSingleton(JsonSerializer.Create(new JsonSerializerSettings()

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace OllamaClientLibrary.Abstractions.Services
 {
-    public interface IFileService
+    public interface IDocumentService
     {
         Task<string?> GetTextAsync(string fileName, Stream stream);
 

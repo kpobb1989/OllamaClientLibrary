@@ -9,8 +9,8 @@ namespace OllamaClientLibrary.Services
 {
     class OcrService : IOcrService
     {
-        private static readonly string TessDataPath = "./tessdata";
-        private static readonly string TessDataUrl = "https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata";
+        private const string TessDataPath = "./tessdata";
+        private const string TessDataUrl = "https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata";
 
         public async Task<string?> GetTextFromImageAsync(Stream stream, string language = "eng")
         {

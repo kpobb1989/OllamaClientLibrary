@@ -17,11 +17,11 @@ using UglyToad.PdfPig;
 
 namespace OllamaClientLibrary.Services
 {
-    internal class FileService : IFileService
+    internal class DocumentService : IDocumentService
     {
         private readonly IOcrService _ocrService;
 
-        public FileService(IOcrService ocrService)
+        public DocumentService(IOcrService ocrService)
         {
             _ocrService = ocrService;
         }
@@ -45,13 +45,6 @@ namespace OllamaClientLibrary.Services
                 case ".xml":
                 case ".csv":
                     return await GetTextAsync(stream).ConfigureAwait(false);
-                case ".jpg":
-                case ".jpeg":
-                case ".png":
-                case ".gif":
-                case ".bmp":
-                case ".webp":
-                    return await _ocrService.GetTextFromImageAsync(stream).ConfigureAwait(false);
                 default:
                     throw new NotSupportedException($"File type {extension} is not supported");
             }

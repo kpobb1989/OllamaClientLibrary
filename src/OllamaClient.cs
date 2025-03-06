@@ -26,7 +26,8 @@ namespace OllamaClientLibrary
         private const string RemoteModelsCacheKey = "remote-models";
         private readonly IOllamaHttpClient _httpClient;
         private readonly ICacheService _cacheService;
-        private readonly IFileService _fileService;
+        private readonly IDocumentService _documentService;
+        private readonly IOcrService _ocrService;
 
         public OllamaOptions Options { get; }
 
@@ -59,23 +60,31 @@ namespace OllamaClientLibrary
             Options = serviceProvider.GetRequiredService<OllamaOptions>();
             _httpClient = serviceProvider.GetRequiredService<IOllamaHttpClient>();
             _cacheService = serviceProvider.GetRequiredService<ICacheService>();
-            _fileService = serviceProvider.GetRequiredService<IFileService>();
+            _documentService = serviceProvider.GetRequiredService<IDocumentService>();
+            _ocrService = serviceProvider.GetRequiredService<IOcrService>();
+            
         }
         
         public async Task<string?> GetTextFromFileAsync(string prompt, OllamaFile file, CancellationToken ct = default)
         {
-            if (file.UseOcrToExtractText)
+            if (file.UseOcrToExtractText && file.IsImage())
             {
-                return await _fileService.GetTextAsync(file.FileName, file.FileStream);
+                return await _ocrService.GetTextFromImageAsync(file.FileStream);
             }
 
             var message = prompt.AsUserChatMessage();
 
             if (file.IsDocument())
             {
+                var text = await _documentService.GetTextAsync(file.FileName, file.FileStream)
+                    .ConfigureAwait(false);
+                
                 if (file.IsPdf())
                 {
-                    var images = await _fileService.PdfToImagesAsync(file.FileName, file.FileStream);
+                    if (!string.IsNullOrWhiteSpace(text)) 
+                        return text;
+                    
+                    var images = await _documentService.PdfToImagesAsync(file.FileName, file.FileStream);
                     foreach (var image in images)
                     {
                         message.Images.Add(image);
@@ -83,7 +92,7 @@ namespace OllamaClientLibrary
                 }
                 else
                 {
-                    throw new ArgumentException($"File type {file.FileName} is not supported.");
+                    return text;
                 }
             }
             else if (file.IsImage())
