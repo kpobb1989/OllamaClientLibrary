@@ -10,7 +10,7 @@ namespace OllamaClientLibrary.Dto.ChatCompletion.Tools.Request
         public Function Function { get; set; } = new Function();
 
         [JsonIgnore]
-        public MethodInfo? MethodInfo { get; set; } = null!;
+        public MethodInfo? MethodInfo { get; set; }
 
         [JsonIgnore]
         public object? Instance { get; set; }

@@ -107,7 +107,7 @@ namespace OllamaClientLibrary
                         using var image = Image.FromStream(attachment.FileStream);
                         image.AdjustOrientation();
                         using var resizedImage = image.Resize(600, 800);
-                        using var ms = new MemoryStream();
+                        await using var ms = new MemoryStream();
                         resizedImage.Save(ms, ImageFormat.Jpeg);
 
                         message.Images.Add(ms.ToArray());
@@ -151,7 +151,8 @@ namespace OllamaClientLibrary
 
             var messageChunks = new StringBuilder();
 
-            await foreach (var chunk in _httpClient.GetChatCompletionAsync(request, Options.Tools?.Select(s => s.AsTool()).ToArray(), ct: ct))
+            var tools = Options.Tools?.Select(s => s.AsTool()).ToArray();
+            await foreach (var chunk in _httpClient.GetChatCompletionAsync(request, tools, ct: ct))
             {
                 var content = chunk?.Message?.Content;
 
@@ -226,7 +227,13 @@ namespace OllamaClientLibrary
 
             if (location == ModelLocation.Local)
             {
-                models = (await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false)).Select(s => new OllamaModel() { Name = s.Name, ModifiedAt = s.ModifiedAt, Size = s.Size }).ToList();
+                models = (await _httpClient.ListLocalModelsAsync(ct).ConfigureAwait(false))
+                    .Select(s => new OllamaModel
+                    {
+                        Name = s.Name, 
+                        ModifiedAt = s.ModifiedAt, 
+                        Size = s.Size
+                    }).ToList();
             }
             else
             {
@@ -238,7 +245,13 @@ namespace OllamaClientLibrary
                 }
                 else
                 {
-                    models = (await _httpClient.ListRemoteModelsAsync(ct).ConfigureAwait(false)).Select(s => new OllamaModel() { Name = s.Name, ModifiedAt = s.ModifiedAt, Size = s.Size }).ToList();
+                    models = (await _httpClient.ListRemoteModelsAsync(ct).ConfigureAwait(false))
+                        .Select(s => new OllamaModel
+                        {
+                            Name = s.Name, 
+                            ModifiedAt = s.ModifiedAt, 
+                            Size = s.Size
+                        }).ToList();
 
                     _cacheService.Set(RemoteModelsCacheKey, models);
                 }
@@ -288,8 +301,7 @@ namespace OllamaClientLibrary
                 var tasks = response.Message.ToolCalls.Select(async toolCall =>
                 {
                     if (toolCall.Function is { Name: var name, Arguments: var args } &&
-                        Options.Tools.FirstOrDefault(t => t.Function.Name == name) is var tool &&
-                        tool != null)
+                        Options.Tools.FirstOrDefault(t => t.Function.Name == name) is { } tool)
                     {
                         var message = new ChatMessageRequest
                         {
