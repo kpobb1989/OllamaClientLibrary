@@ -28,7 +28,7 @@ namespace OllamaClientLibrary.Services
 
         public async Task<string?> GetTextAsync(string fileName, Stream stream)
         {
-            string extension = Path.GetExtension(fileName);
+            var extension = Path.GetExtension(fileName);
 
             switch (extension)
             {
