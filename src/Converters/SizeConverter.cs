@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OllamaClientLibrary.Converters
+﻿namespace OllamaClientLibrary.Converters
 {
     /// <summary>
     /// Provides methods to convert between different size units.

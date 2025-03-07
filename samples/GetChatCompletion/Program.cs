@@ -12,14 +12,14 @@ var cts = new CancellationTokenSource();
 
 Console.WriteLine("CTRL+C to terminate the conversation.");
 #pragma warning disable CS4014
-Task.Run(() =>
+Task.Run(async () =>
 {
     while (true)
     {
         var keyInfo = Console.ReadKey(intercept: true);
         if (keyInfo.Key == ConsoleKey.C && keyInfo.Modifiers == ConsoleModifiers.Control)
         {
-            cts.Cancel();
+            await cts.CancelAsync();
         }
     }
 });

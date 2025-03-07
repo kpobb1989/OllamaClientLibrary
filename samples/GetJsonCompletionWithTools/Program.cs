@@ -73,7 +73,7 @@ public class WeatherService : IDisposable
     {
         var response = await ExecuteAndGetJsonAsync($"/v1/forecast?latitude={latitude}&longitude={longitude}&timezone=auto");
 
-        var timezone = response?["timezone"]?.ToString();
+        var timezone = response["timezone"]?.ToString();
 
         return timezone;
     }
