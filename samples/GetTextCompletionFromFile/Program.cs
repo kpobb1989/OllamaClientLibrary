@@ -16,7 +16,7 @@ try
 {
     var file = new OllamaFile(@"D:\1.jpg");
 
-    var response = await client.GetTextFromFileAsync("Get text our of the image", file);
+    var response = await client.GetTextCompletionFromFileAsync("Get text our of the image", file);
 
     Console.Clear();
 

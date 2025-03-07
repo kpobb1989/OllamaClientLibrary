@@ -37,10 +37,10 @@ namespace OllamaClientLibrary.Abstractions
         /// - PDF document processing (by using PdfPig or converts to images)
         /// - Direct image processing
         ///
-        /// Supported image formats: .jpg, .jpeg, .png, .gif, .bmp, .webp
+        /// Supported image formats: .jpg, .jpeg, .png
         /// Supported document formats: .doc, .docx, .xls, .xlsx, .pdf, .txt, .csv, .json, .xml
         /// </remarks>
-        Task<string?> GetTextFromFileAsync(string prompt, OllamaFile file, CancellationToken ct = default);
+        Task<string?> GetTextCompletionFromFileAsync(string prompt, OllamaFile file, CancellationToken ct = default);
 
         /// <summary>
         /// Gets chat completion asynchronously.

@@ -66,7 +66,7 @@ namespace OllamaClientLibrary
             _ocrService = serviceProvider.GetRequiredService<IOcrService>();
         }
 
-        public async Task<string?> GetTextFromFileAsync(string prompt, OllamaFile file, CancellationToken ct = default)
+        public async Task<string?> GetTextCompletionFromFileAsync(string prompt, OllamaFile file, CancellationToken ct = default)
         {
             if (file.IsDocument())
             {
@@ -118,6 +118,8 @@ namespace OllamaClientLibrary
                     return builder.ToString();
                 }
             }
+            
+            await AutoInstallModelAsync(ct).ConfigureAwait(false);
 
             var message = prompt.AsUserChatMessage();
 

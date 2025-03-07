@@ -3,16 +3,15 @@ OllamaClientLibrary is a .NET Standard 2.1 library designed to interact seamless
 
 
 ## Features
-- Predefined configuration for the local Ollama setup, such as host, model, temperature, timeout, prompt size, etc.
-- Auto-install a model if it is not available on your local machine.
-- Get JSON completion with an automatically recognized JSON schema of the response DTO, so you no longer need to specify it in the prompt.
-- Get chat completion with streaming. The library provides access to the conversation history, allowing you to store it in the database if needed.
-- Get text completion. Provide a prompt and get a simple text response.
-- Get completion with tools. Based on the Ollama response, the library can dynamically call local methods and provide the necessary parameters.
-- Get embeddings completions for a given text. The library provides functionality to convert text into numerical vectors (embeddings) that can be used for various machine learning tasks such as similarity search, clustering, and classification. This is useful for applications like semantic search, recommendation systems, and natural language understanding.
-- List available local and remote models with filtering options. Now you have access to see all models installed on your local machine, as well as all models available on [Ollama's library](https://ollama.com/library)
-- Pull a model from [Ollama's library](https://ollama.com/library) to your local machine.
-- Delete a model from the local machine
+- Customizable configuration for Ollama (host, model, temperature, timeout, etc.)
+- Automatic model installation
+- JSON completions with automatic schema recognition
+- Streaming chat completions with conversation history management
+- Simple text completion API
+- Tool-calling support for dynamic method invocation
+- Text-to-embedding conversion for ML applications
+- Get text completion from a file (doc, docx, xls, xlsx, pdf, txt, json, xml, csv, jpg, jpeg, png) with OCR capabilities
+- Local and remote model management (list, pull, delete)
 
 ## Prerequisites: 
 ### Setting Up Ollama Server
@@ -92,6 +91,7 @@ class DotNetCore
 ```
 
 ## More samples
+- [Get Text Completion From a File](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetTextCompletionFromFile/Program.cs)
 - [Get Chat Completion](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetChatCompletion/Program.cs)
 - [Get JSON Completion](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetJsonCompletion/Program.cs)
 - [Get JSON Completion with Tools](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetJsonCompletionWithTools/Program.cs)
@@ -115,6 +115,11 @@ This project is licensed under the MIT License.
 
 ## Repository
 For more information, visit the [GitHub repository](https://github.com/kpobb1989/OllamaClientLibrary).
+
+# Dependencies
+- [Tesseract](https://www.nuget.org/packages/Tesseract/) (License: Apache-2.0) - OCR capabilities
+- [PdfPig](https://www.nuget.org/packages/PdfPig) (License: Apache-2.0) - Extract text from PDF files
+- [NPOI](https://www.nuget.org/packages/NPOI) (License: Apache-2.0) - Extract text from Word and Excel files
 
 ## Author
 Oleksandr Kushnir
