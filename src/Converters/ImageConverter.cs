@@ -19,5 +19,12 @@ namespace OllamaClientLibrary.Converters
 
             return ms.ToArray();
         }
+        
+        public static byte[] ToBytes(Image image, ImageFormat format)
+        {
+            using var ms = new MemoryStream();
+            image.Save(ms, format);
+            return ms.ToArray();
+        }
     }
 }

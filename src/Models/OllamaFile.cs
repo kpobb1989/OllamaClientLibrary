@@ -18,18 +18,15 @@ namespace OllamaClientLibrary.Models
         /// The file stream of the image or document.
         /// </summary>
         public Stream FileStream { get; set; }
-
-        /// <summary>
-        /// Indicates whether to use OCR to extract text from the image
-        /// </summary>
-        public bool UseOcrToExtractText { get; set; }
         
-        public OllamaFile(string filePath, bool useOcrToExtractText = true)
+        public OllamaFile(string filePath)
         {
             FileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
             FileName = Path.GetFileName(filePath);
-            UseOcrToExtractText = useOcrToExtractText;
         }
+        
+        public string GetExtension()
+            => Path.GetExtension(FileName).ToLowerInvariant();
 
         public bool IsImage()
             => _supportedImages.Contains(Path.GetExtension(FileName).ToLowerInvariant());

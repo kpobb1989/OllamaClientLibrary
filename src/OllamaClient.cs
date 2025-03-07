@@ -16,7 +16,9 @@ using Microsoft.Extensions.DependencyInjection;
 using OllamaClientLibrary.Abstractions.HttpClients;
 using OllamaClientLibrary.Abstractions.Services;
 using System.Drawing.Imaging;
+using OllamaClientLibrary.Converters;
 using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
+using UglyToad.PdfPig;
 using SizeConverter = OllamaClientLibrary.Converters.SizeConverter;
 
 namespace OllamaClientLibrary
@@ -62,43 +64,88 @@ namespace OllamaClientLibrary
             _cacheService = serviceProvider.GetRequiredService<ICacheService>();
             _documentService = serviceProvider.GetRequiredService<IDocumentService>();
             _ocrService = serviceProvider.GetRequiredService<IOcrService>();
-            
         }
-        
+
         public async Task<string?> GetTextFromFileAsync(string prompt, OllamaFile file, CancellationToken ct = default)
         {
-            if (file.UseOcrToExtractText && file.IsImage())
+            if (Options.UseOcrToExtractText)
             {
-                return await _ocrService.GetTextFromImageAsync(file.FileStream);
+                if (file.IsImage())
+                    return await _ocrService.GetTextFromImageAsync(file.FileStream);
+
+                if (!file.IsPdf())
+                    throw new NotSupportedException($"File type {file.GetExtension()} is not supported");
+
+                var builder = new StringBuilder();
+                using var document = PdfDocument.Open(file.FileStream);
+
+                foreach (var page in document.GetPages())
+                {
+                    if (page.IsImageBasedPage())
+                    {
+                        foreach (var image in page.GetImages())
+                        {
+                            var text = await _ocrService.GetTextFromImageAsync(image.RawBytes.ToArray());
+
+                            builder.Append(text);
+                        }
+                    }
+                    else
+                    {
+                        builder.Append(page.Text);
+                    }
+                }
+
+                return builder.ToString();
             }
 
             var message = prompt.AsUserChatMessage();
 
-            if (file.IsDocument())
+            if (file.IsImage())
             {
-                var text = await _documentService.GetTextAsync(file.FileName, file.FileStream)
-                    .ConfigureAwait(false);
-                
-                if (file.IsPdf())
-                {
-                    if (!string.IsNullOrWhiteSpace(text)) 
-                        return text;
-                    
-                    var images = await _documentService.PdfToImagesAsync(file.FileName, file.FileStream);
-                    foreach (var image in images)
-                    {
-                        message.Images.Add(image);
-                    }
-                }
-                else
-                {
-                    return text;
-                }
-            }
-            else if (file.IsImage())
-            {
-                var bytes = Converters.ImageConverter.ToBytes(file.FileStream, ImageFormat.Jpeg, 600, 800);
+                var bytes = ImageConverter.ToBytes(file.FileStream, ImageFormat.Jpeg, 600, 800);
                 message.Images.Add(bytes);
+            }
+            else if (file.IsDocument())
+            {
+                var extension = file.GetExtension();
+
+                switch (extension)
+                {
+                    case ".doc":
+                    case ".docx":
+                        return _documentService.GetTextFromWord(file.FileStream, extension);
+                    case ".xls":
+                    case ".xlsx":
+                        return _documentService.GetTextFromExcel(file.FileStream, extension);
+                    case ".pdf":
+                        var builder = new StringBuilder();
+                        var document = PdfDocument.Open(file.FileStream);
+                        foreach (var page in document.GetPages())
+                        {
+                            builder.Append(page.Text);
+                        }
+
+                        var text = builder.ToString();
+
+                        if (!string.IsNullOrWhiteSpace(text))
+                        {
+                            return text;
+                        }
+
+                        foreach (var image in await PdfConverter.ToImagesAsync(file.FileStream, file.FileName))
+                        {
+                            message.Images.Add(image);
+                        }
+                        break;
+                    case ".txt":
+                    case ".json":
+                    case ".xml":
+                    case ".csv":
+                        return await _documentService.GetTextAsync(file.FileStream);
+                    default:
+                        throw new NotSupportedException($"File type {extension} is not supported");
+                }
             }
             else
             {
@@ -107,14 +154,15 @@ namespace OllamaClientLibrary
 
             ConversationHistory.Add(message);
 
-            var response = await _httpClient.GetCompletionAsync<string>(GetRequest(), GetTools(), ct).ConfigureAwait(false);
+            var response = await _httpClient.GetCompletionAsync<string>(GetRequest(), GetTools(), ct)
+                .ConfigureAwait(false);
 
             var toolMessages = await HandleToolCallsAsync(response).ConfigureAwait(false);
 
             if (toolMessages.Any())
             {
                 ConversationHistory.AddRange(toolMessages.Select(m => m.AsOllamaChatMessage()));
-                
+
                 response = await _httpClient.GetCompletionAsync<string>(GetRequest(), ct: ct).ConfigureAwait(false);
             }
 
@@ -144,7 +192,7 @@ namespace OllamaClientLibrary
             if (toolMessages.Any())
             {
                 ConversationHistory.AddRange(toolMessages.Select(m => m.AsOllamaChatMessage()));
-                
+
                 response = await _httpClient.GetCompletionAsync<T>(GetRequest(), ct: ct).ConfigureAwait(false);
             }
 

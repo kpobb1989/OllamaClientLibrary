@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 
 namespace OllamaClientLibrary.Abstractions.Services
 {
     public interface IDocumentService
     {
-        Task<string?> GetTextAsync(string fileName, Stream stream);
+        string? GetTextFromWord(Stream stream, string extension);
 
-        Task<List<byte[]>> PdfToImagesAsync(string fileName, Stream stream);
+        string? GetTextFromExcel(Stream stream, string extension);
+
+        Task<string?> GetTextAsync(Stream stream);
     }
 }
