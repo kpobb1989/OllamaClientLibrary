@@ -6,26 +6,14 @@ using NPOI.XWPF.UserModel;
 using OllamaClientLibrary.Abstractions.Services;
 
 using System;
-using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using UglyToad.PdfPig;
 
 namespace OllamaClientLibrary.Services
 {
     internal class DocumentService : IDocumentService
     {
-        private readonly IOcrService _ocrService;
-
-        public DocumentService(IOcrService ocrService)
-        {
-            _ocrService = ocrService;
-        }
-
         public string? GetTextFromWord(Stream stream, string extension)
         {
             if (extension == ".doc")
@@ -35,7 +23,8 @@ namespace OllamaClientLibrary.Services
                 var extractor = new NPOI.HSSF.Extractor.EventBasedExcelExtractor(fs);
                 return extractor.Text;
             }
-            else if (extension == ".docx")
+
+            if (extension == ".docx")
             {
                 using var doc = new XWPFDocument(stream);
                 var stringBuilder = new StringBuilder();
@@ -45,10 +34,8 @@ namespace OllamaClientLibrary.Services
                 }
                 return stringBuilder.ToString();
             }
-            else
-            {
-                throw new NotSupportedException($"File type {extension} is not supported");
-            }
+
+            throw new NotSupportedException($"File type {extension} is not supported");
         }
 
         public string? GetTextFromExcel(Stream stream, string extension)
@@ -58,15 +45,14 @@ namespace OllamaClientLibrary.Services
                 using var workbook = new HSSFWorkbook(stream);
                 return ExtractTextFromWorkbook(workbook);
             }
-            else if (extension == ".xlsx")
+
+            if (extension == ".xlsx")
             {
                 using var workbook = new XSSFWorkbook(stream);
                 return ExtractTextFromWorkbook(workbook);
             }
-            else
-            {
-                throw new NotSupportedException($"File type {extension} is not supported");
-            }
+
+            throw new NotSupportedException($"File type {extension} is not supported");
         }
 
         public async Task<string?> GetTextAsync(Stream stream)
@@ -81,7 +67,7 @@ namespace OllamaClientLibrary.Services
             if (sheet == null)
                 return null;
             var stringBuilder = new StringBuilder();
-            for (int i = 0; i <= sheet.LastRowNum; i++)
+            for (var i = 0; i <= sheet.LastRowNum; i++)
             {
                 var row = sheet.GetRow(i);
                 if (row == null)
