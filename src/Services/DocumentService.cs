@@ -1,5 +1,4 @@
 ﻿using NPOI.HSSF.UserModel;
-using NPOI.POIFS.FileSystem;
 using NPOI.XSSF.UserModel;
 using NPOI.XWPF.UserModel;
 
@@ -9,6 +8,8 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using NPOI.HWPF;
+using NPOI.HWPF.Extractor;
 
 namespace OllamaClientLibrary.Services
 {
@@ -18,15 +19,22 @@ namespace OllamaClientLibrary.Services
         {
             if (extension == ".doc")
             {
-                var fs = new POIFSFileSystem(stream);
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-                var extractor = new NPOI.HSSF.Extractor.EventBasedExcelExtractor(fs);
-                return extractor.Text;
+                var document = new HWPFDocument(stream);
+                var wordExtractor = new WordExtractor(document);
+                var docText = new StringBuilder();
+                foreach (var text in wordExtractor.ParagraphText)
+                {
+                    docText.AppendLine(text.Trim());
+                }
+
+                return docText.ToString();
             }
 
             if (extension == ".docx")
             {
-                using var doc = new XWPFDocument(stream);
+                var doc = new XWPFDocument(stream);
                 var stringBuilder = new StringBuilder();
                 foreach (var paragraph in doc.Paragraphs)
                 {
@@ -42,13 +50,13 @@ namespace OllamaClientLibrary.Services
         {
             if (extension == ".xls")
             {
-                using var workbook = new HSSFWorkbook(stream);
+                var workbook = new HSSFWorkbook(stream);
                 return ExtractTextFromWorkbook(workbook);
             }
 
             if (extension == ".xlsx")
             {
-                using var workbook = new XSSFWorkbook(stream);
+                var workbook = new XSSFWorkbook(stream);
                 return ExtractTextFromWorkbook(workbook);
             }
 

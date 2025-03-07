@@ -10,5 +10,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\OllamaClientLibrary.csproj" />
   </ItemGroup>
+  
+  <Target Name="CopyFolderToBin" AfterTargets="Build">
+    <ItemGroup>
+      <FolderToCopy Include="files\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FolderToCopy)" DestinationFolder="$(OutputPath)files\%(RecursiveDir)" />
+  </Target>
 
 </Project>

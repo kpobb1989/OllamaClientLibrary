@@ -10,21 +10,41 @@ using var client = new OllamaClient(new OllamaOptions
     UseOcrToExtractText = true
 });
 
-Console.Write("Loading...");
+var path = Path.Combine(Directory.GetCurrentDirectory(), "files");
+
+var files = new OllamaFile[]
+{
+    new($"{path}/text.doc"),
+    new($"{path}/text.docx"),
+    new($"{path}/text.xls"),
+    new($"{path}/text.xlsx"),
+    new($"{path}/text.csv"),
+    new($"{path}/text.json"),
+    new($"{path}/text.xml"),
+    new($"{path}/text.jpg"),
+    new($"{path}/text.png"),
+    new($"{path}/text.pdf"),
+};
 
 try
 {
-    var file = new OllamaFile(@"D:\1.jpg");
+    foreach (var file in files)
+    {
+        var response = await client.GetTextCompletionFromFileAsync("Get text our of the image", file);
 
-    var response = await client.GetTextCompletionFromFileAsync("Get text our of the image", file);
-
-    Console.Clear();
-
-    Console.WriteLine(response);
+        Console.WriteLine(response);
+    }
 }
 catch (Exception ex)
 {
     Console.WriteLine($"Error: {ex.Message}");
+}
+finally
+{
+    foreach (var file in files)
+    {
+        file?.FileStream?.Dispose();
+    }
 }
 
 Console.ReadKey();

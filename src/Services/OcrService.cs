@@ -24,15 +24,28 @@ namespace OllamaClientLibrary.Services
         {
             await EnsureTessDataAsync().ConfigureAwait(false);
 
-            using var engine = new TesseractEngine(TessDataPath, language, EngineMode.Default);
+            var tempFilePath = Path.GetTempFileName();
+            try
+            {
+                await File.WriteAllBytesAsync(tempFilePath, imageBytes);
 
-            using var img = Pix.LoadFromMemory(imageBytes);
+                using var engine = new TesseractEngine(TessDataPath, language, EngineMode.Default);
 
-            using var page = engine.Process(img);
+                using var img = Pix.LoadFromFile(tempFilePath);
 
-            var text = page.GetText();
+                using var page = engine.Process(img);
 
-            return CleanupOcrText(text);
+                var text = page.GetText();
+
+                return CleanupOcrText(text);
+            }
+            finally
+            {
+                if (File.Exists(tempFilePath))
+                {
+                    File.Delete(tempFilePath);
+                }
+            }
         }
 
         private async Task EnsureTessDataAsync()
@@ -49,7 +62,8 @@ namespace OllamaClientLibrary.Services
                 var response = await httpClient.GetAsync(TessDataUrl).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
 
-                await using var fileStream = new FileStream(tessDataFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                await using var fileStream =
+                    new FileStream(tessDataFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
                 await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
             }
         }
