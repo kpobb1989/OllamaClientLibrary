@@ -20,7 +20,7 @@ namespace OllamaClientLibrary.IntegrationTests
         [SetUp]
         public void Setup()
         {
-            _client = new(new OllamaOptions()
+            _client = new OllamaClient(new OllamaOptions()
             {
                 Model = Model
             });
@@ -57,8 +57,8 @@ namespace OllamaClientLibrary.IntegrationTests
             Assert.Multiple(() =>
             {
                 Assert.That(response, Is.Not.Null);
-                Assert.That(response?.Data?.All(s => !string.IsNullOrWhiteSpace(s.PlanetName)), Is.True);
-                Assert.That(response?.Data?.Count(), Is.GreaterThan(0));
+                Assert.That(response?.Data.All(s => !string.IsNullOrWhiteSpace(s.PlanetName)), Is.True);
+                Assert.That(response?.Data.Count(), Is.GreaterThan(0));
             });
         }
 
@@ -104,7 +104,7 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.ConversationHistory.Where(s => s.Role == MessageRole.User).Count(), Is.EqualTo(conversation.Length));
+            Assert.That(_client.ConversationHistory.Count(s => s.Role == MessageRole.User), Is.EqualTo(conversation.Length));
         }
 
         [Test]
@@ -126,7 +126,7 @@ namespace OllamaClientLibrary.IntegrationTests
             }
 
             // Assert
-            Assert.That(_client.ConversationHistory.Where(s => s.Role == MessageRole.Assistant).Count(), Is.EqualTo(prompts.Length));
+            Assert.That(_client.ConversationHistory.Count(s => s.Role == MessageRole.Assistant), Is.EqualTo(prompts.Length));
         }
 
         [Test]
@@ -156,7 +156,7 @@ namespace OllamaClientLibrary.IntegrationTests
         public async Task GetChatCompletionAsync_WithCancelledToken_ShouldTerminateConversation()
         {
             // Arrange
-            _client = new(new OllamaOptions()
+            _client = new OllamaClient(new OllamaOptions()
             {
                 Model = Model,
                 AssistantBehavior = null
@@ -165,9 +165,9 @@ namespace OllamaClientLibrary.IntegrationTests
             var cts = new CancellationTokenSource();
 
             // Act
-            await foreach (var chunk in _client.GetChatCompletionAsync("hi", ct: cts.Token))
+            await foreach (var unused in _client.GetChatCompletionAsync("hi", ct: cts.Token))
             {
-                cts.Cancel();
+                await cts.CancelAsync();
             }
 
             // Assert
@@ -208,7 +208,7 @@ namespace OllamaClientLibrary.IntegrationTests
             var models = await _client.ListModelsAsync(location: ModelLocation.Local);
 
             // Assert
-            Assert.That(models.All(s => !string.IsNullOrEmpty(s.Name) && s.ModifiedAt != null && s.Size != null), Is.True);
+            Assert.That(models.All(s => !string.IsNullOrEmpty(s.Name) && s is { ModifiedAt: not null, Size: not null }), Is.True);
         }
 
         [Test]
@@ -228,7 +228,7 @@ namespace OllamaClientLibrary.IntegrationTests
             var models = await _client.ListModelsAsync(location: ModelLocation.Remote);
 
             // Assert
-            Assert.That(models.All(s => !string.IsNullOrEmpty(s.Name) && s.ModifiedAt != null && s.Size != null), Is.True);
+            Assert.That(models.All(s => !string.IsNullOrEmpty(s.Name) && s is { ModifiedAt: not null, Size: not null }), Is.True);
         }
 
         [Test]
@@ -263,7 +263,6 @@ namespace OllamaClientLibrary.IntegrationTests
                 Model = Model
             });
             var serviceProvider = serviceCollections.BuildServiceProvider();
-            var client = serviceProvider.GetRequiredService<IOllamaClient>();
             var cacheService = serviceProvider.GetRequiredService<ICacheService>();
             cacheService.Clear();
 
@@ -376,7 +375,7 @@ namespace OllamaClientLibrary.IntegrationTests
         public async Task PullModelAsync_PullTinyModel_ShouldPullTheModel()
         {
             // Arrange
-            var tinyModel = "all-minilm:v2";
+            const string tinyModel = "all-minilm:v2";
 
             // Act
             await _client.PullModelAsync(tinyModel);
@@ -391,7 +390,7 @@ namespace OllamaClientLibrary.IntegrationTests
         public async Task DeleteModelAsync_DeleteExistingModel_ShouldDeleteTheModel()
         {
             // Arrange
-            var tinyModel = "all-minilm:v2";
+            const string tinyModel = "all-minilm:v2";
             await _client.PullModelAsync(tinyModel);
 
             // Act

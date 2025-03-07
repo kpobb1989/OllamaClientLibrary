@@ -6,7 +6,8 @@ using var client = new OllamaClient(new OllamaOptions
 {
     Temperature = Temperature.CodingOrMath,
     AssistantBehavior = "Act as an OCR assistant. Analyze the provided image and recognize all visible text in the image as accurately as possible.",
-    Model = "llava-phi3"
+    Model = "llava-phi3",
+    UseOcrToExtractText = true
 });
 
 Console.Write("Loading...");

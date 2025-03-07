@@ -68,45 +68,7 @@ namespace OllamaClientLibrary
 
         public async Task<string?> GetTextFromFileAsync(string prompt, OllamaFile file, CancellationToken ct = default)
         {
-            if (Options.UseOcrToExtractText)
-            {
-                if (file.IsImage())
-                    return await _ocrService.GetTextFromImageAsync(file.FileStream);
-
-                if (!file.IsPdf())
-                    throw new NotSupportedException($"File type {file.GetExtension()} is not supported");
-
-                var builder = new StringBuilder();
-                using var document = PdfDocument.Open(file.FileStream);
-
-                foreach (var page in document.GetPages())
-                {
-                    if (page.IsImageBasedPage())
-                    {
-                        foreach (var image in page.GetImages())
-                        {
-                            var text = await _ocrService.GetTextFromImageAsync(image.RawBytes.ToArray());
-
-                            builder.Append(text);
-                        }
-                    }
-                    else
-                    {
-                        builder.Append(page.Text);
-                    }
-                }
-
-                return builder.ToString();
-            }
-
-            var message = prompt.AsUserChatMessage();
-
-            if (file.IsImage())
-            {
-                var bytes = ImageConverter.ToBytes(file.FileStream, ImageFormat.Jpeg, 600, 800);
-                message.Images.Add(bytes);
-            }
-            else if (file.IsDocument())
+            if (file.IsDocument())
             {
                 var extension = file.GetExtension();
 
@@ -118,33 +80,71 @@ namespace OllamaClientLibrary
                     case ".xls":
                     case ".xlsx":
                         return _documentService.GetTextFromExcel(file.FileStream, extension);
-                    case ".pdf":
-                        var builder = new StringBuilder();
-                        var document = PdfDocument.Open(file.FileStream);
-                        foreach (var page in document.GetPages())
-                        {
-                            builder.Append(page.Text);
-                        }
-
-                        var text = builder.ToString();
-
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            return text;
-                        }
-
-                        foreach (var image in await PdfConverter.ToImagesAsync(file.FileStream, file.FileName))
-                        {
-                            message.Images.Add(image);
-                        }
-                        break;
                     case ".txt":
                     case ".json":
                     case ".xml":
                     case ".csv":
                         return await _documentService.GetTextAsync(file.FileStream);
-                    default:
-                        throw new NotSupportedException($"File type {extension} is not supported");
+                }
+            }
+
+            if (Options.UseOcrToExtractText)
+            {
+                if (file.IsImage())
+                    return await _ocrService.GetTextFromImageAsync(file.FileStream);
+
+                if (file.IsPdf())
+                {
+                    var builder = new StringBuilder();
+                    using var document = PdfDocument.Open(file.FileStream);
+
+                    foreach (var page in document.GetPages())
+                    {
+                        if (page.IsImageBasedPage())
+                        {
+                            foreach (var image in page.GetImages())
+                            {
+                                var text = await _ocrService.GetTextFromImageAsync(image.RawBytes.ToArray());
+
+                                builder.Append(text);
+                            }
+                        }
+                        else
+                        {
+                            builder.Append(page.Text);
+                        }
+                    }
+
+                    return builder.ToString();
+                }
+            }
+
+            var message = prompt.AsUserChatMessage();
+
+            if (file.IsImage())
+            {
+                var bytes = ImageConverter.ToBytes(file.FileStream, ImageFormat.Jpeg, 600, 800);
+                message.Images.Add(bytes);
+            }
+            else if (file.IsPdf())
+            {
+                var builder = new StringBuilder();
+                var document = PdfDocument.Open(file.FileStream);
+                foreach (var page in document.GetPages())
+                {
+                    builder.Append(page.Text);
+                }
+
+                var text = builder.ToString();
+
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    return text;
+                }
+
+                foreach (var image in await PdfConverter.ToImagesAsync(file.FileStream, file.FileName))
+                {
+                    message.Images.Add(image);
                 }
             }
             else

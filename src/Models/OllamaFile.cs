@@ -7,7 +7,7 @@ namespace OllamaClientLibrary.Models
     public class OllamaFile
     {
         private readonly string[] _supportedImages = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-        private readonly string[] _supportedDocuments = { ".doc", ".docx", ".xls", ".xlsx", ".pdf", ".txt", ".csv", ".json", ".xml" };
+        private readonly string[] _supportedDocuments = { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv", ".json", ".xml" };
 
         /// <summary>
         /// The name of the file to be processed.
