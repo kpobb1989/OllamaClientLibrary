@@ -66,20 +66,18 @@ namespace OllamaClientLibrary
             _ocrService = serviceProvider.GetRequiredService<IOcrService>();
         }
 
-        public async Task<string?> GetTextCompletionFromFileAsync(string prompt, OllamaFile file, CancellationToken ct = default)
+        public async Task<string?> GetOcrTextFromFileAsync(OllamaFile file, CancellationToken ct = default)
         {
             if (file.IsDocument())
             {
-                var extension = file.GetExtension();
-
-                switch (extension)
+                switch (file.GetExtension())
                 {
                     case ".doc":
                     case ".docx":
-                        return _documentService.GetTextFromWord(file.FileStream, extension);
+                        return _documentService.GetTextFromWord(file.FileStream, file.GetExtension());
                     case ".xls":
                     case ".xlsx":
-                        return _documentService.GetTextFromExcel(file.FileStream, extension);
+                        return _documentService.GetTextFromExcel(file.FileStream, file.GetExtension());
                     case ".txt":
                     case ".json":
                     case ".xml":
@@ -88,62 +86,73 @@ namespace OllamaClientLibrary
                 }
             }
 
-            if (Options.UseOcrToExtractText)
+            if (file.IsImage())
+                return await _ocrService.GetTextFromImageAsync(file.FileStream);
+
+            if (file.IsPdf())
             {
-                if (file.IsImage())
-                    return await _ocrService.GetTextFromImageAsync(file.FileStream);
+                var builder = new StringBuilder();
+                using var document = PdfDocument.Open(file.FileStream);
 
-                if (file.IsPdf())
+                foreach (var page in document.GetPages())
                 {
-                    var builder = new StringBuilder();
-                    using var document = PdfDocument.Open(file.FileStream);
-
-                    foreach (var page in document.GetPages())
+                    if (page.IsImageBasedPage())
                     {
-                        if (page.IsImageBasedPage())
+                        foreach (var image in page.GetImages())
                         {
-                            foreach (var image in page.GetImages())
-                            {
-                                var text = await _ocrService.GetTextFromImageAsync(image.RawBytes.ToArray());
+                            var text = await _ocrService.GetTextFromImageAsync(image.RawBytes.ToArray());
 
-                                builder.Append(text);
-                            }
-                        }
-                        else
-                        {
-                            builder.Append(page.Text);
+                            builder.Append(text);
                         }
                     }
-
-                    return builder.ToString();
+                    else
+                    {
+                        builder.Append(page.Text);
+                    }
                 }
+
+                return builder.ToString();
             }
-            
+
+            throw new ArgumentException($"File type {file.FileName} is not supported.");
+        }
+
+        public async Task<string?> GetTextCompletionFromFileAsync(string prompt, OllamaFile file,
+            CancellationToken ct = default)
+        {
             await AutoInstallModelAsync(ct).ConfigureAwait(false);
 
             var message = prompt.AsUserChatMessage();
 
-            if (file.IsImage())
+            if (file.IsDocument())
+            {
+                var extension = file.GetExtension();
+
+                switch (extension)
+                {
+                    case ".doc":
+                    case ".docx":
+                        message.Content = _documentService.GetTextFromWord(file.FileStream, extension);
+                        break;
+                    case ".xls":
+                    case ".xlsx":
+                        message.Content = _documentService.GetTextFromExcel(file.FileStream, extension);
+                        break;
+                    case ".txt":
+                    case ".json":
+                    case ".xml":
+                    case ".csv":
+                        message.Content = await _documentService.GetTextAsync(file.FileStream);
+                        break;
+                }
+            }
+            else if (file.IsImage())
             {
                 var bytes = ImageConverter.ToBytes(file.FileStream, ImageFormat.Jpeg, 600, 800);
                 message.Images.Add(bytes);
             }
             else if (file.IsPdf())
             {
-                var builder = new StringBuilder();
-                var document = PdfDocument.Open(file.FileStream);
-                foreach (var page in document.GetPages())
-                {
-                    builder.Append(page.Text);
-                }
-
-                var text = builder.ToString();
-
-                if (!string.IsNullOrWhiteSpace(text))
-                {
-                    return text;
-                }
-
                 foreach (var image in await PdfConverter.ToImagesAsync(file.FileStream, file.FileName))
                 {
                     message.Images.Add(image);

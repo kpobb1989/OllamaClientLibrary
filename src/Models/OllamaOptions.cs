@@ -78,10 +78,5 @@ namespace OllamaClientLibrary.Models
         /// Gets or sets the list of tools available for the assistant. Tools are not applicable for all models. Make sure the model supports tools before using them.
         /// </summary>
         public OllamaTool[]? Tools { get; set; }
-        
-        /// <summary>
-        /// Indicates whether to use OCR to extract text from the image
-        /// </summary>
-        public bool UseOcrToExtractText { get; set; }
     }
 }
