@@ -104,11 +104,12 @@ class DotNetCore
 - [Delete Model](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/DeleteModel/Program.cs)
 
 ## Changelog
-- **v1.3.0**: Introduced `MaxPromptTokenSize` and `AssistantBehavior` properties to `OllamaOptions`, and added the `DeleteModelAsync` method. Removed `KeepChatHistory`. Fixed handling of multiple `ToolCalls`. Updated to call AI after receiving a response from the tools. Modified `ToolFactory` to retrieve all public methods automatically instead of specifying them manually. Added support for async methods in `ToolCalls`.
-- **v1.2.0**: Renamed methods to be more descriptive, added `AutoInstallModel` and `Timeout` properties to `OllamaOptions`, started using the chat completion API instead of the generate API added the pull model API and added IOllamaClient interface.
-- **v1.1.0**: Changed the default model to `qwen2.5:1.5b`, fixed parsing of `ModifiedAt` for the Models list endpoint, added support for Tools, added Chat History, added integration tests, and configured CI.
-- **v1.0.1**: Allowed setting the `ApiKey` in `OllamaOptions`.
-- **v1.0.0**: Initial release with basic functionality for text and chat completions.
+- **v1.4.0**: Implemented `dependency injection` support, added `file-based embedding generation`, integrated document processing capabilities with `PdfPig` (PDF text extraction), `Tesseract` (`OCR` for images and image-based PDFs), and `NPOI` (extraction from DOC, DOCX, XML, XLSX formats).
+- **v1.3.0**: Enhanced configuration with `MaxPromptTokenSize` and `AssistantBehavior` properties, added model deletion functionality, improved tool calling with multi-call support and async method compatibility, automated public method discovery in `ToolFactory`, and removed the `KeepChatHistory` option.
+- **v1.2.0**: Improved API naming conventions, introduced `AutoInstallModel` and `Timeout` options, migrated from generate API to chat completion API, added model pull functionality, and implemented the `IOllamaClient` interface.
+- **v1.1.0**: Set `qwen2.5:1.5b` as the default model, corrected `ModifiedAt` parsing for model listings, implemented tools support and conversation history, added comprehensive integration tests, and established CI pipeline.
+- **v1.0.1**: Added `ApiKey` configuration support in `OllamaOptions`.
+- **v1.0.0**: Initial release with core text and chat completion functionality.
 
 ## License
 This project is licensed under the MIT License.
