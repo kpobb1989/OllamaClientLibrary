@@ -1,41 +1,39 @@
 ﻿using Newtonsoft.Json;
 
-using OllamaClientLibrary.Extensions;
-
 using System;
 using System.IO;
 
-namespace OllamaClientLibrary.Cache
+using OllamaClientLibrary.Extensions;
+using OllamaClientLibrary.Abstractions.Services;
+
+namespace OllamaClientLibrary.Services
 {
-    public static class CacheStorage
+    internal class CacheService : ICacheService
     {
-        public static T? Get<T>(string key, TimeSpan? cacheTime = null) where T : class
+        public T? Get<T>(string key, TimeSpan? cacheTime = null) where T : class
         {
             cacheTime ??= TimeSpan.FromHours(1);
 
             var filePath = GetFilePath(key);
 
-            if (File.Exists(filePath))
+            if (!File.Exists(filePath)) return null;
+            
+            var fileInfo = new FileInfo(filePath);
+
+            if ((DateTime.UtcNow - fileInfo.LastWriteTimeUtc).Ticks > cacheTime.Value.Ticks)
             {
-                var fileInfo = new FileInfo(filePath);
-
-                if ((DateTime.UtcNow - fileInfo.LastWriteTimeUtc).Ticks > cacheTime?.Ticks)
-                {
-                    return default;
-                }
-
-                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-
-                var jsonSerializer = JsonSerializer.Create();
-
-                var value = jsonSerializer.Deserialize<T>(stream);
-                return value;
+                return null;
             }
 
-            return default;
+            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+            var jsonSerializer = JsonSerializer.Create();
+
+            var value = jsonSerializer.Deserialize<T>(stream);
+            return value;
         }
 
-        public static void Save<T>(string key, T value)
+        public void Set<T>(string key, T value)
         {
             var filePath = GetFilePath(key);
 
@@ -55,7 +53,7 @@ namespace OllamaClientLibrary.Cache
             jsonSerializer.Serialize(writer, value);
         }
 
-        public static void Clear()
+        public void Clear()
         {
             var cachePath = Path.Combine(AppContext.BaseDirectory, "cache");
 
@@ -72,7 +70,7 @@ namespace OllamaClientLibrary.Cache
             }
         }
 
-        private static string GetFilePath(string key)
+        private string GetFilePath(string key)
         {
             var cachePath = Path.Combine(AppContext.BaseDirectory, "cache");
 

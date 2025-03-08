@@ -1,5 +1,5 @@
 ﻿using System;
-namespace OllamaClientLibrary.Abstractions
+namespace OllamaClientLibrary.Models
 {
     public class OllamaModel
     {

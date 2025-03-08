@@ -1,5 +1,5 @@
 ﻿using OllamaClientLibrary;
-using OllamaClientLibrary.Abstractions;
+using OllamaClientLibrary.Models;
 
 using var client = new OllamaClient();
 
@@ -12,7 +12,7 @@ try
 
     var progress = new Progress<OllamaPullModelProgress>(progress =>
     {
-        Console.Write($"\rProgress: {Math.Round(progress.Percentage)}% - Status: {progress?.Status}");
+        Console.Write($"\rProgress: {Math.Round(progress.Percentage)}% - Status: {progress.Status}");
     });
 
     await client.PullModelAsync(modelName, progress);

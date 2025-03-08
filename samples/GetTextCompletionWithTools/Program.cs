@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 
 using OllamaClientLibrary;
-using OllamaClientLibrary.Abstractions;
+using OllamaClientLibrary.Models;
 using OllamaClientLibrary.Tools;
 
 using System.ComponentModel;
@@ -36,7 +36,7 @@ public class WeatherService : IDisposable
     {
         var response = await ExecuteAndGetJsonAsync($"/v1/forecast?latitude={latitude}&longitude={longitude}&timezone=auto");
 
-        var timezone = response?["timezone"]?.ToString();
+        var timezone = response["timezone"]?.ToString();
 
         return timezone;
     }
@@ -48,7 +48,7 @@ public class WeatherService : IDisposable
     {
         var response = await ExecuteAndGetJsonAsync($"/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m");
 
-        var value = response?["current"]?["temperature_2m"]?.ToString();
+        var value = response["current"]?["temperature_2m"]?.ToString();
 
         if (float.TryParse(value, out var temperature))
         {

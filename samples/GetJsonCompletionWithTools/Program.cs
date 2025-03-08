@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 
 using OllamaClientLibrary;
-using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Models;
 using OllamaClientLibrary.Tools;
 
 using System.ComponentModel;
@@ -61,7 +61,7 @@ class WeatherInfo
 
 public class WeatherService : IDisposable
 {
-    private HttpClient httpClient = new HttpClient()
+    private readonly HttpClient _httpClient = new()
     {
         BaseAddress = new Uri("https://api.open-meteo.com")
     };
@@ -73,14 +73,14 @@ public class WeatherService : IDisposable
     {
         var response = await ExecuteAndGetJsonAsync($"/v1/forecast?latitude={latitude}&longitude={longitude}&timezone=auto");
 
-        var timezone = response?["timezone"]?.ToString();
+        var timezone = response["timezone"]?.ToString();
 
         return timezone;
     }
 
     private async Task<JObject> ExecuteAndGetJsonAsync(string url, CancellationToken ct = default)
     {
-        var response = await httpClient.GetAsync(url, ct);
+        var response = await _httpClient.GetAsync(url, ct);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(ct);
@@ -90,6 +90,6 @@ public class WeatherService : IDisposable
 
     public void Dispose()
     {
-        httpClient.Dispose();
+        _httpClient.Dispose();
     }
 }

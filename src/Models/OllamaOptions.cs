@@ -1,10 +1,8 @@
-﻿using OllamaClientLibrary.Abstractions.Tools;
-using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
+﻿using OllamaClientLibrary.Models.Tools;
 
 using System;
-using System.Collections.Generic;
 
-namespace OllamaClientLibrary.Abstractions
+namespace OllamaClientLibrary.Models
 {
     /// <summary>
     /// Represents the options for configuring the Ollama client.
@@ -56,9 +54,10 @@ namespace OllamaClientLibrary.Abstractions
         /// </summary>
         public string DeleteModelApi { get; set; } = $"api/delete";
 
+        /// <summary>
         /// Gets or sets a value indicating whether to automatically install the model if it is not already installed. Defaults to false.
         /// </summary>
-        public bool AutoInstallModel { get; set; } = false;
+        public bool AutoInstallModel { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of tokens for the prompt. Defaults to 4096.
@@ -71,12 +70,12 @@ namespace OllamaClientLibrary.Abstractions
         public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(60);
 
         /// <summary>
-        /// Get or sets the behavior of the assistant. Defaults to "You are a world class AI Assistant".
+        /// Get or sets the behavior of the assistant. Defaults to "You are a world-class AI Assistant".
         /// </summary>
-        public string? AssistantBehavior { get; set; } = "You are a world class AI Assistant";
+        public string? AssistantBehavior { get; set; } = "You are a world-class AI Assistant";
 
         /// <summary>
-        /// Gets or sets the list of tools available for the assistant. Tools are not applicable for all models. Make sure the model supports tools before using them. Also tools are not applicable to the JSON responses.
+        /// Gets or sets the list of tools available for the assistant. Tools are not applicable for all models. Make sure the model supports tools before using them.
         /// </summary>
         public OllamaTool[]? Tools { get; set; }
     }

@@ -3,16 +3,15 @@ OllamaClientLibrary is a .NET Standard 2.1 library designed to interact seamless
 
 
 ## Features
-- Predefined configuration for the local Ollama setup, such as host, model, temperature, timeout, prompt size, etc.
-- Auto-install a model if it is not available on your local machine.
-- Get JSON completion with an automatically recognized JSON schema of the response DTO, so you no longer need to specify it in the prompt.
-- Get chat completion with streaming. The library provides access to the conversation history, allowing you to store it in the database if needed.
-- Get text completion. Provide a prompt and get a simple text response.
-- Get completion with tools. Based on the Ollama response, the library can dynamically call local methods and provide the necessary parameters.
-- Get embeddings completions for a given text. The library provides functionality to convert text into numerical vectors (embeddings) that can be used for various machine learning tasks such as similarity search, clustering, and classification. This is useful for applications like semantic search, recommendation systems, and natural language understanding.
-- List available local and remote models with filtering options. Now you have access to see all models installed on your local machine, as well as all models available on [Ollama's library](https://ollama.com/library)
-- Pull a model from [Ollama's library](https://ollama.com/library) to your local machine.
-- Delete a model from the local machine
+- Customizable configuration for Ollama (host, model, temperature, timeout, etc.)
+- Automatic model installation
+- JSON completions with automatic schema recognition
+- Streaming chat completions with conversation history management
+- Simple text completion API
+- Tool-calling support for dynamic method invocation
+- Text-to-embedding conversion for ML applications
+- Get text completion from a file (doc, docx, xls, xlsx, pdf, txt, json, xml, csv, jpg, jpeg, png) with OCR capabilities
+- Local and remote model management (list, pull, delete)
 
 ## Prerequisites: 
 ### Setting Up Ollama Server
@@ -92,6 +91,7 @@ class DotNetCore
 ```
 
 ## More samples
+- [Get Text Completion From a File](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetTextCompletionFromFile/Program.cs)
 - [Get Chat Completion](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetChatCompletion/Program.cs)
 - [Get JSON Completion](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetJsonCompletion/Program.cs)
 - [Get JSON Completion with Tools](https://github.com/kpobb1989/OllamaClientLibrary/tree/master/samples/GetJsonCompletionWithTools/Program.cs)
@@ -104,17 +104,23 @@ class DotNetCore
 - [Delete Model](https://github.com/kpobb1989/OllamaClientLibrary/blob/master/samples/DeleteModel/Program.cs)
 
 ## Changelog
-- **v1.3.0**: Introduced `MaxPromptTokenSize` and `AssistantBehavior` properties to `OllamaOptions`, and added the `DeleteModelAsync` method. Removed `KeepChatHistory`. Fixed handling of multiple `ToolCalls`. Updated to call AI after receiving a response from the tools. Modified `ToolFactory` to retrieve all public methods automatically instead of specifying them manually. Added support for async methods in `ToolCalls`.
-- **v1.2.0**: Renamed methods to be more descriptive, added `AutoInstallModel` and `Timeout` properties to `OllamaOptions`, started using the chat completion API instead of the generate API added the pull model API and added IOllamaClient interface.
-- **v1.1.0**: Changed the default model to `qwen2.5:1.5b`, fixed parsing of `ModifiedAt` for the Models list endpoint, added support for Tools, added Chat History, added integration tests, and configured CI.
-- **v1.0.1**: Allowed setting the `ApiKey` in `OllamaOptions`.
-- **v1.0.0**: Initial release with basic functionality for text and chat completions.
+- **v1.4.0**: Implemented `dependency injection` support, added `file-based embedding generation`, integrated document processing capabilities with `PdfPig` (PDF text extraction), `Tesseract` (`OCR` for images and image-based PDFs), and `NPOI` (extraction from DOC, DOCX, XML, XLSX formats).
+- **v1.3.0**: Enhanced configuration with `MaxPromptTokenSize` and `AssistantBehavior` properties, added model deletion functionality, improved tool calling with multi-call support and async method compatibility, automated public method discovery in `ToolFactory`, and removed the `KeepChatHistory` option.
+- **v1.2.0**: Improved API naming conventions, introduced `AutoInstallModel` and `Timeout` options, migrated from generate API to chat completion API, added model pull functionality, and implemented the `IOllamaClient` interface.
+- **v1.1.0**: Set `qwen2.5:1.5b` as the default model, corrected `ModifiedAt` parsing for model listings, implemented tools support and conversation history, added comprehensive integration tests, and established CI pipeline.
+- **v1.0.1**: Added `ApiKey` configuration support in `OllamaOptions`.
+- **v1.0.0**: Initial release with core text and chat completion functionality.
 
 ## License
 This project is licensed under the MIT License.
 
 ## Repository
 For more information, visit the [GitHub repository](https://github.com/kpobb1989/OllamaClientLibrary).
+
+# Dependencies
+- [Tesseract](https://www.nuget.org/packages/Tesseract/) (License: Apache-2.0) - OCR capabilities
+- [PdfPig](https://www.nuget.org/packages/PdfPig) (License: Apache-2.0) - Extract text from PDF files
+- [NPOI](https://www.nuget.org/packages/NPOI) (License: Apache-2.0) - Extract text from Word and Excel files
 
 ## Author
 Oleksandr Kushnir

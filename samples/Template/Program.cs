@@ -1,6 +1,7 @@
 ﻿using OllamaClientLibrary;
 using OllamaClientLibrary.Abstractions;
 using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Models;
 
 using System.ComponentModel;
 

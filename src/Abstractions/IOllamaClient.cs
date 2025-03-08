@@ -1,5 +1,6 @@
 ﻿
 using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Models;
 
 using System;
 using System.Collections.Generic;
@@ -22,14 +23,27 @@ namespace OllamaClientLibrary.Abstractions
         /// Gets or sets the conversation history.
         /// </summary>
         public List<OllamaChatMessage> ConversationHistory { get; set; }
-
+        
+        /// <summary>
+        /// Asynchronously gets a text completion from the content of the specified file based on the provided prompt.
+        /// </summary>
+        /// <param name="prompt">The prompt to generate the text completion.</param>
+        /// <param name="file">The file from which to extract the content for text completion.</param>
+        /// <param name="ct">The cancellation token to cancel the operation.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the generated text completion.</returns>
+        /// <remarks>
+        /// Supported image formats: .jpg, .jpeg, .png
+        /// Supported document formats: .doc, .docx, .xls, .xlsx, .pdf, .txt, .csv, .json, .xml
+        /// </remarks>
+        Task<string?> GetTextCompletionFromFileAsync(string prompt, OllamaFile file, CancellationToken ct = default);
+        
         /// <summary>
         /// Gets chat completion asynchronously.
         /// </summary>
         /// <param name="prompt">The prompt to get chat completion for.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>An asynchronous enumerable of chat messages.</returns>
-        IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string? prompt = null, CancellationToken ct = default);
+        IAsyncEnumerable<OllamaChatMessage?> GetChatCompletionAsync(string? prompt, CancellationToken ct = default);
 
         /// <summary>
         /// Gets embeddings for the specified input asynchronously.
@@ -46,7 +60,7 @@ namespace OllamaClientLibrary.Abstractions
         /// <param name="prompt">The prompt to generate completion for.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated completion deserialized to the specified type.</returns>
-        Task<T?> GetJsonCompletionAsync<T>(string? prompt = null, CancellationToken ct = default) where T : class;
+        Task<T?> GetJsonCompletionAsync<T>(string? prompt, CancellationToken ct = default) where T : class;
 
         /// <summary>
         /// Gets text completion asynchronously.
@@ -54,7 +68,7 @@ namespace OllamaClientLibrary.Abstractions
         /// <param name="prompt">The prompt to generate completion for.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated text completion.</returns>
-        Task<string?> GetTextCompletionAsync(string? prompt = null, CancellationToken ct = default);
+        Task<string?> GetTextCompletionAsync(string? prompt, CancellationToken ct = default);
 
         /// <summary>
         /// Lists models asynchronously.

@@ -2,7 +2,7 @@
 
 using System.Reflection;
 
-namespace OllamaClientLibrary.Abstractions.Tools
+namespace OllamaClientLibrary.Models.Tools
 {
     public class OllamaTool
     {
@@ -10,7 +10,7 @@ namespace OllamaClientLibrary.Abstractions.Tools
         public OllamaFunction Function { get; set; } = new OllamaFunction();
 
         [JsonIgnore]
-        public MethodInfo? MethodInfo { get; set; } = null!;
+        public MethodInfo? MethodInfo { get; set; }
 
         [JsonIgnore]
         public object? Instance { get; set; }

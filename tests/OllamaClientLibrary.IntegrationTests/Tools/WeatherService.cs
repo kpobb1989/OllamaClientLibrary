@@ -18,7 +18,7 @@ namespace OllamaClientLibrary.IntegrationTests.Tools
         {
             var response = await ExecuteAndGetJsonAsync($"/v1/forecast?latitude={latitude}&longitude={longitude}&timezone=auto");
 
-            var timezone = response?["timezone"]?.ToString();
+            var timezone = response["timezone"]?.ToString();
 
             return timezone;
         }
@@ -30,7 +30,7 @@ namespace OllamaClientLibrary.IntegrationTests.Tools
         {
             var response = await ExecuteAndGetJsonAsync($"/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m");
 
-            var value = response?["current"]?["temperature_2m"]?.ToString();
+            var value = response["current"]?["temperature_2m"]?.ToString();
 
             if (float.TryParse(value, out var temperature))
             {

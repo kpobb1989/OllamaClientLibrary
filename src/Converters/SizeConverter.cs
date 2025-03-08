@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OllamaClientLibrary.Converters
+﻿namespace OllamaClientLibrary.Converters
 {
     /// <summary>
     /// Provides methods to convert between different size units.
@@ -11,14 +9,14 @@ namespace OllamaClientLibrary.Converters
     /// </summary>
     public static class SizeConverter
     {
-        private const long BytesInOneGB = 1_073_741_824L;
+        private const long BytesInOneGb = 1_073_741_824L;
 
         public static long GigabytesToBytes(double? value)
         {
             if (!value.HasValue)
                 return 0;
 
-            return (long)(value.Value * BytesInOneGB);
+            return (long)(value.Value * BytesInOneGb);
         }
 
         public static double BytesToGigabytes(long? bytes)
@@ -26,7 +24,7 @@ namespace OllamaClientLibrary.Converters
             if (!bytes.HasValue)
                 return 0;
 
-            return (double)bytes.Value / BytesInOneGB;
+            return (double)bytes.Value / BytesInOneGb;
         }
     }
 

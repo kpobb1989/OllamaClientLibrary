@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OllamaClientLibrary.Abstractions.Tools
+namespace OllamaClientLibrary.Models.Tools
 {
     public class OllamaProperty
     {

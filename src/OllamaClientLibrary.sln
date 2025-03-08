@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeleteModel", "..\samples\D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetJsonCompletionWithTools", "..\samples\GetJsonCompletionWithTools\GetJsonCompletionWithTools.csproj", "{B30FD54E-278B-42AE-AC21-438C0E945EC1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetTextCompletionFromFile", "..\samples\GetTextCompletionFromFile\GetTextCompletionFromFile.csproj", "{4AC561F4-98D5-41A6-A08E-11987796A055}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{B30FD54E-278B-42AE-AC21-438C0E945EC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B30FD54E-278B-42AE-AC21-438C0E945EC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B30FD54E-278B-42AE-AC21-438C0E945EC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AC561F4-98D5-41A6-A08E-11987796A055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AC561F4-98D5-41A6-A08E-11987796A055}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AC561F4-98D5-41A6-A08E-11987796A055}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AC561F4-98D5-41A6-A08E-11987796A055}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -108,6 +114,7 @@ Global
 		{E854C09D-414B-41D2-BB3A-8510C54D4268} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
 		{49FC6DAA-189B-49AD-A973-C1AA88A66467} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
 		{B30FD54E-278B-42AE-AC21-438C0E945EC1} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
+		{4AC561F4-98D5-41A6-A08E-11987796A055} = {AEDDD86B-ECBE-4C2A-A9B7-C4DB313467A4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3BD5083D-67CA-49CC-8742-019FD127DF3E}
