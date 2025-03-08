@@ -66,57 +66,6 @@ namespace OllamaClientLibrary
             _ocrService = serviceProvider.GetRequiredService<IOcrService>();
         }
 
-        public async Task<string?> GetOcrTextFromFileAsync(OllamaFile file, CancellationToken ct = default)
-        {
-            if (file.IsDocument())
-            {
-                switch (file.GetExtension())
-                {
-                    case ".doc":
-                    case ".docx":
-                        return _documentService.GetTextFromWord(file.FileStream, file.GetExtension());
-                    case ".xls":
-                    case ".xlsx":
-                        return _documentService.GetTextFromExcel(file.FileStream, file.GetExtension());
-                    case ".txt":
-                    case ".json":
-                    case ".xml":
-                    case ".csv":
-                        return await _documentService.GetTextAsync(file.FileStream);
-                }
-            }
-
-            if (file.IsImage())
-                return await _ocrService.GetTextFromImageAsync(file.FileStream);
-
-            if (file.IsPdf())
-            {
-                var builder = new StringBuilder();
-                using var document = PdfDocument.Open(file.FileStream);
-
-                foreach (var page in document.GetPages())
-                {
-                    if (page.IsImageBasedPage())
-                    {
-                        foreach (var image in page.GetImages())
-                        {
-                            var text = await _ocrService.GetTextFromImageAsync(image.RawBytes.ToArray());
-
-                            builder.Append(text);
-                        }
-                    }
-                    else
-                    {
-                        builder.Append(page.Text);
-                    }
-                }
-
-                return builder.ToString();
-            }
-
-            throw new ArgumentException($"File type {file.FileName} is not supported.");
-        }
-
         public async Task<string?> GetTextCompletionFromFileAsync(string prompt, OllamaFile file,
             CancellationToken ct = default)
         {
@@ -148,14 +97,50 @@ namespace OllamaClientLibrary
             }
             else if (file.IsImage())
             {
-                var bytes = ImageConverter.ToBytes(file.FileStream, ImageFormat.Jpeg, 600, 800);
-                message.Images.Add(bytes);
+                var text = await _ocrService.GetTextFromImageAsync(file.FileStream);
+
+                if (!string.IsNullOrEmpty(text))
+                {
+                    message.Content = text;
+                }
+                else
+                {
+                    var bytes = ImageConverter.ToBytes(file.FileStream, ImageFormat.Jpeg, 600, 800);
+                    message.Images.Add(bytes);
+                }
             }
             else if (file.IsPdf())
             {
-                foreach (var image in await PdfConverter.ToImagesAsync(file.FileStream, file.FileName))
+                var builder = new StringBuilder();
+                using var document = PdfDocument.Open(file.FileStream);
+
+                foreach (var page in document.GetPages())
                 {
-                    message.Images.Add(image);
+                    if (page.IsImageBasedPage())
+                    {
+                        foreach (var image in page.GetImages())
+                        {
+                            builder.Append(await _ocrService.GetTextFromImageAsync(image.RawBytes.ToArray()));
+                        }
+                    }
+                    else
+                    {
+                        builder.Append(page.Text);
+                    }
+                }
+
+                var text = builder.ToString();
+
+                if (!string.IsNullOrEmpty(text))
+                {
+                    message.Content = text;
+                }
+                else
+                {
+                    foreach (var image in await PdfConverter.ToImagesAsync(file.FileStream, file.FileName))
+                    {
+                        message.Images.Add(image);
+                    }
                 }
             }
             else

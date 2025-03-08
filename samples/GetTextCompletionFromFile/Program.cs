@@ -27,25 +27,13 @@ var files = new OllamaFile[]
 
 try
 {
-    Console.WriteLine("Extracting text from the specified files using Optical Character Recognition (OCR)...");
-
-    foreach (var file in files)
-    {
-        // For text-based files, extract the text using local libraries
-        // For image-based files, use OCR (Tesseract) to extract text from the image
-        // For PDF files: extract text from the PDF using PdfPig, if the pdf is image-based, use OCR (Tesseract) to extract text from the image
-        var response = await client.GetOcrTextFromFileAsync(file);
-
-        Console.WriteLine(response);
-    }
-    
     Console.WriteLine("Generating text completions from the content of the specified files...");
     
     foreach (var file in files)
     {
-        // For text-based files, extract text using local libraries and then send the text to the AI model
-        // For image-based files, send the image directly to the AI model (make sure the model supports image input)
-        // For PDF files, convert to image first and then send the image to the AI model (make sure the model supports image input)
+        // For text-based files, use local libraries (NPOI) to extract text and then send it to the AI model.
+        // For PDF files, use PdfPig to extract text and send it to the AI model. If the PDF is image-based, use OCR to extract text. If text extraction fails, convert the PDF to an image and send it to the AI model.
+        // For image-based files, use OCR (Tesseract) to extract text and send it to the AI model. If text extraction fails, send the image directly to the AI model.
         var response = await client.GetTextCompletionFromFileAsync("Please analyze the provided file and recognize all visible text in the file as accurately as possible using Optical Character Recognition (OCR). Additionally, generate a text completion based on the content of the file.", file);
 
         Console.WriteLine(response);

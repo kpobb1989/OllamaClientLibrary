@@ -36,18 +36,6 @@ namespace OllamaClientLibrary.Abstractions
         /// Supported document formats: .doc, .docx, .xls, .xlsx, .pdf, .txt, .csv, .json, .xml
         /// </remarks>
         Task<string?> GetTextCompletionFromFileAsync(string prompt, OllamaFile file, CancellationToken ct = default);
-
-        /// <summary>
-        /// Asynchronously extracts text from the specified file using Optical Character Recognition (OCR).
-        /// </summary>
-        /// <param name="file">The file from which to extract text using OCR.</param>
-        /// <param name="ct">The cancellation token to cancel the operation.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the extracted text.</returns>
-        /// <remarks>
-        /// Supported image formats: .jpg, .jpeg, .png
-        /// Supported document formats: .doc, .docx, .xls, .xlsx, .pdf, .txt, .csv, .json, .xml
-        /// </remarks>
-        Task<string?> GetOcrTextFromFileAsync(OllamaFile file, CancellationToken ct = default);
         
         /// <summary>
         /// Gets chat completion asynchronously.
