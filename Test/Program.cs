@@ -46,10 +46,10 @@ using var client = new OllamaClient(new OllamaOptions()
 {
     Model = "qwen3:4b",
     AutoInstallModel = false,
-    Tools = ToolFactory.Create<SqlRunnerTool>(),
     ThinkingEnabled = false,
     KeepConversationHistory = false,
-    SystemPrompt = systemPrompt
+    SystemPrompt = systemPrompt,
+    Tools = ToolFactory.Create<SqlRunnerTool>(),
 });
 
 while (true)

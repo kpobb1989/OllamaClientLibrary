@@ -17,7 +17,7 @@ namespace OllamaClientLibrary.Abstractions.HttpClients
 
         Task<double[][]> GetEmbeddingCompletionAsync(string[] input, CancellationToken ct = default);
 
-        Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress, CancellationToken ct);
+        Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default);
 
         Task<IEnumerable<Model>> ListLocalModelsAsync(CancellationToken ct = default);
     }

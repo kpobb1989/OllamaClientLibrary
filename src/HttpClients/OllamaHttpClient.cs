@@ -131,7 +131,7 @@ namespace OllamaClientLibrary.HttpClients
             return response?.Models ?? new List<Model>();
         }
 
-        public async Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress, CancellationToken ct)
+        public async Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default)
         {
             var request = new PullModelRequest()
             {
