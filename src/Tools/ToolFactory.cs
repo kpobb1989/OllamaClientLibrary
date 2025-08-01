@@ -150,7 +150,6 @@ namespace OllamaClientLibrary.Tools
             }
 
             return tool;
-
         }
 
         private static string GetTypeString(Type type)

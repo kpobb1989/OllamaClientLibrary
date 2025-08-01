@@ -28,7 +28,6 @@ namespace OllamaClientLibrary
 
         public List<OllamaChatMessage> ConversationHistory { get; set; } = new List<OllamaChatMessage>();
 
-
         public OllamaClient() : this(new OllamaOptions())
         {
         }
@@ -67,6 +66,25 @@ namespace OllamaClientLibrary
             Options = serviceProvider.GetRequiredService<OllamaOptions>();
             _httpClient = serviceProvider.GetRequiredService<IOllamaHttpClient>();
         }
+
+        /// <summary>
+        /// Gets the current conversation messages.
+        /// If KeepConversationHistory is true, returns the ConversationHistory.
+        /// Otherwise, returns a new in-memory collection for this call.
+        /// </summary>
+        /// <returns>The list of chat messages.</returns>
+        private List<OllamaChatMessage> GetMessages()
+        {
+            if (Options.KeepConversationHistory)
+            {
+                return ConversationHistory;
+            }
+            else
+            {
+                return new List<OllamaChatMessage>() { new OllamaChatMessage() { Role = MessageRole.System, Content = Options.SystemPrompt } };
+            }
+        }
+
         public async Task<string?> GetTextCompletionAsync(string? prompt, CancellationToken ct = default)
             => await GetJsonCompletionAsync<string>(prompt, ct).ConfigureAwait(false);
 
@@ -74,27 +92,34 @@ namespace OllamaClientLibrary
         {
             await AutoInstallModelAsync(ct).ConfigureAwait(false);
 
-            var message = prompt?.AsUserChatMessage();
+            var messages = GetMessages();
 
-            if (Options.KeepConversationHistory && message != null)
+            var message = prompt?.AsUserChatMessage();
+            if (message != null)
             {
-                ConversationHistory.Add(message);
+                messages.Add(message);
             }
 
+            var request = messages.Select(s => s.AsChatMessageRequest()).ToArray();
+
             var response = await _httpClient
-                .GetCompletionAsync<T>(GetRequest(prompt), Options.Tools?.Select(s => s.AsTool()).ToArray(), ct)
+                .GetCompletionAsync<T>(request, Options.Tools?.Select(s => s.AsTool()).ToArray(), ct)
                 .ConfigureAwait(false);
 
             var toolMessages = await HandleToolCallsAsync(response).ConfigureAwait(false);
 
             if (toolMessages.Any())
             {
-                if (Options.KeepConversationHistory)
-                {
-                    ConversationHistory.AddRange(toolMessages.Select(m => m.AsOllamaChatMessage()));
-                }
+                messages.AddRange(toolMessages.Select(m => m.AsOllamaChatMessage()));
 
-                response = await _httpClient.GetCompletionAsync<T>(GetRequest(prompt), ct: ct).ConfigureAwait(false);
+                request = messages.Select(s => s.AsChatMessageRequest()).ToArray();
+
+                response = await _httpClient.GetCompletionAsync<T>(request, ct: ct).ConfigureAwait(false);
+            }
+
+            if (response?.Message?.Content != null)
+            {
+                messages.Add(new OllamaChatMessage(MessageRole.Assistant, response.Message.Content));
             }
 
             return response?.Message?.Content;
@@ -104,15 +129,19 @@ namespace OllamaClientLibrary
         {
             await AutoInstallModelAsync(ct).ConfigureAwait(false);
 
-            if (Options.KeepConversationHistory && !string.IsNullOrEmpty(prompt))
+            var messages = GetMessages();
+
+            if (!string.IsNullOrEmpty(prompt))
             {
-                ConversationHistory.Add(prompt.AsUserChatMessage());
+                messages.Add(prompt.AsUserChatMessage());
             }
+
+            var request = messages.Select(s => s.AsChatMessageRequest()).ToArray();
 
             var messageChunks = new StringBuilder();
 
             var tools = Options.Tools?.Select(s => s.AsTool()).ToArray();
-            await foreach (var chunk in _httpClient.GetChatCompletionAsync(GetRequest(prompt), tools, ct: ct))
+            await foreach (var chunk in _httpClient.GetChatCompletionAsync(request, tools, ct: ct))
             {
                 var content = chunk?.Message?.Content;
 
@@ -122,12 +151,11 @@ namespace OllamaClientLibrary
 
                     if (toolMessages.Any())
                     {
-                        if (Options.KeepConversationHistory)
-                        {
-                            ConversationHistory.AddRange(toolMessages.Select(m => m.AsOllamaChatMessage()));
-                        }
+                        messages.AddRange(toolMessages.Select(m => m.AsOllamaChatMessage()));
 
-                        var response = await _httpClient.GetCompletionAsync<string>(GetRequest(prompt), ct: ct)
+                        request = messages.Select(s => s.AsChatMessageRequest()).ToArray();
+
+                        var response = await _httpClient.GetCompletionAsync<string>(request, ct: ct)
                             .ConfigureAwait(false);
                         content = response?.Message?.Content;
                     }
@@ -135,15 +163,15 @@ namespace OllamaClientLibrary
 
                 messageChunks.Append(content);
 
-                yield return new OllamaChatMessage(MessageRole.Assistant, content);
+                var assistantMsg = new OllamaChatMessage(MessageRole.Assistant, content);
+                messages.Add(assistantMsg);
+
+                yield return assistantMsg;
             }
 
             var completeMessage = new ChatMessageRequest { Role = MessageRole.Assistant, Content = messageChunks.ToString() };
 
-            if (Options.KeepConversationHistory)
-            {
-                ConversationHistory.Add(completeMessage.AsOllamaChatMessage());
-            }
+            messages.Add(completeMessage.AsOllamaChatMessage());
 
             yield return new OllamaChatMessage
             {
@@ -175,26 +203,6 @@ namespace OllamaClientLibrary
                     await _httpClient.PullModelAsync(Options.Model, null, ct).ConfigureAwait(false);
                 }
             }
-        }
-
-        private ChatMessageRequest[] GetRequest(string? prompt)
-        {
-            var messages = new List<OllamaChatMessage>();
-
-            if (Options.KeepConversationHistory)
-            {
-                messages = ConversationHistory;
-            }
-            else
-            {
-                messages = new List<OllamaChatMessage>()
-                {
-                    new OllamaChatMessage(MessageRole.System, Options.SystemPrompt),
-                    new OllamaChatMessage(MessageRole.User, prompt)
-                };
-            }
-
-            return messages.Select(s => s.AsChatMessageRequest()).ToArray();
         }
 
         private async Task<List<ChatMessageRequest>> HandleToolCallsAsync<T>(ChatCompletionResponse<T>? response)
