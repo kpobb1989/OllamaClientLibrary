@@ -1,12 +1,11 @@
-﻿using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
-using OllamaClientLibrary.Dto.ChatCompletion;
-
-using System;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Collections.Generic;
+﻿using OllamaClientLibrary.Dto.ChatCompletion;
+using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
 using OllamaClientLibrary.Dto.Models;
 using OllamaClientLibrary.Models;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OllamaClientLibrary.Abstractions.HttpClients
 {
@@ -18,12 +17,8 @@ namespace OllamaClientLibrary.Abstractions.HttpClients
 
         Task<double[][]> GetEmbeddingCompletionAsync(string[] input, CancellationToken ct = default);
 
-        Task<IEnumerable<Model>> ListLocalModelsAsync(CancellationToken ct = default);
-
-        Task<IEnumerable<Model>> ListRemoteModelsAsync(CancellationToken ct = default);
-
         Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress, CancellationToken ct);
 
-        Task DeleteModelAsync(string model, CancellationToken ct = default);
+        Task<IEnumerable<Model>> ListLocalModelsAsync(CancellationToken ct = default);
     }
 }

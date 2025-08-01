@@ -6,5 +6,7 @@
         public string[]? Input { get; set; }
 
         public ModelOptions? Options { get; set; }
+
+        public bool Think { get; set; }
     }
 }

@@ -11,6 +11,9 @@ namespace OllamaClientLibrary.Dto.ChatCompletion
         public bool Stream { get; set; }
         public ModelOptions? Options { get; set; }
         public object? Format { get; set; }
+
+        public bool Think { get; set; }
+
         public IEnumerable<Tool>? Tools { get; set; }
     }
 }

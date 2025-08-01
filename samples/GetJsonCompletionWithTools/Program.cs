@@ -10,7 +10,7 @@ using System.ComponentModel;
 using var client = new OllamaClient(new OllamaOptions()
 {
     Temperature = Temperature.CodingOrMath,
-    AssistantBehavior = "You are a professional meteorologist.",
+    SystemPrompt = "You are a professional meteorologist.",
     Tools = ToolFactory.Create<WeatherService>()
 });
 

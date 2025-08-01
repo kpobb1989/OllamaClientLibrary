@@ -1,4 +1,5 @@
-﻿using OllamaClientLibrary.Models.Tools;
+﻿using Newtonsoft.Json;
+using OllamaClientLibrary.Models.Tools;
 
 using System;
 using System.Collections.Generic;
@@ -43,7 +44,9 @@ namespace OllamaClientLibrary.Tools
                 return await GetTaskResultAsync(task).ConfigureAwait(false);
             }
 
-            return result;
+            var json = JsonConvert.SerializeObject(result);
+
+            return json;
         }
 
         /// <summary>
@@ -73,7 +76,11 @@ namespace OllamaClientLibrary.Tools
         public static OllamaTool[] Create<TClass>()
         {
             var tools = new List<OllamaTool>();
-            var methodInfos = typeof(TClass).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+
+            var methodInfos = typeof(TClass)
+                .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
+                .Where(m => m.DeclaringType != typeof(object))
+                .ToArray();
 
             foreach (var methodInfo in methodInfos)
             {

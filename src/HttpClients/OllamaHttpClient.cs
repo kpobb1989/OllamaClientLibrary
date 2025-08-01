@@ -1,9 +1,6 @@
-﻿using HtmlAgilityPack;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Schema.Generation;
 using OllamaClientLibrary.Abstractions.HttpClients;
-using OllamaClientLibrary.Abstractions.Services;
 using OllamaClientLibrary.Dto;
 using OllamaClientLibrary.Dto.ChatCompletion;
 using OllamaClientLibrary.Dto.ChatCompletion.Tools.Request;
@@ -14,15 +11,12 @@ using OllamaClientLibrary.Extensions;
 using OllamaClientLibrary.Models;
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using OllamaClientLibrary.Dto.Models.DeleteModel;
 
 
 namespace OllamaClientLibrary.HttpClients
@@ -32,12 +26,10 @@ namespace OllamaClientLibrary.HttpClients
         private readonly JSchemaGenerator _jsonSchemaGenerator = new JSchemaGenerator();
         private readonly HttpClient _httpClient;
         private readonly OllamaOptions _options;
-        private readonly IOllamaWebParserService _ollamaWebParserService;
         private readonly JsonSerializer _jsonSerializer;
 
-        public OllamaHttpClient(IOllamaWebParserService ollamaWebParserService, OllamaOptions options, JsonSerializer jsonSerializer)
+        public OllamaHttpClient(OllamaOptions options, JsonSerializer jsonSerializer)
         {
-            _ollamaWebParserService = ollamaWebParserService;
             _options = options;
             _jsonSerializer = jsonSerializer;
 
@@ -66,6 +58,7 @@ namespace OllamaClientLibrary.HttpClients
                 Format = typeof(T) != typeof(string) && tools == null ? _jsonSchemaGenerator.Generate(typeof(T)) : null,
                 Messages = messages,
                 Tools = tools,
+                Think = _options.ThinkingEnabled,
                 Stream = false
             };
 
@@ -84,6 +77,7 @@ namespace OllamaClientLibrary.HttpClients
                 },
                 Messages = messages,
                 Stream = tools == null,
+                Think = _options.ThinkingEnabled,
                 Tools = tools
             };
 
@@ -122,6 +116,7 @@ namespace OllamaClientLibrary.HttpClients
                     Temperature = _options.Temperature,
                     MaxPromptTokenSize = _options.MaxPromptTokenSize
                 },
+                Think = _options.ThinkingEnabled
             };
 
             var response = await _httpClient.ExecuteAndGetJsonAsync<EmbeddingCompletionResponse>(_options.EmbeddingsApi, HttpMethod.Post, _jsonSerializer, request, ct).ConfigureAwait(false);
@@ -134,46 +129,6 @@ namespace OllamaClientLibrary.HttpClients
             var response = await _httpClient.ExecuteAndGetJsonAsync<ModelResponse>(_options.TagsApi, HttpMethod.Get, _jsonSerializer, ct: ct).ConfigureAwait(false);
 
             return response?.Models ?? new List<Model>();
-        }
-
-        public async Task<IEnumerable<Model>> ListRemoteModelsAsync(CancellationToken ct = default)
-        {
-            using var stream = await _httpClient.ExecuteAndGetStreamAsync("https://ollama.com/library?sort=newest", HttpMethod.Get, _jsonSerializer, ct: ct).ConfigureAwait(false);
-
-            var htmlDoc = new HtmlDocument();
-            htmlDoc.Load(stream);
-
-            var hrefs = htmlDoc.DocumentNode
-                      .SelectNodes("//a[starts-with(@href, '/library/')]")
-                      .Select(node => node.GetAttributeValue("href", string.Empty))
-                      .ToList();
-
-            var remoteModels = new ConcurrentBag<Model>();
-
-            var semaphore = new SemaphoreSlim(20);
-
-            var tasks = hrefs.Select(async href =>
-            {
-                await semaphore.WaitAsync(ct).ConfigureAwait(false);
-
-                try
-                {
-                    var models = await GetRemoteModelsAsync(href, ct).ConfigureAwait(false);
-
-                    foreach (var model in models)
-                    {
-                        remoteModels.Add(model);
-                    }
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            }).ToList();
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            return remoteModels;
         }
 
         public async Task PullModelAsync(string modelName, IProgress<OllamaPullModelProgress>? progress, CancellationToken ct)
@@ -224,28 +179,9 @@ namespace OllamaClientLibrary.HttpClients
             }
         }
 
-        public async Task DeleteModelAsync(string model, CancellationToken ct = default)
-        {
-            var request = new DeleteModelRequest()
-            {
-                Model = model
-            };
-
-            await _httpClient.ExecuteAsync(_options.DeleteModelApi, HttpMethod.Delete, _jsonSerializer, request, returnStream: false, ct).ConfigureAwait(false);
-        }
-
         public void Dispose()
         {
             _httpClient.Dispose();
-        }
-
-        private async Task<IEnumerable<Model>> GetRemoteModelsAsync(string href, CancellationToken ct)
-        {
-            using var stream = await _httpClient.ExecuteAndGetStreamAsync($"https://ollama.com/{href}/tags", HttpMethod.Get, _jsonSerializer, ct: ct).ConfigureAwait(false);
-
-            var remoteModels = await _ollamaWebParserService.GetRemoteModelsAsync(stream, ct).ConfigureAwait(false);
-
-            return remoteModels;
         }
     }
 }

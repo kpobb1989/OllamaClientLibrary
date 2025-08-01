@@ -1,10 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-using OllamaClientLibrary.Abstractions;
-using OllamaClientLibrary.Abstractions.Services;
-using OllamaClientLibrary.Constants;
-using OllamaClientLibrary.Converters;
-using OllamaClientLibrary.Extensions;
+﻿using OllamaClientLibrary.Constants;
 using OllamaClientLibrary.IntegrationTests.Tools;
 using OllamaClientLibrary.Models;
 using OllamaClientLibrary.Tools;
@@ -91,7 +85,7 @@ namespace OllamaClientLibrary.IntegrationTests
             // Arrange
             _client = new OllamaClient(new OllamaOptions()
             {
-                AssistantBehavior = null
+                SystemPrompt = null
             });
             var conversation = new[] { "hello", "how are you doing?" };
 
@@ -159,7 +153,7 @@ namespace OllamaClientLibrary.IntegrationTests
             _client = new OllamaClient(new OllamaOptions()
             {
                 Model = Model,
-                AssistantBehavior = null
+                SystemPrompt = null
             });
 
             var cts = new CancellationTokenSource();
@@ -189,217 +183,6 @@ namespace OllamaClientLibrary.IntegrationTests
 
             // Assert
             Assert.That(response, Is.Not.Null);
-        }
-
-        [Test]
-        public async Task ListModelsAsync_LocalModels_ShouldReturnAtLeastOneModel()
-        {
-            // Act
-            var models = await _client.ListModelsAsync(location: ModelLocation.Local);
-
-            // Assert
-            Assert.That(models.Count(), Is.GreaterThanOrEqualTo(1));
-        }
-
-        [Test]
-        public async Task ListModelsAsync_LocalModels_ShouldReturnModelsWithNonEmptyFields()
-        {
-            // Act
-            var models = await _client.ListModelsAsync(location: ModelLocation.Local);
-
-            // Assert
-            Assert.That(models.All(s => !string.IsNullOrEmpty(s.Name) && s is { ModifiedAt: not null, Size: not null }), Is.True);
-        }
-
-        [Test]
-        public async Task ListModelsAsync_RemoteModels_ShouldReturnAtLeastOneModel()
-        {
-            // Act
-            var models = await _client.ListModelsAsync(location: ModelLocation.Remote);
-
-            // Assert
-            Assert.That(models.Count(), Is.GreaterThanOrEqualTo(1));
-        }
-
-        [Test]
-        public async Task ListModelsAsync_RemoteModels_ShouldReturnModelsWithNonEmptyFields()
-        {
-            // Act
-            var models = await _client.ListModelsAsync(location: ModelLocation.Remote);
-
-            // Assert
-            Assert.That(models.All(s => !string.IsNullOrEmpty(s.Name) && s is { ModifiedAt: not null, Size: not null }), Is.True);
-        }
-
-        [Test]
-        public async Task ListModelsAsync_RemoteModels_ShouldStoreModelsInCache()
-        {
-            // Arrange
-            var serviceCollections = new ServiceCollection();
-            serviceCollections.AddOllamaClient(new OllamaOptions()
-            {
-                Model = Model
-            });
-            var serviceProvider = serviceCollections.BuildServiceProvider();
-            var client = serviceProvider.GetRequiredService<IOllamaClient>();
-            var cacheService = serviceProvider.GetRequiredService<ICacheService>();
-            cacheService.Clear();
-
-            // Act
-            await client.ListModelsAsync(location: ModelLocation.Remote);
-            var cache = cacheService.Get<IEnumerable<OllamaModel>>("remote-models");
-
-            // Assert
-            Assert.That(cache?.Count(), Is.GreaterThanOrEqualTo(1));
-        }
-
-        [Test]
-        public async Task ListModelsAsync_RemoteModels_ShouldReturnCachedModels()
-        {
-            // Arrange
-            var serviceCollections = new ServiceCollection();
-            serviceCollections.AddOllamaClient(new OllamaOptions()
-            {
-                Model = Model
-            });
-            var serviceProvider = serviceCollections.BuildServiceProvider();
-            var cacheService = serviceProvider.GetRequiredService<ICacheService>();
-            cacheService.Clear();
-
-            // Act
-            var models = await _client.ListModelsAsync(location: ModelLocation.Remote);
-            var cache = cacheService.Get<IEnumerable<OllamaModel>>("remote-models");
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.That(models, Is.Not.Null);
-                Assert.That(cache, Is.Not.Null);
-            });
-            Assert.Multiple(() =>
-            {
-                Assert.That(models.Count(), Is.EqualTo(cache?.Count()));
-                Assert.That(models.IntersectBy(cache!.Select(s => (s.Name, s.ModifiedAt, s.Size)), s => (s.Name, s.ModifiedAt, s.Size)).Count(), Is.EqualTo(models.Count()));
-            });
-        }
-
-        [Test]
-        public async Task ListModelsAsync_FilteringOnRemoteModels_ShouldReturnCachedModels()
-        {
-            // Act
-            var models = await _client.ListModelsAsync("deepseek-r1");
-
-            // Assert
-            Assert.That(models, Is.Not.Null);
-            Assert.That(models.Count(), Is.GreaterThanOrEqualTo(1));
-        }
-
-        [Test]
-        public async Task ListModelsAsync_ModelSizeTiny_ShouldReturnModelsLessThanOrEqualTo500Mb()
-        {
-            // Act
-            var models = await _client.ListModelsAsync(size: ModelSize.Tiny);
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.That(models, Is.Not.Null);
-
-                Assert.That(models.All(s => s.Size <= SizeConverter.GigabytesToBytes(0.5)), Is.True);
-            });
-        }
-
-        [Test]
-        public async Task ListModelsAsync_ModelSizeSmall_ShouldReturnModelsMoreThan500MbANdLessThanOrEqualTo2Gb()
-        {
-            // Act
-            var models = await _client.ListModelsAsync(size: ModelSize.Small);
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.That(models, Is.Not.Null);
-
-                Assert.That(models.All(s => s.Size > SizeConverter.GigabytesToBytes(0.5) && s.Size <= SizeConverter.GigabytesToBytes(2)), Is.True);
-            });
-        }
-
-        [Test]
-        public async Task ListModelsAsync_ModelSizeMedium_ShouldReturnModelsMoreThan2GbAndLessThanOrEqualTo5Gb()
-        {
-            // Act
-            var models = await _client.ListModelsAsync(size: ModelSize.Medium);
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.That(models, Is.Not.Null);
-
-                Assert.That(models.All(s => s.Size > SizeConverter.GigabytesToBytes(2) && s.Size <= SizeConverter.GigabytesToBytes(5)), Is.True);
-            });
-        }
-
-        [Test]
-        public async Task ListModelsAsync_ModelSizeLarge_ShouldReturnModelsMoreThan5Gb()
-        {
-            // Act
-            var models = await _client.ListModelsAsync(size: ModelSize.Large);
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.That(models, Is.Not.Null);
-                Assert.That(models.All(s => s.Size > SizeConverter.GigabytesToBytes(5)), Is.True);
-            });
-        }
-
-        [TestCase(Model, ModelSize.Small, ModelLocation.Local)]
-        [TestCase(Model, ModelSize.Small, ModelLocation.Remote)]
-        public async Task ListModelsAsync_ComplexFilter_ShouldReturnAtLeastOneModel(string pattern, ModelSize size, ModelLocation location)
-        {
-            // Act
-            var models = await _client.ListModelsAsync(
-                pattern: pattern,
-                size: size,
-                location: location);
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.That(models, Is.Not.Null);
-                Assert.That(models.Count(), Is.GreaterThanOrEqualTo(1));
-            });
-        }
-
-        [Test]
-        public async Task PullModelAsync_PullTinyModel_ShouldPullTheModel()
-        {
-            // Arrange
-            const string tinyModel = "all-minilm:v2";
-
-            // Act
-            await _client.PullModelAsync(tinyModel);
-
-            // Assert
-            var localModels = await _client.ListModelsAsync(tinyModel, location: ModelLocation.Local);
-
-            Assert.That(localModels.FirstOrDefault()?.Name, Is.EquivalentTo(tinyModel));
-        }
-
-        [Test]
-        public async Task DeleteModelAsync_DeleteExistingModel_ShouldDeleteTheModel()
-        {
-            // Arrange
-            const string tinyModel = "all-minilm:v2";
-            await _client.PullModelAsync(tinyModel);
-
-            // Act
-            await _client.DeleteModelAsync(tinyModel);
-
-            // Assert
-            var localModels = await _client.ListModelsAsync(tinyModel, location: ModelLocation.Local);
-
-            Assert.That(localModels.Count(), Is.EqualTo(0));
         }
 
         record PlanetResponse(IEnumerable<Planet> Data);

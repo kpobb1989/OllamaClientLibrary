@@ -25,19 +25,6 @@ namespace OllamaClientLibrary.Abstractions
         public List<OllamaChatMessage> ConversationHistory { get; set; }
         
         /// <summary>
-        /// Asynchronously gets a text completion from the content of the specified file based on the provided prompt.
-        /// </summary>
-        /// <param name="prompt">The prompt to generate the text completion.</param>
-        /// <param name="file">The file from which to extract the content for text completion.</param>
-        /// <param name="ct">The cancellation token to cancel the operation.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the generated text completion.</returns>
-        /// <remarks>
-        /// Supported image formats: .jpg, .jpeg, .png
-        /// Supported document formats: .doc, .docx, .xls, .xlsx, .pdf, .txt, .csv, .json, .xml
-        /// </remarks>
-        Task<string?> GetTextCompletionFromFileAsync(string prompt, OllamaFile file, CancellationToken ct = default);
-        
-        /// <summary>
         /// Gets chat completion asynchronously.
         /// </summary>
         /// <param name="prompt">The prompt to get chat completion for.</param>
@@ -69,32 +56,5 @@ namespace OllamaClientLibrary.Abstractions
         /// <param name="ct">The cancellation token.</param>
         /// <returns>The generated text completion.</returns>
         Task<string?> GetTextCompletionAsync(string? prompt, CancellationToken ct = default);
-
-        /// <summary>
-        /// Lists models asynchronously.
-        /// </summary>
-        /// <param name="pattern">The pattern to filter models by name.</param>
-        /// <param name="size">The size to filter models by.</param>
-        /// <param name="location">The location to filter models by.</param>
-        /// <param name="ct">The cancellation token.</param>
-        /// <returns>A list of models.</returns>
-        Task<IEnumerable<OllamaModel>> ListModelsAsync(string? pattern = null, ModelSize? size = null, ModelLocation location = ModelLocation.Remote, CancellationToken ct = default);
-
-        /// <summary>
-        /// Pulls a model asynchronously.
-        /// </summary>
-        /// <param name="model">The name of the model to pull.</param>
-        /// <param name="progress">An optional progress reporter to report the status of the model pull.</param>
-        /// <param name="ct">The cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        Task PullModelAsync(string model, IProgress<OllamaPullModelProgress>? progress = null, CancellationToken ct = default);
-
-        /// <summary>
-        /// Deletes a model asynchronously.
-        /// </summary>
-        /// <param name="model">The name of the model to delete.</param>
-        /// <param name="ct">The cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        Task DeleteModelAsync(string model, CancellationToken ct = default);
     }
 }

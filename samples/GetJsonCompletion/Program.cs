@@ -7,7 +7,7 @@ using System.ComponentModel;
 using var client = new OllamaClient(new OllamaOptions()
 {
     Temperature = Temperature.DataCleaningOrAnalysis,
-    AssistantBehavior = "You are a professional .NET developer."
+    SystemPrompt = "You are a professional .NET developer."
 });
 
 Console.Write("Loading...");

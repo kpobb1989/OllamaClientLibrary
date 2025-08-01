@@ -50,11 +50,6 @@ namespace OllamaClientLibrary.Models
         public string PullModelApi { get; set; } = $"api/pull";
 
         /// <summary>
-        /// Gets or sets the API endpoint for deleting models. Defaults to "api/delete".
-        /// </summary>
-        public string DeleteModelApi { get; set; } = $"api/delete";
-
-        /// <summary>
         /// Gets or sets a value indicating whether to automatically install the model if it is not already installed. Defaults to false.
         /// </summary>
         public bool AutoInstallModel { get; set; }
@@ -70,9 +65,21 @@ namespace OllamaClientLibrary.Models
         public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(60);
 
         /// <summary>
-        /// Get or sets the behavior of the assistant. Defaults to "You are a world-class AI Assistant".
+        /// Get or sets the system prompt. Defaults to "You are a world-class AI Assistant".
         /// </summary>
-        public string? AssistantBehavior { get; set; } = "You are a world-class AI Assistant";
+        public string? SystemPrompt { get; set; } = "You are a world-class AI Assistant";
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the assistant should simulate a "thinking" state before responding. 
+        /// When enabled, the assistant may introduce a delay or intermediate reasoning steps to mimic thoughtful processing.
+        /// Defaults to true.
+        /// </summary>
+        public bool ThinkingEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether conversation history should be retained.
+        /// </summary>
+        public bool KeepConversationHistory { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the list of tools available for the assistant. Tools are not applicable for all models. Make sure the model supports tools before using them.
