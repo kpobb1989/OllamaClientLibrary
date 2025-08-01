@@ -30,14 +30,14 @@ namespace OllamaClientLibrary.IntegrationTests
         public async Task GetTextCompletionAsync_SimplePrompt_ShouldReturnTextCompletion()
         {
             // Act
-            var response = await _client.GetTextCompletionAsync("Hi, how are you doing?");
+            var response = await _client.GetCompletionAsync("Hi, how are you doing?");
 
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.That(response, Is.Not.Null);
-                Assert.That(response, Is.Not.Empty);
-                Assert.That(response, Is.Not.WhiteSpace);
+                Assert.That(response?.Content, Is.Not.Null);
+                Assert.That(response?.Content, Is.Not.Empty);
+                Assert.That(response?.Content, Is.Not.WhiteSpace);
             });
         }
 
@@ -179,10 +179,10 @@ namespace OllamaClientLibrary.IntegrationTests
             });
 
             // Act
-            var response = await _client.GetTextCompletionAsync("What is the weather today in Paris?");
+            var response = await _client.GetCompletionAsync("What is the weather today in Paris?");
 
             // Assert
-            Assert.That(response, Is.Not.Null);
+            Assert.That(response?.Content, Is.Not.Null);
         }
 
         record PlanetResponse(IEnumerable<Planet> Data);

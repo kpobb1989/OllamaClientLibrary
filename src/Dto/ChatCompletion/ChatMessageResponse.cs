@@ -15,6 +15,8 @@ namespace OllamaClientLibrary.Dto.ChatCompletion
         [JsonConverter(typeof(ContentConverter))]
         public TContent? Content { get; set; }
 
+        public string? Thinking { get; set; }
+
         [JsonProperty("tool_calls")]
         public List<ToolCall>? ToolCalls { get; set; }
     }

@@ -1,5 +1,6 @@
 ﻿
 using OllamaClientLibrary.Constants;
+using OllamaClientLibrary.Dto.ChatCompletion;
 using OllamaClientLibrary.Models;
 
 using System;
@@ -50,11 +51,11 @@ namespace OllamaClientLibrary.Abstractions
         Task<T?> GetJsonCompletionAsync<T>(string? prompt, CancellationToken ct = default) where T : class;
 
         /// <summary>
-        /// Gets text completion asynchronously.
+        /// Gets the completion asynchronously.
         /// </summary>
         /// <param name="prompt">The prompt to generate completion for.</param>
         /// <param name="ct">The cancellation token.</param>
-        /// <returns>The generated text completion.</returns>
-        Task<string?> GetTextCompletionAsync(string? prompt, CancellationToken ct = default);
+        /// <returns>The generated completion.</returns>
+        Task<OllamaChatMessage> GetCompletionAsync(string? prompt, CancellationToken ct = default);
     }
 }

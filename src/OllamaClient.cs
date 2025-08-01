@@ -85,8 +85,47 @@ namespace OllamaClientLibrary
             }
         }
 
-        public async Task<string?> GetTextCompletionAsync(string? prompt, CancellationToken ct = default)
-            => await GetJsonCompletionAsync<string>(prompt, ct).ConfigureAwait(false);
+        public async Task<OllamaChatMessage> GetCompletionAsync(string? prompt, CancellationToken ct = default)
+        {
+            await AutoInstallModelAsync(ct).ConfigureAwait(false);
+
+            var messages = GetMessages();
+
+            var message = prompt?.AsUserChatMessage();
+            if (message != null)
+            {
+                messages.Add(message);
+            }
+
+            var request = messages.Select(s => s.AsChatMessageRequest()).ToArray();
+
+            var response = await _httpClient
+                .GetCompletionAsync<string>(request, Options.Tools?.Select(s => s.AsTool()).ToArray(), ct)
+                .ConfigureAwait(false);
+
+            var toolMessages = await HandleToolCallsAsync(response).ConfigureAwait(false);
+
+            if (toolMessages.Any())
+            {
+                messages.AddRange(toolMessages.Select(m => m.AsOllamaChatMessage()));
+
+                request = messages.Select(s => s.AsChatMessageRequest()).ToArray();
+
+                response = await _httpClient.GetCompletionAsync<string>(request, ct: ct).ConfigureAwait(false);
+            }
+
+            if (response?.Message?.Content != null)
+            {
+                messages.Add(new OllamaChatMessage(MessageRole.Assistant, response.Message.Content));
+            }
+
+            return new OllamaChatMessage()
+            {
+                Content = response?.Message?.Content,
+                Thinking = response?.Message?.Thinking,
+                Role = response?.Message?.Role ?? MessageRole.Assistant
+            };
+        }
 
         public async Task<T?> GetJsonCompletionAsync<T>(string? prompt, CancellationToken ct = default) where T : class
         {

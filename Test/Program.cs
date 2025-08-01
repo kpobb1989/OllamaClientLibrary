@@ -46,7 +46,7 @@ using var client = new OllamaClient(new OllamaOptions()
 {
     Model = "qwen3:4b",
     AutoInstallModel = false,
-    ThinkingEnabled = false,
+    ThinkingEnabled = true,
     KeepConversationHistory = false,
     SystemPrompt = systemPrompt,
     Tools = ToolFactory.Create<SqlRunnerTool>(),
@@ -58,7 +58,7 @@ while (true)
 
     var prompt = Console.ReadLine();
 
-    var resp = await client.GetTextCompletionAsync(prompt);
+    var resp = await client.GetCompletionAsync(prompt);
 
     Console.WriteLine(resp);
 }

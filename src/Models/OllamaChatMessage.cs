@@ -16,6 +16,12 @@ namespace OllamaClientLibrary.Models
         /// </summary>
         public object? Content { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the current thought or idea being processed.
+        /// </summary>
+        public string? Thinking { get; set; }
+
         /// <summary>
         /// The list of images associated with the message.
         /// </summary>

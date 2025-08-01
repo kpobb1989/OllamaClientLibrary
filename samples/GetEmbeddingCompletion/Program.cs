@@ -133,7 +133,9 @@ static async Task<string?> GenerateRefinedAnswer(OllamaClient client, string sta
                         $"Question:\n{question}\n\n" +
                         $"Answer:";
 
-        return await client.GetTextCompletionAsync(prompt);
+        var response = await client.GetCompletionAsync(prompt);
+
+        return response.Content?.ToString();
     }
     catch (Exception ex)
     {

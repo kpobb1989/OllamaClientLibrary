@@ -11,11 +11,11 @@ Console.Write("Loading...");
 
 try
 {
-    var response = await client.GetTextCompletionAsync("Why .NET is the best platform for creating applications?");
+    var response = await client.GetCompletionAsync("Why .NET is the best platform for creating applications?");
 
     Console.Clear();
 
-    Console.WriteLine(response);
+    Console.WriteLine(response.Content);
 }
 catch (Exception ex)
 {
